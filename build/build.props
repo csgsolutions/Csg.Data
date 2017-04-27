@@ -22,6 +22,10 @@
         <_Parameter1>SvnRevision</_Parameter1>
         <_Parameter2>$(CSG_SVNREV)</_Parameter2>
       </AssemblyAttributes>
+      <AssemblyAttributes Include="AssemblyMetadata" Condition=" '$(GIT_COMMITHASH)' != '' ">
+        <_Parameter1>CommitHash</_Parameter1>
+        <_Parameter2>$(GIT_COMMITHASH)</_Parameter2>
+      </AssemblyAttributes>
     </ItemGroup>
     
     <ItemGroup Condition=" '$(BuildNumber)' != '' ">
