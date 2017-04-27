@@ -10,7 +10,7 @@
     <VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
   
-  <Target Name="AddAssemblyMetadata" BeforeTargets="CoreCompile" Condition=" '$(BuildNumber)' != '' AND '$(CI)' != '' ">    
+  <Target Name="AddAssemblyMetadata" BeforeTargets="CoreCompile" Condition=" '$(CI)' != '' ">    
     <Message Text="Build server configuration detected, setting Assembly metadata attributes..." />
     
     <ItemGroup Condition=" '$(CSG_SVNREV)' != '' ">
