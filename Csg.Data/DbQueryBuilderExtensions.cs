@@ -544,5 +544,18 @@ namespace Csg.Data
             return fork;
         }
 
+        /// <summary>
+        /// Adds OPTION (RECOMPILE) query hint to the query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public static IDbQueryBuilder OptionRecompile(this IDbQueryBuilder query)
+        {
+            var fork = query.Fork();
+
+            fork.Options.Add(new SqlRecompileOption());
+
+            return fork; 
+        }
     }
 }

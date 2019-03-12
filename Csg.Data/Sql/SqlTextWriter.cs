@@ -591,7 +591,12 @@ namespace Csg.Data.Sql
             return this.InnerWriter.ToString();
         }
 
+        public void RenderOptions(IEnumerable<SqlOptionBase> options, SqlBuildArguments args)
+        {
+            this.Write(" OPTION ");
+            this.WriteBeginGroup();
+            this.RenderAll(options, args, ", ");
+            this.WriteEndGroup();
+        }
     }
-
-
 }

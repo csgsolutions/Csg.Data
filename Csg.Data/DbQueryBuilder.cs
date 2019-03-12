@@ -33,6 +33,7 @@ namespace Csg.Data
             this.Joins = new List<ISqlJoin>();
             this.Filters = new List<ISqlFilter>();
             this.OrderBy = new List<SqlOrderColumn>();
+            this.Options = new List<SqlOptionBase>();
         }
 
         /// <summary>
@@ -127,6 +128,11 @@ namespace Csg.Data
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the collection of SQL options to apply to the query.
+        /// </summary>
+        public ICollection<SqlOptionBase> Options { get; protected set; }
         
         /// <summary>
         /// Gets a SQL statement for the given query.
@@ -138,6 +144,7 @@ namespace Csg.Data
             {
                 SelectDistinct = this.Distinct,
                 GenerateFormattedSql = true,
+                Options = this.Options
             };
 
             //TODO: To support xplat db platforms, we would need to pass in a writer and build args here
@@ -181,6 +188,7 @@ namespace Csg.Data
             builder.Distinct = this.Distinct;
             builder.Parameters = new List<DbParameterValue>(this.Parameters);
             builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
+            builder.Options = new List<SqlOptionBase>(this.Options);
             return builder;
         }
 

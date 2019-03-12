@@ -10,8 +10,10 @@ namespace Csg.Data.Linq
     /// <summary>
     /// Extension methods for use with IQueryable's
     /// </summary>
+    [Obsolete("Stop using this. Use something else")]
     public static class QueryableExtensions
     {
+
         /// <summary>
         /// Gets a single page of items from a sequence.
         /// </summary>
@@ -21,6 +23,7 @@ namespace Csg.Data.Linq
         /// <param name="pageSize">The number of items in each page.</param>
         /// <param name="pageCount">Provides the total number of pages available.</param>
         /// <returns></returns>
+        [Obsolete("Stop using this. Use something else")]
         public static IEnumerable<T> TakePage<T>(this IQueryable<T> query, int pageNumber, int pageSize, out int pageCount)
         {
             int itemCount;
@@ -37,6 +40,7 @@ namespace Csg.Data.Linq
         /// <param name="pageCount">Provides the total number of pages available.</param>
         /// <param name="itemCount">Provides the total number of items availabe.</param>
         /// <returns></returns>
+        [Obsolete("Stop using this. Use something else")]
         public static IEnumerable<T> TakePage<T>(this IQueryable<T> query, int pageNumber, int pageSize, out int pageCount, out int itemCount)
         {
             if (pageNumber < 1)
@@ -54,7 +58,8 @@ namespace Csg.Data.Linq
             else
                 return query.Take(pageSize);
         }
-        
+
+
         /// <summary>
         /// Returns an ordered <see cref="IQueryable"/> after creating the OrderBy method from the specified sort expression
         /// </summary>
@@ -63,6 +68,7 @@ namespace Csg.Data.Linq
         /// <param name="propertyName">The property name of the object on which sorting should be evaluated.</param>
         /// <param name="sortAsc">Pass true to sort ascending, or false to sort descending.</param>
         /// <returns></returns>
+        [Obsolete("Stop using this. Use something else")]
         public static IQueryable<TEntity> OrderBy<TEntity>(this IQueryable<TEntity> source, string propertyName, bool sortAsc = true) where TEntity : class
         {
             var type = typeof(TEntity);
@@ -83,6 +89,7 @@ namespace Csg.Data.Linq
             return (IQueryable<TEntity>)source.Provider.CreateQuery(resultExp);
         }
 
+
         /// <summary>
         /// Filters a sequence of values using a predicate based on a string match with the given field and value.
         /// </summary>
@@ -93,6 +100,7 @@ namespace Csg.Data.Linq
         /// <param name="applyWhenNull">If true, the filter will be applied even if the <paramref name="value"/> parameter is null. The default is false.</param>
         /// <remarks>This method adds a predicate to the query that compares a field to a string value using Equals, Contains, EndsWith or StartsWith depending on how the value is decorated with wildcard characters.</remarks>
         /// <returns></returns>
+        [Obsolete("Stop using this. Use something else")]
         public static IQueryable<T> WhereLike<T>(this IQueryable<T> source, string fieldName, string value, bool applyWhenNull = false)
         {
             if (!applyWhenNull && string.IsNullOrEmpty(value))

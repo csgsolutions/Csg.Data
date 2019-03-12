@@ -141,6 +141,26 @@ namespace Csg.Data.Sql
         private IList<ISqlFilter> _filters;
 
         /// <summary>
+        /// 
+        /// </summary>
+        public ICollection<SqlOptionBase> Options
+        {
+            get
+            {
+                if (_options == null)
+                {
+                    _options = new List<SqlOptionBase>();
+                }
+                return _options;
+            }
+            set
+            {
+                _options = value;
+            }
+        }
+        private ICollection<SqlOptionBase> _options;
+
+        /// <summary>
         /// Renders the query.
         /// </summary>
         /// <returns></returns>
@@ -159,8 +179,8 @@ namespace Csg.Data.Sql
             var writer = new SqlTextWriter() { Format = this.GenerateFormattedSql };
             var args = new SqlBuildArguments();
 
-            this.CompileInternal(args);
-            this.RenderInternal(writer, args);
+            this.Render(writer, args);
+
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();
@@ -229,6 +249,11 @@ namespace Csg.Data.Sql
             }
 
             writer.RenderOrderBy(this.OrderBy, args);
+
+            if (_options != null && _options.Count > 0)
+            {
+                writer.RenderOptions(_options, args);
+            }
         }
                 
         void ISqlTable.Compile(SqlBuildArguments args)

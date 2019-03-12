@@ -156,5 +156,22 @@ namespace TestProject
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(stmt.CommandText, test);
         }
+
+        [TestMethod]
+        public void TestOptionRecompile()
+        {
+            var test = "SELECT [t0].[LastName],[t0].[FirstName] FROM [dbo].[Contact] AS [t0] OPTION (RECOMPILE);";
+            var builder = new SqlSelectBuilder();
+
+            builder.Table = new SqlTable("dbo.Contact");
+            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.Options.Add(new SqlRecompileOption());
+
+            var stmt = builder.Render();
+
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(test, stmt.CommandText);
+        }
     }
 }

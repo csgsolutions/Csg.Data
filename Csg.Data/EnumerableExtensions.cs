@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace Csg.Data
 {
+    [Obsolete("Stop using this. Use something else")]
     /// <summary>
     /// Extension methods on enumerable sets
     /// </summary>

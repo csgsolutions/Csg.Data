@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     
   <PropertyGroup>
-    <VersionPrefix>3.1.7</VersionPrefix>
+    <VersionPrefix>3.2.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Description>Tools for data access and database query generation.</Description>
     <Copyright>Copyright 2017 Cornerstone Solutions Group, Inc.</Copyright>

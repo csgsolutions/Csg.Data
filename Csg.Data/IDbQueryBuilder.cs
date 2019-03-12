@@ -64,6 +64,11 @@ namespace Csg.Data
         int CommandTimeout { get; set; }
 
         /// <summary>
+        /// Gets a collection of query options that will be appended to the query.
+        /// </summary>
+        ICollection<SqlOptionBase> Options { get; }
+
+        /// <summary>
         /// When implemented in a derived class, returns an initalized database command.
         /// </summary>
         /// <returns></returns>
