@@ -1,11 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28705.295
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{404EC3DC-573A-4F78-B606-F6857BD47885}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{7A7F9514-C48D-4521-9A8F-165DF39B23F7}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		build.cmd = build.cmd
 		build\build.props = build\build.props
 	EndProjectSection
@@ -66,6 +67,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E641A596-1501-466C-9DD2-C7AC107A4F07}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Csg.Core.vsmdi

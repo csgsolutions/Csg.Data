@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     
   <PropertyGroup>
-    <VersionPrefix>3.2.1</VersionPrefix>
+    <VersionPrefix>3.2.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Description>Tools for data access and database query generation.</Description>
     <Copyright>Copyright 2017 Cornerstone Solutions Group, Inc.</Copyright>
     <Authors>Justin R. Buchanan</Authors>
     <Company>CSG</Company>
-    <TargetFrameworks>net461;net451;net452;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net462;net461;net451;net452;netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Csg.Data</AssemblyName>
     <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
@@ -29,7 +29,8 @@
   <Import Project="..\build\build.props" />
 
   <ItemGroup>
-    <PackageReference Include="System.Data.Common" Version="4.1.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
@@ -47,9 +48,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
-    <PackageReference Include="System.Reflection" Version="4.1.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
   </ItemGroup>
 
 </Project>
