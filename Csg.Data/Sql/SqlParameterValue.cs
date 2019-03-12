@@ -29,5 +29,7 @@ namespace Csg.Data.Sql
             command.Parameters.Add(p);
             return p;
         }
+
+        public string ParameterKey { get; set; }
     }
 }

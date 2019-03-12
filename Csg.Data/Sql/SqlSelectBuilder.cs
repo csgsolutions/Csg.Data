@@ -161,6 +161,15 @@ namespace Csg.Data.Sql
 
             this.CompileInternal(args);
             this.RenderInternal(writer, args);
+
+            if (args.Options != null)
+            {
+                foreach (var option in args.Options)
+                {
+                    option.Render(writer, args);
+                }
+            }
+                                   
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();

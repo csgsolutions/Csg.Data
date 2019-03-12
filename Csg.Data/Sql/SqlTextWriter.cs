@@ -526,6 +526,42 @@ namespace Csg.Data.Sql
             }
         }
 
+        public virtual void WriteLiteralValue(object value, System.Data.DbType dbType)
+        {
+            switch (dbType)
+            {
+                case System.Data.DbType.AnsiString:
+                case System.Data.DbType.AnsiStringFixedLength:
+                case System.Data.DbType.String:
+                case System.Data.DbType.StringFixedLength:
+                    this.WriteQuotedString(value.ToString()); break;
+                case System.Data.DbType.Date:
+                    this.WriteQuotedString($"{value:yyyy-MM-dd}"); break;
+                case System.Data.DbType.DateTime:
+                case System.Data.DbType.DateTime2:
+                case System.Data.DbType.DateTimeOffset:
+                    this.WriteQuotedString($"{value:s}"); break;
+                default:
+                    this.WriteLiteralValue(value); break;
+            }
+        }
+
+        public virtual void WriteOptimizeForParameterValue(DbParameterValue parameterValue)
+        {
+            //OPTION (OPTIMIZE FOR (@foo=@foo2))
+            this.Write(SqlConstants.OPTION);
+            this.WriteSpace();
+            this.WriteBeginGroup();
+            this.Write(SqlConstants.OPTIMIZE_FOR);
+            this.WriteSpace();
+            this.WriteBeginGroup();
+            this.WriteParameter(parameterValue.ParameterName);
+            this.Write("=");
+            this.WriteLiteralValue(parameterValue.Value, parameterValue.DbType);
+            this.WriteEndGroup();
+            this.WriteEndGroup();
+        }
+
         public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator) where T: ISqlStatementElement
         {
             this.RenderAll(items, args, seperator, (a, b, c) => { a.Render(b, c); });
@@ -546,6 +582,11 @@ namespace Csg.Data.Sql
                 }
                 renderAction(item, this, args);
             }
+        }
+
+        public virtual void Render(ISqlStatementElement element)
+        {
+            
         }
 
         #endregion
@@ -590,7 +631,7 @@ namespace Csg.Data.Sql
         {
             return this.InnerWriter.ToString();
         }
-
+        
     }
 
 

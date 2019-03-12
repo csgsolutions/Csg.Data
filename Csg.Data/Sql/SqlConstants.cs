@@ -33,5 +33,7 @@ namespace Csg.Data.Sql
         public const string DESC = "DESC";
         public const string ON = "ON";
         public const string DISTINCT = "DISTINCT";
+        public const string OPTION = "OPTION";
+        public const string OPTIMIZE_FOR = "OPTIMIZE FOR";
     }
 }

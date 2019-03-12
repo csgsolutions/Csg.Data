@@ -173,6 +173,7 @@ namespace Csg.Data
         public IDbQueryBuilder Fork()
         {
             var builder = new DbQueryBuilder(this.Connection, this.Transaction);
+
             builder.CommandTimeout = this.CommandTimeout;
             builder.Root = this.Root;
             builder.Joins = new List<ISqlJoin>(this.Joins);
@@ -181,6 +182,7 @@ namespace Csg.Data
             builder.Distinct = this.Distinct;
             builder.Parameters = new List<DbParameterValue>(this.Parameters);
             builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
+
             return builder;
         }
 

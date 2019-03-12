@@ -8,9 +8,8 @@ namespace Csg.Data.Sql
         public const string SqlParameterPrefix = "@";
         public const string SqlTableNameFormat = "t{0}";
 
-        private List<DbParameterValue> _params;        
-        private List<ISqlTable> _tables;     
-
+        private List<DbParameterValue> _params;
+        private List<ISqlTable> _tables;
         private int _paramIndex;
 
         public SqlBuildArguments()
@@ -34,13 +33,24 @@ namespace Csg.Data.Sql
         }
 
         /// <summary>
+        /// Gets a collection of OPTION values that will be rendered at the end of the query.
+        /// </summary>
+        public IList<ISqlStatementElement> Options
+        {
+            get
+            {
+                return _options;
+            }
+        }
+
+        /// <summary>
         /// Creates a new SqlParameter, optionally specifying the dbtype.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="dbType"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        public string CreateParameter(object value, System.Data.DbType dbType, int? size = null)
+        public string CreateParameter(object value, System.Data.DbType dbType, int? size = null, string lookupName = null)
         {
             _paramIndex++;
 
@@ -49,7 +59,8 @@ namespace Csg.Data.Sql
                 ParameterName = string.Concat("p", this._paramIndex.ToString()),
                 Value = util.ConvertValue(value, dbType),
                 DbType = dbType,
-                Size = size
+                Size = size,
+                ParameterKey = lookupName
             };
             
             this.Parameters.Add(p);
@@ -75,5 +86,6 @@ namespace Csg.Data.Sql
             }
             return string.Format(SqlTableNameFormat, index);
         }
+
     }
 }
