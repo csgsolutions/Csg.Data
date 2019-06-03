@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="./version.props" />
+  <ItemGroup>
+    <PackageReference Include="Csg.Build.Metadata.Tasks" PrivateAssets="All" Version="1.0.*" />
+  </ItemGroup>
+  <PropertyGroup>
+    <Copyright>Copyright 2019 Cornerstone Solutions Group, Inc.</Copyright>
+    <Authors>Justin R. Buchanan</Authors>
+    <Company>CSG</Company>
+    <PackageLicenseUrl></PackageLicenseUrl>
+  </PropertyGroup>
+</Project>

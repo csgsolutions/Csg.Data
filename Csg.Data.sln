@@ -1,13 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{404EC3DC-573A-4F78-B606-F6857BD47885}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{7A7F9514-C48D-4521-9A8F-165DF39B23F7}"
 	ProjectSection(SolutionItems) = preProject
 		build.cmd = build.cmd
-		build\build.props = build\build.props
+		Directory.Build.props = Directory.Build.props
+		version.props = version.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Csg.Data", "Csg.Data\Csg.Data.csproj", "{533F4E01-AA6B-449D-B57D-D6FBCAEDA1B2}"
@@ -66,6 +67,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {636AA35E-916A-4FE7-9E1D-88C02495DAC8}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Csg.Core.vsmdi
