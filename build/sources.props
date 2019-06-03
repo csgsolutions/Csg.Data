@@ -10,9 +10,5 @@
       $(RestoreSources);
       https://www.myget.org/F/csgsolutions/api/v3/index.json;      
     </RestoreSources>
-    <RestoreSources>
-      $(RestoreSources);
-      https://nuget.corp.csgsolutions.com/nuget;
-    </RestoreSources>
   </PropertyGroup>
 </Project>
