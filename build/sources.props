@@ -6,7 +6,7 @@
       $(RestoreSources);
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
-    <RestoreSources Condition="'$(EnableCsgInternalRestoreSources)' == 'true'">
+    <RestoreSources>
       $(RestoreSources);
       https://www.myget.org/F/csgsolutions/api/v3/index.json;      
     </RestoreSources>
