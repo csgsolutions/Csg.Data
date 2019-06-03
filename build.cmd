@@ -17,7 +17,7 @@ dotnet build %SOLUTION% --configuration %BUILD_CONFIG%
 IF ERRORLEVEL 1 GOTO BuildFail
 
 ECHO ----- TESTING -----
-dotnet test %TEST_PROJ% --no-build --configuration %BUILD_CONFIG%
+dotnet test %TEST_PROJ% --no-build --configuration %BUILD_CONFIG% --logger:trx --results-directory .\TestResults
 IF ERRORLEVEL 1 GOTO TestFail
 
 ECHO ----- PACKAGING -----

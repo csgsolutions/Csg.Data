@@ -11,13 +11,9 @@
     <PackageId>Csg.Data</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/csgsolutions/Csg.Data.git</RepositoryUrl>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>    
-    <PackageProjectUrl>https://github.com/csgsolutions/Csg.Data</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/csgsolutions/Csg.Data/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageIconUrl>https://csgstorpub.blob.core.windows.net/images/csg-square-32.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>
