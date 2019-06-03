@@ -1,13 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     
   <PropertyGroup>
-    <VersionPrefix>3.1.7</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
     <Description>Tools for data access and database query generation.</Description>
-    <Copyright>Copyright 2017 Cornerstone Solutions Group, Inc.</Copyright>
-    <Authors>Justin R. Buchanan</Authors>
-    <Company>CSG</Company>
-    <TargetFrameworks>net461;net451;net452;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net461;net451;net472;netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Csg.Data</AssemblyName>
     <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
@@ -16,17 +11,10 @@
     <PackageId>Csg.Data</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/csgsolutions/Csg.Data.git</RepositoryUrl>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
-    
-    <PackageProjectUrl>https://github.com/csgsolutions/Csg.Data</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/csgsolutions/Csg.Data/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageIconUrl>https://csgstorpub.blob.core.windows.net/images/csg-square-32.png</PackageIconUrl>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>    
   </PropertyGroup>
-
-  <Import Project="..\build\build.props" />
 
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.1.0" />
