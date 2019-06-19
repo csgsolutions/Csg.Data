@@ -156,5 +156,37 @@ namespace TestProject
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(stmt.CommandText, test);
         }
+
+        [TestMethod]
+        public void TestJoinMultipleFilterCollectionsWithOrLogic()
+        {
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE ([t0].[IsActive]=@p0) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))));";
+            var builder = new SqlSelectBuilder("dbo.Product");
+            
+            var listOfThings1 = new string[] { "a", "b", "c" };
+            var listOfThings2 = new string[] { "d", "e", "f" };
+
+            builder.Filters.Add(builder.Table, "IsActive", SqlOperator.Equal, System.Data.DbType.Boolean, true);
+
+            var productCategories = new SqlFilterCollection() { Logic = SqlLogic.Or };
+
+            var productCategory1 = new SqlFilterCollection();
+            productCategory1.Add(builder.Table, "ProductCategoryID", SqlOperator.Equal, System.Data.DbType.Int32, 123);
+            productCategory1.Add(builder.Table, "SupplierID", SqlOperator.Equal, System.Data.DbType.Int32, 456);
+            productCategory1.Add(new SqlListFilter<string>(builder.Table, "ThingName", listOfThings1));
+
+            var productCategory2 = new SqlFilterCollection();
+            productCategory2.Add(builder.Table, "ProductCategoryID", SqlOperator.Equal, System.Data.DbType.Int32, 123);
+            productCategory2.Add(builder.Table, "SupplierID", SqlOperator.Equal, System.Data.DbType.Int32, 456);
+            productCategory2.Add(new SqlListFilter<string>(builder.Table, "ThingName", listOfThings2));
+
+            productCategories.Add(productCategory1);
+            productCategories.Add(productCategory2);
+            builder.Filters.Add(productCategories);
+
+            var stmt = builder.Render();
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(expectSql, stmt.CommandText);
+        }
     }
 }
