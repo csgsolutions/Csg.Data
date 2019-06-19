@@ -211,11 +211,14 @@ namespace Csg.Data
         /// <returns></returns>
         public static IDbQueryBuilder Where(this IDbQueryBuilder query, Action<IDbQueryWhereClause> expression)
         {
-            var group = new DbQueryWhereClause(query.Fork(), SqlLogic.And);
+            query = query.Fork();
+            var group = new DbQueryWhereClause(query.Root, SqlLogic.And);
 
             expression.Invoke(group);
 
-            return group.Complete();
+            query.AddFilter(group.Filters);
+
+            return query;
         }
 
         /// <summary>
@@ -226,11 +229,63 @@ namespace Csg.Data
         /// <returns></returns>
         public static IDbQueryBuilder WhereAny(this IDbQueryBuilder query, Action<IDbQueryWhereClause> expression)
         {
-            var group = new DbQueryWhereClause(query.Fork(), SqlLogic.Or);
+            query = query.Fork();
+            var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
 
             expression.Invoke(group);
 
-            return group.Complete();
+            query.AddFilter(group.Filters);
+
+            return query;
+        }
+
+
+        /// <summary>
+        /// Adds a set of WHERE clause conditions by looping over the given collection, and then joining them together with the given logic.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="collection"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static IDbQueryBuilder WhereAny<TItem>(this IDbQueryBuilder query, IEnumerable<TItem> collection, Action<IDbQueryWhereClause, TItem> expression)
+        {
+            query = query.Fork();
+            var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
+
+            foreach (var item in collection)
+            {
+                var innerGroup = new DbQueryWhereClause(query.Root, SqlLogic.And);
+                expression.Invoke(innerGroup, item);
+                group.AddFilter(innerGroup.Filters);
+            }
+
+            query.AddFilter(group.Filters);
+
+            return query;
+        }
+
+        /// <summary>
+        /// Adds a set of WHERE clause conditions by looping over the given collection, and then joining them together with the given logic.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="collection"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static IDbQueryBuilder WhereAny<TItem>(this IDbQueryBuilder query, IList<TItem> list, Action<IDbQueryWhereClause, TItem, int> expression)
+        {
+            query = query.Fork();
+            var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
+
+            for(var i = 0; i < list.Count; i++)
+            {
+                var innerGroup = new DbQueryWhereClause(query.Root, SqlLogic.And);
+                expression.Invoke(innerGroup, list[i], i);
+                group.AddFilter(innerGroup.Filters);
+            }
+
+            query.AddFilter(group.Filters);
+
+            return query;
         }
 
         /// <summary>
