@@ -14,7 +14,7 @@ namespace Csg.Data
         /// Adds the given filter to the underlying query expression.
         /// </summary>
         /// <param name="filter"></param>
-        void AddFilter(Csg.Data.Sql.ISqlFilter filter);
+        IDbQueryWhereClause AddFilter(Csg.Data.Sql.ISqlFilter filter);
 
         /// <summary>
         /// Gets the root table of the underlying query.

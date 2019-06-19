@@ -8,33 +8,28 @@ namespace Csg.Data
 {
     internal class DbQueryWhereClause : IDbQueryWhereClause
     {
-        public DbQueryWhereClause(IDbQueryBuilder query, SqlLogic logic)
+        private readonly ISqlTable _root;
+
+        public DbQueryWhereClause(ISqlTable root, SqlLogic logic)
         {
-            this.Query = query;
+            _root = root;
             this.Filters = new SqlFilterCollection() { Logic = logic };
         }
 
-        protected SqlFilterCollection Filters { get; set; }
-
-        public IDbQueryBuilder Query { get; set; }
+        public SqlFilterCollection Filters { get; set; }
 
         public ISqlTable Root
         {
             get
             {
-                return this.Query.Root;
+                return _root;
             }
         }
 
-        public void AddFilter(ISqlFilter filter)
+        public IDbQueryWhereClause AddFilter(ISqlFilter filter)
         {
             this.Filters.Add(filter);
-        }
-
-        public IDbQueryBuilder Complete()
-        {
-            this.Query.AddFilter(this.Filters);
-            return this.Query;
+            return this;
         }
     }
 }
