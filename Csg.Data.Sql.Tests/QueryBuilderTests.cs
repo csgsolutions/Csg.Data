@@ -184,7 +184,7 @@ namespace TestProject
             productCategories.Add(productCategory1);
             productCategories.Add(productCategory2);
             builder.Filters.Add(productCategories);
-
+                        
             var stmt = builder.Render();
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(expectSql, stmt.CommandText);
@@ -212,7 +212,7 @@ namespace TestProject
                         .FieldEquals("SupplierID", f.Item2)
                         .FieldIn("ThingName", f.Item3)
             );
-
+                        
             var stmt = builder.Render();
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(expectSql, stmt.CommandText);            
@@ -233,14 +233,14 @@ namespace TestProject
                 new Tuple<int,int,string[]>(123,456,listOfThings2)
             };
 
-            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
+            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true).FieldIn("CategoryID", new int[] { 10, 20, 30 }, useLiteralNumbers: true));
             builder = builder.WhereAny(
                 listOfCriteria,
                 (x, f, i) => x.FieldEquals("ProductCategoryID", f.Item1)
                         .FieldEquals("SupplierID", f.Item2)
                         .FieldIn("ThingName", f.Item3)
             );
-
+                        
             var stmt = builder.Render();
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(expectSql, stmt.CommandText);
