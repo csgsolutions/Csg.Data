@@ -110,13 +110,13 @@ contains asterisk (*) or question marks (?) they will be replaced with the SQL
 equivalent of % and _ respectively.
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
-    .Where(x => x..StringMatch("Description", SqlWildcardDecoration.Contains, "Fruit"));
+    .Where(x => x.StringMatch("Description", SqlWildcardDecoration.Contains, "Fruit"));
 // SELECT * FROM dbo.Product WHERE Description LIKE '%Fruit%';
 var query2 = connection.QueryBuilder("dbo.Product")
-    .Where(x => x..StringMatch("Description", SqlWildcardDecoration.BeginsWith, "Fruit"));
+    .Where(x => x.StringMatch("Description", SqlWildcardDecoration.BeginsWith, "Fruit"));
 // SELECT * FROM dbo.Product WHERE Description LIKE 'Fruit%';
 var query3 = connection.QueryBuilder("dbo.Product")
-    .Where(x => x..StringMatch("Description", SqlWildcardDecoration.None, "Fruit"));
+    .Where(x => x.StringMatch("Description", SqlWildcardDecoration.None, "Fruit"));
 // SELECT * FROM dbo.Product WHERE Description LIKE 'Fruit';
 ```
 
@@ -141,11 +141,11 @@ WHERE IN (list,of,values) and WHERE NOT IN (list,of,values) filters can be built
 
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
-    .Where(x => .FieldIn("CategoryID", new int[] { 10, 20, 30 }));
+    .Where(x => x.FieldIn("CategoryID", new int[] { 10, 20, 30 }));
 // SELECT * FROM dbo.Product WHERE CategoryID IN (10,20,30);
 
 var query2 = connection.QueryBuilder("dbo.Product")
-    .Where(x => .FieldNotIn("CategoryID", new int[] { 10, 20, 30 }));
+    .Where(x => x.FieldNotIn("CategoryID", new int[] { 10, 20, 30 }));
 // SELECT * FROM dbo.Product WHERE CategoryID NOT IN (10,20,30);
 ```
 
@@ -279,6 +279,40 @@ var query3 = query1.Where(x => x.FieldEquals<string>("Category", "Veggies"));
 // adding additional filters to the same field doesn't modify the filter already in place
 var query4 = query1.Where(x => x.FieldEquals<bool>("IsActive", false));
 // SELECT * FROM dbo.Product WHERE IsActive=1 AND Color='Red' AND Category='Veggies' AND IsActive=0;
+```
+
+### Conditional Filter Application Scenario
+A common application of the QueryBuilder is in building a dynamic WHERE clause for a query based on various
+input parameters that may or may not have values provided. Below is an example of a ListProducts() method for such
+a scenario.
+
+```csharp
+public static IEnumerable<Product> ListProducts(bool? isActive, string productName, string color, IEnumerable<int> categoryIDs)
+{
+    var query = connection.QueryBuilder("dbo.Product");
+
+    if (isActive.HasValue)
+    {
+        query = query.Where(x => x.FieldEquals("IsActive", isActive.Value));
+    }
+
+    if (!string.IsNullOrEmpty(productName))
+    {
+        query = query.Where(x => x.StringMatch("Name", SqlWildcardDecoration.Contains, productName));
+    }
+
+    if (!string.IsNullOrEmpty(color))
+    {
+        query = query.Where(x => x.FieldEquals("Color", color, isAnsi: true));
+    }
+
+    if (categoryIDs != null)
+    {
+        query = query.Where(x => x.FieldIn("CategoryID", categoryIDs));
+    }
+
+    // execute query and return data omitted        
+}
 ```
 
 ### Filter a query using a collection of criteria
