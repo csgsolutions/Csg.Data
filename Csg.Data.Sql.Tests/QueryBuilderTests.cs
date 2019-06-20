@@ -233,7 +233,7 @@ namespace TestProject
                 new Tuple<int,int,string[]>(123,456,listOfThings2)
             };
 
-            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true).FieldIn("CategoryID", new int[] { 10, 20, 30 }, useLiteralNumbers: true));
+            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
             builder = builder.WhereAny(
                 listOfCriteria,
                 (x, f, i) => x.FieldEquals("ProductCategoryID", f.Item1)
