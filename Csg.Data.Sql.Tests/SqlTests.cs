@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data.SqlClient;
 using Csg.Data;
 using Csg.Data.Sql;
+using System.Data.Common;
 
 namespace TestProject
 {
@@ -581,27 +582,47 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             Assert.AreEqual("SELECT 1,'2' AS [Two] FROM [Foo] AS [t0];", stmt.CommandText);
         }
 
-        //[TestMethod]
-        //public void TestTableCollection()
-        //{
-        //    var writer = new SqlTextWriter();
-        //    var args = new SqlBuildArguments();
+        [TestMethod]
+        public void TestRawFilter()
+        {
+            string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ((SELECT COUNT(*) FROM dbo.WidgetComment WHERE WidgetID = [t0].WidgetID) > @p0);";
+            SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
+            
+            q.Filters.Add(new SqlRawFilter("(SELECT COUNT(*) FROM dbo.WidgetComment WHERE WidgetID = {0}.WidgetID) > {1}", q.Table, new DbParameterValue() {
+                Value = 3,
+                DbType = System.Data.DbType.Int32
+            }));
 
-        //    var order = new SqlTable2("Order");                     
-        //    var orderLine = new SqlTable2("OrderLine");
-        //    var product = new SqlTable2("Product");
+            var s = q.Render();
 
-        //    order.InnerJoin(orderLine, new string[] { "OrderID", "OrderID" });
-        //    orderLine.InnerJoin(product, new SqlColumnCompareFilter(product, "ProductID", SqlOperator.Equal, orderLine, "ProductID"));
+            Assert.IsTrue((s.Parameters.Count > 0), "Parameter count should be 1.");
+            Assert.AreEqual(test, s.CommandText, true);
+        }
 
-        //    ((ISqlTable2)order).Compile(args);           
-        //    ((ISqlStatementElement)order).Render(writer, args);
+        [TestMethod]
+        public void TestSubQueryCountFilter()
+        {
+            string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ( (SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);";
+            //             SELECT * FROM [DimWidget] AS [t0] WHERE ( (SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
+            SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
 
-        //    var s = writer.ToString();
+            var widgetComment = SqlTable.Create("dbo.WidgetComment");
 
-        //    Assert.Fail();
-        //    Assert.IsNotNull(s);
-        //}
+            var sqf = new SqlSubQueryFilter(q.Table, widgetComment)
+            {
+                SubQueryMode = SubQueryMode.Count,
+                CountOperator = SqlOperator.GreaterThan,
+                CountValue = 3,
+                SubQueryColumn = "WidgetCommentID"
+            };
+            sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(q.Table, "WidgetID", SqlOperator.Equal, widgetComment));
+            q.Filters.Add(sqf);
+
+            var s = q.Render();
+
+            Assert.IsTrue((s.Parameters.Count > 0), "Parameter count should be 1.");
+            Assert.AreEqual(test, s.CommandText, true);
+        }
     }
 }
 
