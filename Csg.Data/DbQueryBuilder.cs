@@ -14,6 +14,8 @@ namespace Csg.Data
     /// </summary>
     public class DbQueryBuilder : IDbQueryBuilder
     {
+        public static bool GenerateFormattedSql = true;
+
         private DbQueryBuilder(System.Data.IDbConnection connection, System.Data.IDbTransaction transaction)
         {
             _connection = connection;
@@ -127,7 +129,7 @@ namespace Csg.Data
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
-        
+                
         /// <summary>
         /// Gets a SQL statement for the given query.
         /// </summary>
@@ -137,7 +139,7 @@ namespace Csg.Data
             var builder = new SqlSelectBuilder(this.Root, this.Joins, this.SelectColumns, this.Filters, this.OrderBy)
             {
                 SelectDistinct = this.Distinct,
-                GenerateFormattedSql = true,
+                GenerateFormattedSql = GenerateFormattedSql,
             };
 
             //TODO: To support xplat db platforms, we would need to pass in a writer and build args here

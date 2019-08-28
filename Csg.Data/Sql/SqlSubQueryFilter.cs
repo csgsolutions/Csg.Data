@@ -19,6 +19,40 @@ namespace Csg.Data.Sql
             this.SubQueryTable = SqlTable.Create(subQueryTable);
         }
 
+        //// FROM <leftTable> WHERE <leftTable>.<matchColumnName> IN (SELECT <matchColumnName> FROM <subquery> WHERE <matchColumnName> = <leftTable>.<matchColumnName> AND <filterColumnName> <filterOperator> <filterValue>)
+        //public static SqlSubQueryFilter Create(ISqlTable leftTable, ISqlTable subQuery, string selectColumnName, string matchColumnName, string filterColumnName, SqlOperator @filterOperator, System.Data.DbType filterType, object filterValue)
+        //{
+        //    var sqf = new SqlSubQueryFilter(leftTable, subQuery)
+        //    {
+        //        ColumnName = leftColumnName,
+        //        SubQueryColumn = subQueryColumnName,
+        //        SubQueryMode = SubQueryMode.InList
+        //    };
+
+        //    sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(leftTable, matchColumnName, SqlOperator.Equal, subQuery));
+        //    sqf.SubQueryFilters.Add(new SqlCompareFilter(subQuery, filterColumnName, filterOperator, filterType, filterValue));
+
+        //    return sqf;
+        //}
+
+        //public static SqlSubQueryFilter Create(ISqlTable leftTable, ISqlTable subQuery, string selectColumnName, string matchColumnName, string filterColumnName, SqlWildcardDecoration @filterOperator, string filterValue, bool isAnsiString = false)
+        //{
+        //    var sqf = new SqlSubQueryFilter(leftTable, subQuery)
+        //    {
+        //        ColumnName = leftColumnName,
+        //        SubQueryColumn = subQueryColumnName,
+        //        SubQueryMode = SubQueryMode.InList
+        //    };
+
+        //    sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(leftTable, matchColumnName, SqlOperator.Equal, subQuery));
+        //    sqf.SubQueryFilters.Add(new SqlStringMatchFilter(subQuery, filterColumnName, filterOperator, filterValue)
+        //    {
+        //        DataType = isAnsiString ? System.Data.DbType.AnsiString : System.Data.DbType.String
+        //    });
+
+        //    return sqf;
+        //}
+
         /// <summary>
         /// Gets or sets the table to filter.
         /// </summary>

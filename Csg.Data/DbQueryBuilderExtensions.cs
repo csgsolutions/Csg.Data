@@ -12,7 +12,7 @@ namespace Csg.Data
     /// <summary>
     /// Provides extension methods for the <see cref="IDbQueryBuilder"/>.
     /// </summary>
-    public static class DbQueryBuilderExtensions
+    public static partial class DbQueryBuilderExtensions
     {
         /// <summary>
         /// Creates a <see cref="IDbQueryBuilder"/> associated with the given <see cref="IDbScope"/> which can be used to build and execute a SQL statement.
@@ -239,7 +239,6 @@ namespace Csg.Data
             return query;
         }
 
-
         /// <summary>
         /// Adds a set of WHERE clause conditions by looping over the given collection, and then joining them together with the given logic.
         /// </summary>
@@ -358,6 +357,8 @@ namespace Csg.Data
 
             return fork;
         }
+
+        
 
     }
 }

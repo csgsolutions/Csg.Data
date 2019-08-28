@@ -293,5 +293,6 @@ namespace Csg.Data
             where.AddFilter(new Csg.Data.Sql.SqlExistFilter(innerQuery));
             return where;
         }
+
     }
 }
