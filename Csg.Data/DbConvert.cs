@@ -54,6 +54,8 @@ namespace Csg.Data
                     return Convert.ToSingle(value);                
                 case DbType.Boolean:
                     return Convert.ToBoolean(value);
+                case DbType.Time:
+                    return TimeSpan.Parse(value.ToString());
                 default:
                     return value;
             }
@@ -129,6 +131,37 @@ namespace Csg.Data
                         return DbType.String;
                     }
             }
+            return DbType.Object;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="DbType"/> for a System type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static System.Data.DbType TypeToDbType(Type type)
+        {
+            if (type == typeof(Nullable<>))
+            {
+                type = type.GetGenericArguments()[0];
+            }
+
+            if (type == typeof(byte)) return DbType.Byte;
+            if (type == typeof(short)) return DbType.Int16;
+            if (type == typeof(int)) return DbType.Int32;
+            if (type == typeof(long)) return DbType.Int64;
+            if (type == typeof(bool)) return DbType.Boolean;
+            if (type == typeof(Guid)) return DbType.Guid;
+            if (type == typeof(DateTime)) return DbType.DateTime2;
+            if (type == typeof(DateTimeOffset)) return DbType.DateTimeOffset;
+            if (type == typeof(TimeSpan)) return DbType.Time;
+            if (type == typeof(string)) return DbType.String;
+            if (type == typeof(char)) return DbType.StringFixedLength;
+            if (type == typeof(byte[])) return DbType.Binary;
+            if (type == typeof(decimal)) return DbType.Decimal;
+            if (type == typeof(float)) return DbType.Single;
+            if (type == typeof(double)) return DbType.Double;
+
             return DbType.Object;
         }
 
