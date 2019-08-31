@@ -13,7 +13,10 @@ namespace Csg.Data
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
     public class DbQueryBuilder : IDbQueryBuilder
-    {
+    { 
+        /// <summary>
+        /// Gets or sets a value that indicates if the query builder will generate formatted SQL by default. Applies to all instances.
+        /// </summary>
         public static bool GenerateFormattedSql = true;
 
         private DbQueryBuilder(System.Data.IDbConnection connection, System.Data.IDbTransaction transaction)
@@ -129,17 +132,18 @@ namespace Csg.Data
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
-                
+
         /// <summary>
         /// Gets a SQL statement for the given query.
         /// </summary>
+        /// <param name="generateFormattedSql">Indicates if SQL should be indented, have new-line characters, etc.</param>
         /// <returns></returns>
-        public SqlStatement Render()
+        public SqlStatement Render(bool? generateFormattedSql = null)
         {
             var builder = new SqlSelectBuilder(this.Root, this.Joins, this.SelectColumns, this.Filters, this.OrderBy)
             {
                 SelectDistinct = this.Distinct,
-                GenerateFormattedSql = GenerateFormattedSql,
+                GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
             };
 
             //TODO: To support xplat db platforms, we would need to pass in a writer and build args here
@@ -151,7 +155,7 @@ namespace Csg.Data
             }
 
             return stmt;
-        }      
+        }
 
         /// <summary>
         /// Returns an initalized database command.
@@ -195,5 +199,9 @@ namespace Csg.Data
             return this.Render().CommandText;
         }
 
+        SqlStatement IDbQueryBuilder.Render()
+        {
+            return this.Render();
+        }
     }
 }

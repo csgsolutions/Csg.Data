@@ -294,5 +294,64 @@ namespace Csg.Data
             return where;
         }
 
+        /// <summary>
+        /// Adds a {columnName} IN | NOT IN (SELECT {subQueryColumnName} FROM {sqlText} WHERE {SubQueryConditions})
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="where"></param>
+        /// <param name="columnName"></param>
+        /// <param name="subQuery"></param>
+        /// <param name="subQueryColumn"></param>
+        /// <returns></returns>
+        internal static IDbQueryWhereClause FieldSubQuery(IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, SubQueryMode condition, Action<IDbQueryWhereClause> subQueryFilters)
+        {
+            var subQueryFilter = new Csg.Data.Sql.SqlSubQueryFilter(where.Root, SqlTable.Create(sqlText))
+            {
+                ColumnName = columnName,
+                Condition = condition,
+                SubQueryColumn = subQueryColumnName,
+            };
+
+            var subQueryWhere = new DbQueryWhereClause(subQueryFilter.SubQueryTable, SqlLogic.And);
+
+            subQueryFilters(subQueryWhere);
+
+            if (subQueryWhere.Filters.Count > 0)
+            {
+                subQueryFilter.SubQueryFilters.Add(subQueryWhere.Filters);
+            }
+
+            where.AddFilter(subQueryFilter);
+
+            return where;
+        }
+
+        /// <summary>
+        /// Adds a {columnName} IN (SELECT {subQueryColumnName} FROM {sqlText} WHERE {SubQueryConditions})
+        /// </summary>
+        /// <param name="where"></param>
+        /// <param name="columnName">The column name on the table the condition is being added to.</param>
+        /// <param name="sqlText">SQL text that defines the sub query.</param>
+        /// <param name="subQueryColumnName">The column to select from the sub query and match against <paramref name="columnName"/></param>
+        /// <param name="subQueryFilters">A set of filters to narrow the sub-query</param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause FieldInSubQuery(this IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IDbQueryWhereClause> subQueryFilters)
+        {
+            return FieldSubQuery(where, columnName, sqlText, subQueryColumnName, SubQueryMode.InList, subQueryFilters);
+        }
+
+        /// <summary>
+        /// Adds a {columnName} NOT IN (SELECT {subQueryColumnName} FROM {sqlText} WHERE {SubQueryConditions})
+        /// </summary>
+        /// <param name="where"></param>
+        /// <param name="columnName">The column name on the table the condition is being added to.</param>
+        /// <param name="sqlText">SQL text that defines the sub query.</param>
+        /// <param name="subQueryColumnName">The column to select from the sub query and match against <paramref name="columnName"/></param>
+        /// <param name="subQueryFilters">A set of filters to narrow the sub-query</param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause FieldNotInSubQuery(this IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IDbQueryWhereClause> subQueryFilters)
+        {
+            return FieldSubQuery(where, columnName, sqlText, subQueryColumnName, SubQueryMode.NotInList, subQueryFilters);
+        }
     }
 }

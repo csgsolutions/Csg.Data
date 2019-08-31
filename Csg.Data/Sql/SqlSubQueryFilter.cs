@@ -136,8 +136,8 @@ namespace Csg.Data.Sql
     public enum SubQueryMode
     {
         InList,
-        NotInList,
-        Count
+        NotInList
     }
 
 }
+
