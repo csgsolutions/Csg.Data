@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Csg.Data.Sql
 {
+    /// <summary>
+    /// Creates a filter condition matching {ColumnName} { IN | NOT IN } (SELECT {SubQueryColumn} FROM {SubQueryTable} WHERE {SubQueryFilters})
+    /// </summary>
     public class SqlSubQueryFilter : ISqlFilter
     {
         public SqlSubQueryFilter(ISqlTable table, ISqlTable subQueryTable)
@@ -92,35 +95,22 @@ namespace Csg.Data.Sql
         /// <summary>
         /// Gets or sets a value that indicates if the operator applied is 'NOT IN' or 'IN'
         /// </summary>
-        public SubQueryMode SubQueryMode { get; set; }
+        public SubQueryMode Condition { get; set; }
 
-        /// <summary>
-        /// Gets or sets the count value to use for comparison when SubQueryMode is Count
-        /// </summary>
-        public int CountValue { get; set; } = 0;
-
-        /// <summary>
-        /// Gets or sets the operator to use when SubQueryMode is Count
-        /// </summary>
-        public SqlOperator CountOperator { get; set; } = SqlOperator.GreaterThanOrEqual;
-                        
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
             writer.WriteBeginGroup();
 
-            if (this.SubQueryMode == SubQueryMode.InList || this.SubQueryMode == SubQueryMode.NotInList)
+            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
+            writer.WriteSpace();
+
+            if (this.Condition == SubQueryMode.NotInList)
             {
-                writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
+                writer.Write(SqlConstants.NOT);
                 writer.WriteSpace();
-
-                if (this.SubQueryMode == SubQueryMode.NotInList)
-                {
-                    writer.Write(SqlConstants.NOT);
-                    writer.WriteSpace();
-                }
-
-                writer.Write(SqlConstants.IN);
             }
+
+            writer.Write(SqlConstants.IN);
 
             writer.WriteSpace();
 
@@ -128,12 +118,6 @@ namespace Csg.Data.Sql
             
             var builder = new SqlSelectBuilder(this.SubQueryTable);
             var subQueryColumn = new SqlColumn(this.SubQueryTable, this.SubQueryColumn);
-            if (this.SubQueryMode == SubQueryMode.Count)
-            {
-                subQueryColumn.Aggregate = SqlAggregate.Count;
-                subQueryColumn.Alias = "Cnt";
-            }
-
             builder.Columns.Add(subQueryColumn);
 
             foreach (var filter in this.SubQueryFilters)
@@ -144,14 +128,6 @@ namespace Csg.Data.Sql
             writer.WriteBeginGroup();
             builder.Render(writer, args);
             writer.WriteEndGroup();
-
-            if (this.SubQueryMode == SubQueryMode.Count)
-            {
-                writer.WriteSpace();
-                writer.WriteOperator(this.CountOperator);
-                writer.WriteSpace();
-                writer.WriteParameter(args.CreateParameter(this.CountValue, System.Data.DbType.Int32));
-            }
 
             writer.WriteEndGroup();
         }
