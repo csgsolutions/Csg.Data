@@ -37,7 +37,18 @@ namespace Csg.Data
 
         public void ApplyToQuery(IDbQueryBuilder builder)
         {
-            builder.AddFilter(this.Filters);
+            if (this.Filters.Count > 0)
+            {
+                builder.AddFilter(this.Filters);
+            }
+        }
+
+        public void ApplyTo(ICollection<ISqlFilter> filters)
+        {
+            if (this.Filters.Count > 0)
+            {
+                filters.Add(this.Filters);
+            }
         }
     }
 }
