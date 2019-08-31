@@ -216,7 +216,7 @@ namespace Csg.Data
 
             expression.Invoke(group);
 
-            query.AddFilter(group.Filters);
+            group.ApplyToQuery(query);
 
             return query;
         }

@@ -315,11 +315,7 @@ namespace Csg.Data
             var subQueryWhere = new DbQueryWhereClause(subQueryFilter.SubQueryTable, SqlLogic.And);
 
             subQueryFilters(subQueryWhere);
-
-            if (subQueryWhere.Filters.Count > 0)
-            {
-                subQueryFilter.SubQueryFilters.Add(subQueryWhere.Filters);
-            }
+            subQueryWhere.ApplyTo(subQueryFilter.SubQueryFilters);
 
             where.AddFilter(subQueryFilter);
 
@@ -352,6 +348,26 @@ namespace Csg.Data
         public static IDbQueryWhereClause FieldNotInSubQuery(this IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IDbQueryWhereClause> subQueryFilters)
         {
             return FieldSubQuery(where, columnName, sqlText, subQueryColumnName, SubQueryMode.NotInList, subQueryFilters);
+        }
+
+        /// <summary>
+        /// Adds a (SELECT COUNT({countFieldName}) FROM {sqlText} WHERE {subQueryConditions}) {subQueryOperator} {countValue} condition to the query; 
+        /// </summary>
+        /// <param name="where"></param>
+        /// <param name="sqlText"></param>
+        /// <param name="countColumnName"></param>
+        /// <param name="operator"></param>
+        /// <param name="countValue"></param>
+        /// <param name="subQueryWhere"></param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause SubQueryCount(this IDbQueryWhereClause where, string sqlText, string countColumnName, SqlOperator @operator, int countValue, Action<IDbQueryWhereClause> subQueryWhere)
+        {
+            var sqf = new SqlCountFilter(where.Root, SqlTable.Create(sqlText), countColumnName, @operator, countValue);
+            var sqfWhere = new DbQueryWhereClause(sqf.SubQueryTable, SqlLogic.And);
+            subQueryWhere(sqfWhere);
+            sqfWhere.ApplyTo(sqf.SubQueryFilters);
+            where.AddFilter(sqf);
+            return where;
         }
     }
 }
