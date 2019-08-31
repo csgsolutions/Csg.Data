@@ -602,19 +602,13 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         [TestMethod]
         public void TestSubQueryCountFilter()
         {
-            string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ( (SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);";
-            //             SELECT * FROM [DimWidget] AS [t0] WHERE ( (SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
+            string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ((SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);";
+            //             SELECT * FROM [DimWidget] AS [t0] WHERE ((SELECT COUNT([t1].[WidgetCommentID]) AS [Cnt] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
             SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
 
             var widgetComment = SqlTable.Create("dbo.WidgetComment");
 
-            var sqf = new SqlSubQueryFilter(q.Table, widgetComment)
-            {
-                SubQueryMode = SubQueryMode.Count,
-                CountOperator = SqlOperator.GreaterThan,
-                CountValue = 3,
-                SubQueryColumn = "WidgetCommentID"
-            };
+            var sqf = new SqlCountFilter(q.Table, widgetComment, "WidgetCommentID", SqlOperator.GreaterThan, 3);
             sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(q.Table, "WidgetID", SqlOperator.Equal, widgetComment));
             q.Filters.Add(sqf);
 

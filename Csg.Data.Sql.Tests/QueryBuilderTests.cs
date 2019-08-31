@@ -10,6 +10,11 @@ namespace TestProject
     [TestClass]
     public class QueryBuilderTests
     {
+        static QueryBuilderTests()
+        {
+            Csg.Data.DbQueryBuilder.GenerateFormattedSql = false;
+        }
+
         [TestMethod]
         public void TestSelect()
         {
@@ -190,60 +195,5 @@ namespace TestProject
             Assert.AreEqual(expectSql, stmt.CommandText);
         }
 
-        [TestMethod]
-        public void TestJoinMultipleFilterCollectionsWithOrLogicFluentAPI()
-        {
-            var expectSql = "SELECT *\r\n FROM [dbo].[Product] AS [t0]\r\n WHERE (([t0].[IsActive]=@p0)) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))))\r\n;";
-            IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
-
-            var listOfThings1 = new string[] { "a", "b", "c" };
-            var listOfThings2 = new string[] { "d", "e", "f" };
-
-            var listOfCriteria = new Tuple<int, int, string[]>[]
-            {
-                new Tuple<int,int,string[]>(123,456,listOfThings1),
-                new Tuple<int,int,string[]>(123,456,listOfThings2)
-            };
-
-            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
-            builder = builder.WhereAny(
-                (IEnumerable<Tuple<int, int, string[]>>)listOfCriteria, 
-                (x, f) => x.FieldEquals("ProductCategoryID", f.Item1)
-                        .FieldEquals("SupplierID", f.Item2)
-                        .FieldIn("ThingName", f.Item3)
-            );
-
-            var stmt = builder.Render();
-            Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(expectSql, stmt.CommandText);            
-        }
-
-        [TestMethod]
-        public void TestJoinMultipleFilterCollectionsWithOrLogicFluentAPIIndexed()
-        {
-            var expectSql = "SELECT *\r\n FROM [dbo].[Product] AS [t0]\r\n WHERE (([t0].[IsActive]=@p0)) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))))\r\n;";
-            IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
-
-            var listOfThings1 = new string[] { "a", "b", "c" };
-            var listOfThings2 = new string[] { "d", "e", "f" };
-
-            var listOfCriteria = new Tuple<int, int, string[]>[]
-            {
-                new Tuple<int,int,string[]>(123,456,listOfThings1),
-                new Tuple<int,int,string[]>(123,456,listOfThings2)
-            };
-
-            builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
-            builder = builder.WhereAny(
-                listOfCriteria,
-                (x, f, i) => x.FieldEquals("ProductCategoryID", f.Item1)
-                        .FieldEquals("SupplierID", f.Item2)
-                        .FieldIn("ThingName", f.Item3)
-            );
-
-            var stmt = builder.Render();
-            Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(expectSql, stmt.CommandText);
-        }
     }
 }

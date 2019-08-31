@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Csg.Data
 {
+    /// <summary>
+    /// Used to build a set of fitlers with the fluent api.
+    /// </summary>
     public class DbQueryWhereClause : IDbQueryWhereClause
     {
         private readonly ISqlTable _root;
