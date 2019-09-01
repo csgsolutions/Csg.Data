@@ -10,6 +10,11 @@ namespace Csg.Data.Sql.Tests
     [TestClass]
     public class DbQueryBuilderTests
     {
+        static DbQueryBuilderTests()
+        {
+            Csg.Data.DbQueryBuilder.GenerateFormattedSql = false;
+        }
+
         [TestMethod]
         public void TestCreateCommandPopulatesCommandParameters()
         {

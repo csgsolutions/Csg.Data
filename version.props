@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <BuildNumber>$(BUILD_BUILDNUMBER)</BuildNumber>
-    <VersionPrefix>3.2.0</VersionPrefix>
+    <VersionPrefix>3.3.0</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <PackageVersion Condition="'$(VersionSuffix)' == '' ">$(VersionPrefix)</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t0000</BuildNumber>

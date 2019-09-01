@@ -6,7 +6,10 @@ using System.Text;
 
 namespace Csg.Data
 {
-    internal class DbQueryWhereClause : IDbQueryWhereClause
+    /// <summary>
+    /// Used to build a set of fitlers with the fluent api.
+    /// </summary>
+    public class DbQueryWhereClause : IDbQueryWhereClause
     {
         private readonly ISqlTable _root;
 
@@ -30,6 +33,11 @@ namespace Csg.Data
         {
             this.Filters.Add(filter);
             return this;
+        }
+
+        public void ApplyToQuery(IDbQueryBuilder builder)
+        {
+            builder.AddFilter(this.Filters);
         }
     }
 }

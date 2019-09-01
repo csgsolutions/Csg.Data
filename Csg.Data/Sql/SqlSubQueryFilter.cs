@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Csg.Data.Sql
 {
+    /// <summary>
+    /// Creates a filter condition matching {ColumnName} { IN | NOT IN } (SELECT {SubQueryColumn} FROM {SubQueryTable} WHERE {SubQueryFilters})
+    /// </summary>
     public class SqlSubQueryFilter : ISqlFilter
     {
         public SqlSubQueryFilter(ISqlTable table, ISqlTable subQueryTable)
@@ -19,6 +22,40 @@ namespace Csg.Data.Sql
             this.SubQueryTable = SqlTable.Create(subQueryTable);
         }
 
+        //// FROM <leftTable> WHERE <leftTable>.<matchColumnName> IN (SELECT <matchColumnName> FROM <subquery> WHERE <matchColumnName> = <leftTable>.<matchColumnName> AND <filterColumnName> <filterOperator> <filterValue>)
+        //public static SqlSubQueryFilter Create(ISqlTable leftTable, ISqlTable subQuery, string selectColumnName, string matchColumnName, string filterColumnName, SqlOperator @filterOperator, System.Data.DbType filterType, object filterValue)
+        //{
+        //    var sqf = new SqlSubQueryFilter(leftTable, subQuery)
+        //    {
+        //        ColumnName = leftColumnName,
+        //        SubQueryColumn = subQueryColumnName,
+        //        SubQueryMode = SubQueryMode.InList
+        //    };
+
+        //    sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(leftTable, matchColumnName, SqlOperator.Equal, subQuery));
+        //    sqf.SubQueryFilters.Add(new SqlCompareFilter(subQuery, filterColumnName, filterOperator, filterType, filterValue));
+
+        //    return sqf;
+        //}
+
+        //public static SqlSubQueryFilter Create(ISqlTable leftTable, ISqlTable subQuery, string selectColumnName, string matchColumnName, string filterColumnName, SqlWildcardDecoration @filterOperator, string filterValue, bool isAnsiString = false)
+        //{
+        //    var sqf = new SqlSubQueryFilter(leftTable, subQuery)
+        //    {
+        //        ColumnName = leftColumnName,
+        //        SubQueryColumn = subQueryColumnName,
+        //        SubQueryMode = SubQueryMode.InList
+        //    };
+
+        //    sqf.SubQueryFilters.Add(new SqlColumnCompareFilter(leftTable, matchColumnName, SqlOperator.Equal, subQuery));
+        //    sqf.SubQueryFilters.Add(new SqlStringMatchFilter(subQuery, filterColumnName, filterOperator, filterValue)
+        //    {
+        //        DataType = isAnsiString ? System.Data.DbType.AnsiString : System.Data.DbType.String
+        //    });
+
+        //    return sqf;
+        //}
+
         /// <summary>
         /// Gets or sets the table to filter.
         /// </summary>
@@ -27,7 +64,7 @@ namespace Csg.Data.Sql
         /// <summary>
         /// Gets or sets the column in the left table to compare to the sub-query.
         /// </summary>
-        public string ColumnName { get;set;}
+        public string ColumnName { get;set; }
 
         /// <summary>
         /// Gets or sets the column in the sub-query to match the left column against.
@@ -58,32 +95,30 @@ namespace Csg.Data.Sql
         /// <summary>
         /// Gets or sets a value that indicates if the operator applied is 'NOT IN' or 'IN'
         /// </summary>
-        public bool NotInList
-        {
-            get;
-            set;
-        }
-        
+        public SubQueryMode Condition { get; set; }
+
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
             writer.WriteBeginGroup();
 
             writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
             writer.WriteSpace();
-            
-            if (this.NotInList)
+
+            if (this.Condition == SubQueryMode.NotInList)
             {
                 writer.Write(SqlConstants.NOT);
                 writer.WriteSpace();
             }
-            writer.Write(SqlConstants.IN);
-            writer.WriteSpace();
 
+            writer.Write(SqlConstants.IN);
+
+            writer.WriteSpace();
 
             args.AssignAlias(this.SubQueryTable);
             
             var builder = new SqlSelectBuilder(this.SubQueryTable);
-            builder.Columns.Add(new SqlColumn(this.SubQueryTable, this.SubQueryColumn));
+            var subQueryColumn = new SqlColumn(this.SubQueryTable, this.SubQueryColumn);
+            builder.Columns.Add(subQueryColumn);
 
             foreach (var filter in this.SubQueryFilters)
             {
@@ -97,4 +132,12 @@ namespace Csg.Data.Sql
             writer.WriteEndGroup();
         }
     }
+
+    public enum SubQueryMode
+    {
+        InList,
+        NotInList
+    }
+
 }
+
