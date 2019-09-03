@@ -52,8 +52,7 @@ namespace Csg.Data.Sql
         /// Writes the filter to the specified <see cref="SqlTextWriter"/> and adds any parameters to the specified <see cref="SqlBuildArguments"/>.
         /// </summary>
         /// <param name="writer">The instance of <see cref="SqlTextWriter"/> to write the T-SQL statement to.</param>
-        /// <param name="args">An instance of <see cref="SqlBuildArguments"/> to use for parameters.</param>
-        protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
+        protected override void RenderInternal(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);
         }

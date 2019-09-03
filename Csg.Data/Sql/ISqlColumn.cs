@@ -28,6 +28,6 @@ namespace Csg.Data.Sql
         /// </summary>
         /// <param name="writer">An instance of a SQL compatible text writer.</param>
         /// <param name="args">An instance of <see cref="SqlBuildArguments"/>.</param>
-        void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args);
+        void RenderValueExpression(ISqlTextWriter writer);
     }
 }

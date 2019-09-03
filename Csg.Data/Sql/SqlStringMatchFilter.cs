@@ -64,7 +64,7 @@ namespace Csg.Data.Sql
         /// </summary>
         public string Value { get; set; }
 
-        protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
+        protected override void RenderInternal(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);            
         }

@@ -166,7 +166,7 @@ namespace Csg.Data.Sql
                 writer.WriteEndStatement();
             }
 
-            return new SqlStatement(writer.ToString(), writer.args.Parameters);
+            return new SqlStatement(writer.ToString(), writer.BuildArguments.Parameters);
         }
 
 
@@ -214,7 +214,7 @@ namespace Csg.Data.Sql
             args.AssignAlias(this);
         }
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this, wrapped: true, aliased: true);
         }

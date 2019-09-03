@@ -535,12 +535,12 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         {
             var table = new SqlDerivedTable("SELECT * FROM [Foo]");
             var writer = new SqlTextWriter();
-            var args = writer.args;
+            var args = writer.BuildArguments;
             
 
             args.AssignAlias(table);            
 
-            ((ISqlTable)table).Render(writer, args);
+            ((ISqlTable)table).Render(writer);
             
             Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + args.TableName(table) + "]"));
         }
@@ -551,11 +551,11 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             var table = new SqlDerivedTable("SELECT * FROM [Foo];");
             var writer = new SqlTextWriter();
 
-            writer.args.AssignAlias(table);
+            writer.BuildArguments.AssignAlias(table);
 
-            ((ISqlTable)table).Render(writer, writer.args);
+            ((ISqlTable)table).Render(writer);
 
-            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + writer.args.TableName(table) + "]"));
+            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + writer.BuildArguments.TableName(table) + "]"));
         }
 
 

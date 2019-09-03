@@ -27,7 +27,7 @@ namespace Csg.Data.Sql
 
         #region ISqlStatementElement Members
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);
         }

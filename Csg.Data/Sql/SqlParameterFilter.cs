@@ -40,7 +40,7 @@ namespace Csg.Data.Sql
         /// </summary>
         public string ParameterName { get; set; }
 
-        public void Render(SqlTextWriter writer, SqlBuildArguments args)
+        public void Render(Abstractions.ISqlTextWriter  writer )
         {
             writer.Render(this);            
         }

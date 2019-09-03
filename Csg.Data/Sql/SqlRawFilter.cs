@@ -18,7 +18,7 @@ namespace Csg.Data.Sql
 
         public object[] Arguments { get; set; }
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);           
         }

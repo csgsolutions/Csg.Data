@@ -9,6 +9,9 @@ namespace Csg.Data.Abstractions
 {
     public interface ISqlTextWriter
     {
+
+        SqlBuildArguments BuildArguments { get; }
+
         void Render(SqlColumn src);
 
         void RenderValue(SqlColumn src);

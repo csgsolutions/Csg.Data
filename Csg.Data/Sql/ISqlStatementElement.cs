@@ -7,6 +7,6 @@ namespace Csg.Data.Sql
 {
     public interface ISqlStatementElement
     {
-        void Render(SqlTextWriter writer, SqlBuildArguments args);
+        void Render(Abstractions.ISqlTextWriter writer);
     }
 }

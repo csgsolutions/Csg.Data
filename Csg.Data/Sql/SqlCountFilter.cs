@@ -60,7 +60,7 @@ namespace Csg.Data.Sql
         /// </summary>
         public SqlOperator CountOperator { get; set; } = SqlOperator.GreaterThanOrEqual;
                         
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);          
         }

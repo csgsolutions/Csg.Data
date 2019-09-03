@@ -66,12 +66,12 @@ namespace Csg.Data.Sql
             return this.Alias;
         }
 
-        public void Render(SqlTextWriter writer, SqlBuildArguments args)
+        public void Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);
         }
 
-        public void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args)
+        public void RenderValueExpression(ISqlTextWriter writer)
         {
             writer.RenderValue(this);
         }

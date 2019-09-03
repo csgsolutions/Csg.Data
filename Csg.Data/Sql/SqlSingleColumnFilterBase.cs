@@ -45,15 +45,15 @@ namespace Csg.Data.Sql
 
         #region ISqlFilter Members
 
-        protected abstract void RenderInternal(SqlTextWriter writer, SqlBuildArguments args);
+        protected abstract void RenderInternal(Abstractions.ISqlTextWriter writer);
 
         #endregion
 
         #region ISqlStatementElement Members
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
-            this.RenderInternal(writer, args);
+            this.RenderInternal(writer);
         }
 
         #endregion

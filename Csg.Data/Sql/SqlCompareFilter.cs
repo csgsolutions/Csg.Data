@@ -67,7 +67,7 @@ namespace Csg.Data.Sql
         /// </summary>
         public bool EncodeValueAsLiteral { get; set; }
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);
         }

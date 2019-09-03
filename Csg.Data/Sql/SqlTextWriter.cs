@@ -11,8 +11,6 @@ namespace Csg.Data.Sql
     {
         private System.IO.TextWriter InnerWriter;
 
-        public SqlBuildArguments args { get; set; }
-
         private const string COLUMN_SEPERATOR = ",";
         private const string JOIN_SEPERATOR = " ";
         private const string QUOTE = "\"";
@@ -21,19 +19,19 @@ namespace Csg.Data.Sql
         public SqlTextWriter() : base()
         {
             this.InnerWriter = new System.IO.StringWriter();
-            this.args = new SqlBuildArguments();
+            this.BuildArguments = new SqlBuildArguments();
         }
 
         public SqlTextWriter(System.IO.TextWriter writer) : base()
         {
             this.InnerWriter = writer;
-            this.args = new SqlBuildArguments();
+            this.BuildArguments = new SqlBuildArguments();
         }        
 
         public SqlTextWriter(StringBuilder sb) : base()
         {
             this.InnerWriter = new System.IO.StringWriter(sb);
-            this.args = new SqlBuildArguments();
+            this.BuildArguments = new SqlBuildArguments();
         }
 
         /// <summary>
@@ -42,9 +40,9 @@ namespace Csg.Data.Sql
         public bool Format { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that indiciates if the writer should write quoted Identifiers.
+        /// Gets or sets the build arguments that will be used with this writer.
         /// </summary>
-        public bool UseQuotedIdentifiers { get; set; }
+        public virtual SqlBuildArguments BuildArguments { get; protected set; }
 
         #region SQL SERVER Specific Statics
 
@@ -131,6 +129,16 @@ namespace Csg.Data.Sql
 
         #region Language Specifics
 
+        /// <summary>
+        /// Gets or sets a value that indiciates if the writer should write quoted Identifiers.
+        /// </summary>
+        public bool UseQuotedIdentifiers { get; set; }
+
+        /// <summary>
+        /// Gets the prefix value that will be used before a named parameter.
+        /// </summary>
+        public virtual string ParameterNamePrefix { get => "@"; }
+
         protected virtual string FormatIdentifier(string value)
         {
             return FormatSqlServerIdentifier(value, this.UseQuotedIdentifiers);
@@ -166,24 +174,30 @@ namespace Csg.Data.Sql
             return ConvertDbSortDirectionToString(direction);
         }
 
-        public virtual string ColumnSeperator
-        {
-            get
-            {
-                return COLUMN_SEPERATOR;
-            }
-        }
+        public virtual string ColumnSeperator { get => COLUMN_SEPERATOR; }
 
         #endregion
 
-        #region Standard Write Methods
+        #region ISqlTextWriter
 
         public override void Write(char value)
         {
             InnerWriter.Write(value);
         }
 
-        public void WriteNewLine()
+        public override Encoding Encoding
+        {
+            get { return this.InnerWriter.Encoding; }
+        }
+
+        public override string ToString()
+        {
+            return this.InnerWriter.ToString();
+        }
+        
+        #region ISqlTextWriter
+
+        public virtual void WriteNewLine()
         {
             if (this.Format)
             {
@@ -191,19 +205,19 @@ namespace Csg.Data.Sql
             }
         }
 
-        public void WriteColumnName(string columnName)
+        public virtual void WriteColumnName(string columnName)
         {
             Write(this.FormatColumnName(columnName));
         }
 
-        public void WriteColumnName(string columnName, string tableName)
+        public virtual void WriteColumnName(string columnName, string tableName)
         {
             WriteTableName(tableName);
             Write(SqlConstants.DOT);
             WriteColumnName(columnName);
         }
 
-        public void WriteColumnName(string columnName, string tableName, string alias)
+        public virtual void WriteColumnName(string columnName, string tableName, string alias)
         {
             WriteTableName(tableName);
 
@@ -219,12 +233,12 @@ namespace Csg.Data.Sql
             }
         }
 
-        public void WriteTableName(string tableName)
+        public virtual void WriteTableName(string tableName)
         {
             this.WriteTableName(tableName, null);
         }
 
-        public void WriteTableName(string tableName, string alias)
+        public virtual void WriteTableName(string tableName, string alias)
         {            
             Write(FormatQualifiedIdentifierName(tableName));
             if (!string.IsNullOrEmpty(alias))
@@ -236,13 +250,13 @@ namespace Csg.Data.Sql
             }
         }
 
-        public void WriteParameter(string parameterName)
+        public virtual void WriteParameter(string parameterName)
         {
-            this.Write("@");
+            this.Write(this.ParameterNamePrefix);
             this.Write(parameterName);
         }
 
-        public void WriteAggregateColumn(string columnName, string tableName, SqlAggregate aggregateType, string outputName)
+        public virtual void WriteAggregateColumn(string columnName, string tableName, SqlAggregate aggregateType, string outputName)
         {
                 Write(ConvertSqlAggregateToString(aggregateType));
                 WriteBeginGroup();
@@ -259,7 +273,7 @@ namespace Csg.Data.Sql
                 WriteColumnName(outputName);
         }
 
-        public void WriteAggregate(string columnName, string tableName, SqlAggregate aggregateType)
+        public virtual void WriteAggregate(string columnName, string tableName, SqlAggregate aggregateType)
         {
             Write(ConvertSqlAggregateToString(aggregateType));
             WriteBeginGroup();
@@ -267,145 +281,19 @@ namespace Csg.Data.Sql
             WriteEndGroup();
         }
 
-        public void WriteOperator(SqlOperator oper)
+        public virtual void WriteOperator(SqlOperator oper)
         {
             Write(SqlTextWriter.ConvertSqlOperatorToString(oper));
         }
 
-        public void WriteSelect()
+        public virtual void WriteSelect()
         {
             this.Write(SqlConstants.SELECT);
         }
 
-        public void RenderSelect(IEnumerable<ISqlColumn> columns, SqlBuildArguments args)
-        {
-            this.RenderSelect(columns, args);
-        }
 
-        public void RenderSelect(IEnumerable<ISqlColumn> columns, SqlBuildArguments args, bool distinct)
-        {
-            if (columns == null)
-                throw new ArgumentNullException("columns");
-            if (args == null)
-                throw new ArgumentNullException("args");
 
-            var items = columns.ToArray();
-            this.WriteSelect();      
-            this.WriteSpace();
-
-            if (distinct)
-            {
-                this.Write(SqlConstants.DISTINCT);
-                this.WriteSpace();
-            }
-
-            if (items.Length > 0)
-            {
-                if (this.Format)
-                {
-                    this.RenderAll(items, string.Concat(COLUMN_SEPERATOR, "\r\n"));
-                }
-                else
-                {
-                    this.RenderAll(items, COLUMN_SEPERATOR);
-                }
-            }
-            else
-            {
-                this.Write("*");
-            }
-            this.WriteNewLine();
-        }
-
-        public void WriteFrom()
-        {
-            this.WriteSpace();
-            this.Write(SqlConstants.FROM);
-            this.WriteSpace();
-        }
-
-        public void RenderFrom(ISqlTable table, SqlBuildArguments args)
-        {
-            if (table == null)
-                throw new ArgumentNullException("table");
-            if (args == null)
-                throw new ArgumentNullException("args");
-            
-            this.WriteFrom();
-            table.Render(this, args);
-            this.WriteNewLine();
-        }
-
-        public void WriteWhere()
-        {
-            this.WriteSpace();
-            this.Write(SqlConstants.WHERE);
-            this.WriteSpace();
-        }
-
-        public void RenderWhere(IEnumerable<ISqlFilter> filters, SqlLogic logic, SqlBuildArguments args)
-        {
-            if (filters == null)
-                throw new ArgumentNullException("filters");
-            if (args == null)
-                throw new ArgumentNullException("args");
-
-            var items = filters.ToArray();
-            if (items.Length > 0)
-            {
-                this.WriteWhere();
-                this.RenderAll(items, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(logic), SqlConstants.SPACE));
-            }
-        }
-
-        public void WriteGroupBy()
-        {
-            this.WriteSpace();
-            this.Write(SqlConstants.GROUP_BY);
-            this.WriteSpace();
-        }
-
-        public void RenderGroupBy(IEnumerable<ISqlColumn> columns, SqlBuildArguments args)
-        {
-            if (columns == null)
-                throw new ArgumentNullException("columns");
-            if (args == null)
-                throw new ArgumentNullException("args");
-
-            var items = columns.ToArray();
-            if (items.Length > 0)
-            {
-                this.WriteGroupBy();                
-                this.RenderAll(items, COLUMN_SEPERATOR, (a, b) => { a.RenderValueExpression(b, args); });               
-            }
-            this.WriteNewLine();
-        }
-
-        public void WriteOrderBy()
-        {
-            this.WriteSpace();
-            this.Write(SqlConstants.ORDER_BY);
-            this.WriteSpace();
-        }
-
-        public void RenderOrderBy(IEnumerable<SqlOrderColumn> columns, SqlBuildArguments args)
-        {
-            if (columns == null)
-                throw new ArgumentNullException("columns");
-            if (args == null)
-                throw new ArgumentNullException("args");
-
-            var items = columns.ToArray();
-            
-            if (items.Length > 0)
-            {
-                this.WriteOrderBy();                
-                this.RenderAll(items, COLUMN_SEPERATOR);
-            }
-            this.WriteNewLine();
-        }
-
-        public void WriteSortColumn(string columnName, DbSortDirection direction)
+        public virtual void WriteSortColumn(string columnName, DbSortDirection direction)
         {
             this.WriteColumnName(columnName);
             if (direction != DbSortDirection.None)
@@ -415,9 +303,8 @@ namespace Csg.Data.Sql
             }
         }
 
-        
 
-        public void WriteDerivedTable(string commandText, string alias)
+        public virtual void WriteDerivedTable(string commandText, string alias)
         {
             this.WriteBeginGroup();
             this.Write(commandText);
@@ -427,22 +314,26 @@ namespace Csg.Data.Sql
             this.WriteSpace();
             this.WriteTableName(FormatTableName(alias));
         }
-        
+
+
         public void WriteSpace()
         {
             Write(SqlConstants.SPACE);
         }
+
 
         public void WriteComma()
         {
             Write(SqlConstants.COMMA);
         }
 
+
         public void WriteColumnSeperator()
         {
             this.WriteComma();
         }
-        
+
+
         public virtual void WriteBeginGroup()
         {
             Write(SqlConstants.BEGINGROUP);
@@ -461,32 +352,6 @@ namespace Csg.Data.Sql
         public virtual void WriteEndStatement()
         {
             Write(SqlConstants.SEMICOLON);
-        }
-
-        public virtual void RenderJoin(ISqlTable leftTable, SqlJoinType joinType, ISqlTable rightTable, IEnumerable<ISqlFilter> conditions, SqlBuildArguments args)
-        {
-            this.WriteSpace();
-            this.Write(joinType.ToString().ToUpper());
-            this.WriteSpace();
-            this.Write("JOIN");
-            this.WriteSpace();
-
-            //TODO: This is causing joined tables to render their conditions here, which is not right.
-            rightTable.Render(this, args);
-
-            if (joinType != SqlJoinType.Cross)
-            {
-                this.WriteSpace();
-                this.Write(SqlConstants.ON);
-                this.WriteSpace();
-                this.RenderAll<ISqlFilter>(conditions, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(SqlLogic.And), SqlConstants.SPACE));
-            }
-            this.WriteNewLine();
-        }
-
-        public virtual void RenderJoins(IEnumerable<ISqlJoin> joins, SqlBuildArguments args)
-        {
-            this.RenderAll(joins, string.Empty);
         }
 
         public virtual void WriteCast(string columnName, string sqlDataTypeName, string tableName)
@@ -534,30 +399,16 @@ namespace Csg.Data.Sql
             }
         }
 
-        //public virtual void RenderAll<T>(IEnumerable<T> items, string seperator)
-        //{
-        //    bool first = true;
-        //    foreach (var item in items)
-        //    {
-        //        if (first)
-        //        {
-        //            first = false;
-        //        }
-        //        else
-        //        {
-        //            this.Write(seperator);
-        //        }
+        #endregion
 
-        //        RenderObject(item);
-        //    }
-        //}
+        #region Custom Render Methods
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, string seperator) where T : ISqlStatementElement
+        protected virtual void RenderAll<T>(IEnumerable<T> items, string seperator) where T : ISqlStatementElement
         {
-            this.RenderAll(items, seperator, (a, b) => { a.Render(b, args); });
+            this.RenderAll(items, seperator, (a, b) => { a.Render(b); });
         }
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, string seperator, Action<T, SqlTextWriter> renderAction) where T : ISqlStatementElement
+        protected virtual void RenderAll<T>(IEnumerable<T> items, string seperator, Action<T, SqlTextWriter> renderAction) where T : ISqlStatementElement
         {
             bool first = true;
             foreach (var item in items)
@@ -575,7 +426,117 @@ namespace Csg.Data.Sql
             }
         }
 
-        public void RenderObject(object obj)
+        protected virtual void RenderSelect(IEnumerable<ISqlColumn> columns, SqlBuildArguments args)
+        {
+            this.RenderSelect(columns, args);
+        }
+
+        protected virtual void RenderSelect(IEnumerable<ISqlColumn> columns, SqlBuildArguments args, bool distinct)
+        {
+            if (columns == null)
+                throw new ArgumentNullException("columns");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            var items = columns.ToArray();
+            this.WriteSelect();
+            this.WriteSpace();
+
+            if (distinct)
+            {
+                this.Write(SqlConstants.DISTINCT);
+                this.WriteSpace();
+            }
+
+            if (items.Length > 0)
+            {
+                if (this.Format)
+                {
+                    this.RenderAll(items, string.Concat(COLUMN_SEPERATOR, "\r\n"));
+                }
+                else
+                {
+                    this.RenderAll(items, COLUMN_SEPERATOR);
+                }
+            }
+            else
+            {
+                this.Write("*");
+            }
+            this.WriteNewLine();
+        }
+
+        protected virtual void RenderFrom(ISqlTable table, SqlBuildArguments args)
+        {
+            if (table == null)
+                throw new ArgumentNullException("table");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            this.WriteSpace();
+            this.Write(SqlConstants.FROM);
+            this.WriteSpace();
+
+            table.Render(this);
+            this.WriteNewLine();
+        }
+
+        protected virtual void RenderWhere(IEnumerable<ISqlFilter> filters, SqlLogic logic, SqlBuildArguments args)
+        {
+            if (filters == null)
+                throw new ArgumentNullException("filters");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            var items = filters.ToArray();
+            if (items.Length > 0)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.WHERE);
+                this.WriteSpace();
+                this.RenderAll(items, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(logic), SqlConstants.SPACE));
+            }
+        }
+
+        protected virtual void RenderGroupBy(IEnumerable<ISqlColumn> columns, SqlBuildArguments args)
+        {
+            if (columns == null)
+                throw new ArgumentNullException("columns");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            var items = columns.ToArray();
+            if (items.Length > 0)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.GROUP_BY);
+                this.WriteSpace();
+                this.RenderAll(items, COLUMN_SEPERATOR, (a, b) => { a.RenderValueExpression(b); });
+            }
+            this.WriteNewLine();
+        }
+
+        protected virtual void RenderOrderBy(IEnumerable<SqlOrderColumn> columns, SqlBuildArguments args)
+        {
+            if (columns == null)
+                throw new ArgumentNullException("columns");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            var items = columns.ToArray();
+
+            if (items.Length > 0)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.ORDER_BY);
+                this.WriteSpace();
+                this.RenderAll(items, COLUMN_SEPERATOR);
+            }
+
+            this.WriteNewLine();
+        }
+
+        protected void RenderObject(object obj)
         {
             //TODO: Consider typeof(ISqlTextWriter) intead???
             var renderMethod = this.GetType().GetMethod("Render", new Type[] { obj.GetType() });
@@ -585,6 +546,32 @@ namespace Csg.Data.Sql
             }
 
             renderMethod.Invoke(this, new object[] { obj });
+        }
+
+        public virtual void RenderJoin(ISqlTable leftTable, SqlJoinType joinType, ISqlTable rightTable, IEnumerable<ISqlFilter> conditions, SqlBuildArguments args)
+        {
+            this.WriteSpace();
+            this.Write(joinType.ToString().ToUpper());
+            this.WriteSpace();
+            this.Write("JOIN");
+            this.WriteSpace();
+
+            //TODO: This is causing joined tables to render their conditions here, which is not right.
+            rightTable.Render(this);
+
+            if (joinType != SqlJoinType.Cross)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.ON);
+                this.WriteSpace();
+                this.RenderAll<ISqlFilter>(conditions, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(SqlLogic.And), SqlConstants.SPACE));
+            }
+            this.WriteNewLine();
+        }
+
+        public virtual void RenderJoins(IEnumerable<ISqlJoin> joins, SqlBuildArguments args)
+        {
+            this.RenderAll(joins, string.Empty);
         }
 
         #endregion
@@ -624,19 +611,19 @@ namespace Csg.Data.Sql
             {
                 if (arg is ISqlTable table)
                 {
-                    return this.FormatQualifiedIdentifierName(args.TableName(table));
+                    return this.FormatQualifiedIdentifierName(BuildArguments.TableName(table));
                 }
                 else if (arg is System.Data.Common.DbParameter dbParam)
                 {
-                    return string.Concat("@", args.CreateParameter(dbParam.Value, dbParam.DbType));
+                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(dbParam.Value, dbParam.DbType));
                 }
                 else if (arg is DbParameterValue paramValue)
                 {
-                    return string.Concat("@", args.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
+                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
                 }
                 else
                 {
-                    return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(arg.ToString(), System.Data.DbType.String));
                 }
             }).ToArray();
 
@@ -645,45 +632,34 @@ namespace Csg.Data.Sql
 
         #endregion
 
-        public override Encoding Encoding
-        {
-            get { return this.InnerWriter.Encoding; }
-        }
 
-        public override string ToString()
-        {
-            return this.InnerWriter.ToString();
-        }
-
-
-        #region ISqlTextWriter
         // -----------------------------------------------
 
         public void Render(SqlColumn src)
         {
             if (src.Aggregate == SqlAggregate.None)
             {
-                this.WriteColumnName(src.ColumnName, args.TableName(src.Table), src.Alias);
+                this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table), src.Alias);
             }
             else
             {
-                this.WriteAggregateColumn(src.ColumnName, args.TableName(src.Table), src.Aggregate, src.Alias);
+                this.WriteAggregateColumn(src.ColumnName, BuildArguments.TableName(src.Table), src.Aggregate, src.Alias);
             }
         }
 
         public void Render(SqlColumnCompareFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.LeftColumnName, args.TableName(src.LeftTable));
+            this.WriteColumnName(src.LeftColumnName, BuildArguments.TableName(src.LeftTable));
             this.WriteOperator(src.Operator);
-            this.WriteColumnName(src.RightColumnName, args.TableName(src.RightTable));
+            this.WriteColumnName(src.RightColumnName, BuildArguments.TableName(src.RightTable));
             this.WriteEndGroup();
         }
 
         public void Render(SqlCompareFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteOperator(src.Operator);
 
             if (src.EncodeValueAsLiteral)
@@ -692,7 +668,7 @@ namespace Csg.Data.Sql
             }
             else
             {
-                this.WriteParameter(args.CreateParameter(src.Value, src.DataType));
+                this.WriteParameter(BuildArguments.CreateParameter(src.Value, src.DataType));
             }
 
             this.WriteEndGroup();
@@ -700,7 +676,7 @@ namespace Csg.Data.Sql
 
         public void Render(SqlCountFilter src)
         {
-            args.AssignAlias(src.SubQueryTable);
+            BuildArguments.AssignAlias(src.SubQueryTable);
 
             var subquery = new SqlSelectBuilder(src.SubQueryTable);
             var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
@@ -719,7 +695,7 @@ namespace Csg.Data.Sql
             this.WriteSpace();
             this.WriteOperator(src.CountOperator);
             this.WriteSpace();
-            this.WriteParameter(args.CreateParameter(src.CountValue, System.Data.DbType.Int32));
+            this.WriteParameter(BuildArguments.CreateParameter(src.CountValue, System.Data.DbType.Int32));
 
             this.WriteEndGroup();
         }
@@ -727,16 +703,16 @@ namespace Csg.Data.Sql
         public void Render(SqlDateFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteOperator(SqlOperator.GreaterThanOrEqual);
-            this.WriteParameter(args.CreateParameter(src.BeginDate.Date, System.Data.DbType.DateTime));
+            this.WriteParameter(BuildArguments.CreateParameter(src.BeginDate.Date, System.Data.DbType.DateTime));
             this.WriteSpace();
             this.Write(SqlConstants.AND);
             this.WriteSpace();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteOperator(SqlOperator.LessThanOrEqual);
             //TODO: Get data type from object
-            this.WriteParameter(args.CreateParameter(src.EndDate.Date, System.Data.DbType.DateTime));
+            this.WriteParameter(BuildArguments.CreateParameter(src.EndDate.Date, System.Data.DbType.DateTime));
             this.WriteEndGroup();
         }
 
@@ -747,16 +723,16 @@ namespace Csg.Data.Sql
             {
                 this.WriteCast("date", () =>
                 {
-                    this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                    this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
                 });
             }
             else
             {
-                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             }
 
             this.WriteOperator(SqlOperator.GreaterThanOrEqual);
-            this.WriteParameter(args.CreateParameter(src.BeginDate, System.Data.DbType.DateTime));
+            this.WriteParameter(BuildArguments.CreateParameter(src.BeginDate, System.Data.DbType.DateTime));
             this.WriteSpace();
             this.Write(SqlConstants.AND);
             this.WriteSpace();
@@ -765,17 +741,17 @@ namespace Csg.Data.Sql
             {
                 this.WriteCast("date", () =>
                 {
-                    this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                    this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
                 });
             }
             else
             {
-                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             }
 
             this.WriteOperator(SqlOperator.LessThanOrEqual);
             //TODO: Get data type from object
-            this.WriteParameter(args.CreateParameter(src.EndDate, System.Data.DbType.DateTime));
+            this.WriteParameter(BuildArguments.CreateParameter(src.EndDate, System.Data.DbType.DateTime));
             this.WriteEndGroup();
         }
 
@@ -825,7 +801,7 @@ namespace Csg.Data.Sql
             this.WriteSpace();
 
             //TODO: This is causing joined tables to render their conditions here, which is not right.
-            src.RightTable.Render(this, args);
+            src.RightTable.Render(this);
 
             if (src.JoinType != SqlJoinType.Cross)
             {
@@ -849,7 +825,7 @@ namespace Csg.Data.Sql
             }
 
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteSpace();
 
             if (src.NotInList)
@@ -875,7 +851,7 @@ namespace Csg.Data.Sql
                     case System.Data.DbType.AnsiString:
                     case System.Data.DbType.AnsiStringFixedLength:
                     case System.Data.DbType.Object:
-                        this.WriteParameter(args.CreateParameter(v.ToString(), src.DataType, src.Size)); break;
+                        this.WriteParameter(BuildArguments.CreateParameter(v.ToString(), src.DataType, src.Size)); break;
                     case System.Data.DbType.Boolean:
                         this.Write(Convert.ToBoolean(v) ? 1 : 0); break;
                     case System.Data.DbType.Int16:
@@ -887,11 +863,11 @@ namespace Csg.Data.Sql
                         }
                         else
                         {
-                            this.WriteParameter(args.CreateParameter(v, src.DataType, src.Size));
+                            this.WriteParameter(BuildArguments.CreateParameter(v, src.DataType, src.Size));
                         }
                         break;
                     default:
-                        this.WriteParameter(args.CreateParameter(v, src.DataType, src.Size)); break;
+                        this.WriteParameter(BuildArguments.CreateParameter(v, src.DataType, src.Size)); break;
                 }
             }
 
@@ -919,7 +895,7 @@ namespace Csg.Data.Sql
         public void Render(SqlNullFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.Write((src.IsNull) ? " IS NULL" : " IS NOT NULL");
             this.WriteEndGroup();
         }
@@ -932,7 +908,7 @@ namespace Csg.Data.Sql
         public void Render(SqlParameterFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteOperator(src.Operator);
             this.Write(src.ParameterName);
             this.WriteEndGroup();
@@ -940,7 +916,7 @@ namespace Csg.Data.Sql
 
         public void Render(SqlRankColumn src)
         {
-            this.WriteRankOver(src.ColumnName, args.TableName(src.Table), src.Aggregate, src.Alias, src.RankDescending);
+            this.WriteRankOver(src.ColumnName, BuildArguments.TableName(src.Table), src.Aggregate, src.Alias, src.RankDescending);
         }
 
         public void Render(SqlRawFilter src)
@@ -949,19 +925,19 @@ namespace Csg.Data.Sql
             {
                 if (arg is ISqlTable table)
                 {
-                    return this.FormatQualifiedIdentifierName(args.TableName(table));
+                    return this.FormatQualifiedIdentifierName(BuildArguments.TableName(table));
                 }
                 else if (arg is System.Data.Common.DbParameter dbParam)
                 {
-                    return string.Concat("@", args.CreateParameter(dbParam.Value, dbParam.DbType));
+                    return string.Concat("@", BuildArguments.CreateParameter(dbParam.Value, dbParam.DbType));
                 }
                 else if (arg is DbParameterValue paramValue)
                 {
-                    return string.Concat("@", args.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
+                    return string.Concat("@", BuildArguments.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
                 }
                 else
                 {
-                    return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                    return string.Concat("@", BuildArguments.CreateParameter(arg.ToString(), System.Data.DbType.String));
                 }
             }).ToArray();
 
@@ -979,18 +955,18 @@ namespace Csg.Data.Sql
             }
 
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteSpace();
             this.Write(SqlConstants.LIKE);
             this.WriteSpace();
-            this.WriteParameter(args.CreateParameter(SqlStringMatchFilter.DecorateValue(src.Value, src.Operator), src.DataType));
+            this.WriteParameter(BuildArguments.CreateParameter(SqlStringMatchFilter.DecorateValue(src.Value, src.Operator), src.DataType));
             this.WriteEndGroup();
         }
 
         public void Render(SqlSubQueryFilter src)
         {
             this.WriteBeginGroup();
-            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             this.WriteSpace();
 
             if (src.Condition == SubQueryMode.NotInList)
@@ -1003,7 +979,7 @@ namespace Csg.Data.Sql
 
             this.WriteSpace();
 
-            args.AssignAlias(src.SubQueryTable);
+            BuildArguments.AssignAlias(src.SubQueryTable);
 
             var builder = new SqlSelectBuilder(src.SubQueryTable);
             var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
@@ -1022,7 +998,7 @@ namespace Csg.Data.Sql
 
         public void Render(SqlTable src)
         {
-            this.WriteTableName(src.TableName, args.TableName(src));
+            this.WriteTableName(src.TableName, BuildArguments.TableName(src));
         }
 
         public void Render(SqlDerivedTable src)
@@ -1033,25 +1009,25 @@ namespace Csg.Data.Sql
             this.WriteSpace();
             this.Write(SqlConstants.AS);
             this.WriteSpace();
-            this.WriteTableName(args.TableName(src));
+            this.WriteTableName(BuildArguments.TableName(src));
         }
 
         public void RenderValue(SqlColumn src)
         {
             if (src.Aggregate == SqlAggregate.None)
             {
-                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                this.WriteColumnName(src.ColumnName, BuildArguments.TableName(src.Table));
             }
             else
             {
-                this.WriteAggregate(src.ColumnName, args.TableName(src.Table), src.Aggregate);
+                this.WriteAggregate(src.ColumnName, BuildArguments.TableName(src.Table), src.Aggregate);
             }
         }
 
         public void Render(SqlSelectBuilder selectBuilder, bool wrapped = false, bool aliased = false)
         {
             // build refs for all the referenced tables            
-            selectBuilder.CompileInternal(args);
+            selectBuilder.CompileInternal(BuildArguments);
 
             if (wrapped)
             {
@@ -1059,28 +1035,28 @@ namespace Csg.Data.Sql
             }
 
             // SELECT
-            this.RenderSelect(selectBuilder.Columns, args, selectBuilder.SelectDistinct);
+            this.RenderSelect(selectBuilder.Columns, BuildArguments, selectBuilder.SelectDistinct);
 
             // FROM
-            this.RenderFrom(selectBuilder.Table, args);
+            this.RenderFrom(selectBuilder.Table, BuildArguments);
 
             // JOINS
             if (selectBuilder.Joins.Count > 0)
             {
-                this.RenderJoins(selectBuilder.Joins, args);
+                this.RenderJoins(selectBuilder.Joins, BuildArguments);
             }
 
             // WHERE
-            this.RenderWhere(selectBuilder.Filters, SqlLogic.And, args);
+            this.RenderWhere(selectBuilder.Filters, SqlLogic.And, BuildArguments);
 
             // GROUP BY
             if (selectBuilder.Columns.Count(x => x.IsAggregate) > 0)
             {
-                this.RenderGroupBy(selectBuilder.Columns.Where(x => !x.IsAggregate), args);
+                this.RenderGroupBy(selectBuilder.Columns.Where(x => !x.IsAggregate), BuildArguments);
             }
 
             // ORDER BY
-            this.RenderOrderBy(selectBuilder.OrderBy, args);
+            this.RenderOrderBy(selectBuilder.OrderBy, BuildArguments);
 
             // if we are using this as a subquery, or in a join, we need to wrap/alias it.
             if (wrapped)
@@ -1092,7 +1068,7 @@ namespace Csg.Data.Sql
                     this.WriteSpace();
                     this.Write(SqlConstants.AS);
                     this.WriteSpace();
-                    this.WriteTableName(args.TableName(selectBuilder));
+                    this.WriteTableName(BuildArguments.TableName(selectBuilder));
                 }
             }
         }

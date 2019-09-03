@@ -97,7 +97,7 @@ namespace Csg.Data.Sql
         /// </summary>
         public SubQueryMode Condition { get; set; }
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
             writer.Render(this);
         }

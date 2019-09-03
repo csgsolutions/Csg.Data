@@ -47,7 +47,7 @@ namespace Csg.Data.Sql
         /// </summary>
         /// <param name="writer">An instance of a T-SQL compatible text writer.</param>
         /// <param name="args">An instance of <see cref="SqlBuildArguments"/>.</param>
-        protected abstract void Render(SqlTextWriter writer, SqlBuildArguments args);
+        protected abstract void Render(Abstractions.ISqlTextWriter writer);
 
         /// <summary>
         /// Gets the portion of a SELECT column that would be renderd after the AS keyword.
@@ -63,7 +63,7 @@ namespace Csg.Data.Sql
         /// </summary>
         /// <param name="writer">An instance of a T-SQL compatible text writer.</param>
         /// <param name="args">An instance of <see cref="SqlBuildArguments"/>.</param>
-        protected abstract void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args);
+        protected abstract void RenderValueExpression(ISqlTextWriter writer);
 
         #region Interface Members
 
@@ -75,21 +75,19 @@ namespace Csg.Data.Sql
             }
         }
 
-        ISqlTable ISqlTableElement.Table { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-
         string ISqlColumn.GetAlias()
         {
             return this.GetAlias();
         }
 
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
         {
- 	        this.Render(writer,args);
+ 	        this.Render(writer);
         }
 
-        void ISqlColumn.RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args)
+        void ISqlColumn.RenderValueExpression(ISqlTextWriter writer)
         {
-            this.RenderValueExpression(writer, args);
+            this.RenderValueExpression(writer);
         }
 
         #endregion
