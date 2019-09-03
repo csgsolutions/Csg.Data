@@ -60,11 +60,7 @@ namespace Csg.Data.Sql
 
         public void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            if (_innerList.Count <= 0)
-                return;
-            writer.WriteBeginGroup();
-            writer.RenderAll(this, args, string.Concat(" ",((this.Logic == SqlLogic.And) ? SqlConstants.AND : SqlConstants.OR).ToString().ToUpper()," "));
-            writer.WriteEndGroup();
+            writer.Render(this);            
         }
 
         #endregion

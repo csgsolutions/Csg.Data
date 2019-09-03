@@ -79,9 +79,9 @@ namespace TestProject
             var stmt = builder.Render();
 
             Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(stmt.CommandText, test);
-            Assert.AreEqual(stmt.Parameters.ToList()[0].Value, "Buchanan");
-            Assert.AreEqual(stmt.Parameters.ToList()[1].Value, "a");
+            Assert.AreEqual(test, stmt.CommandText);
+            Assert.AreEqual("Buchanan", stmt.Parameters.ToList()[0].Value);
+            Assert.AreEqual("a", stmt.Parameters.ToList()[1].Value);
         }
 
         [TestMethod]
@@ -98,7 +98,7 @@ namespace TestProject
             var stmt = builder.Render();
 
             Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(stmt.CommandText, test);
+            Assert.AreEqual(test, stmt.CommandText);
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace TestProject
             var stmt = builder.Render();
 
             Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(stmt.CommandText, test);
+            Assert.AreEqual(test, stmt.CommandText);
         }
 
         [TestMethod]
@@ -142,7 +142,7 @@ namespace TestProject
             var stmt = builder.Render();
 
             Assert.AreEqual(stmt.CommandText, test);
-            Assert.AreEqual(stmt.Parameters.Single().Value, "Test123");
+            Assert.AreEqual("Test123", stmt.Parameters.Single().Value);
         }
 
         [TestMethod]
@@ -160,7 +160,7 @@ namespace TestProject
             var stmt = builder.Render();
 
             Assert.IsNotNull(stmt.CommandText);
-            Assert.AreEqual(stmt.CommandText, test);
+            Assert.AreEqual(test, stmt.CommandText);
         }
 
         [TestMethod]
@@ -193,6 +193,31 @@ namespace TestProject
             var stmt = builder.Render();
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(expectSql, stmt.CommandText);
+        }
+
+        [TestMethod]
+        public void TestJoinToSelectBuilderSelect()
+        {
+            var test = "SELECT [t0].[BusinessEntityID],[t2].[PhoneNumber] FROM [Person].[Person] AS [t0] INNER JOIN (SELECT [t1].[BusinessEntityID],[t1].[PhoneNumber] FROM [Person].[PersonPhone] AS [t1]) AS [t2] ON ([t0].[BusinessEntityID]=[t2].[BusinessEntityID]);";
+                      //SELECT [t0].[FooID],[t2].[BarName] FROM [dbo].[Foo] AS [t0] INNER JOIN (SELECT [t1].[BarID],[t1].[BarName] FROM [dbo].[Bar] AS [t1]) AS [t2] ON ([t0].[BarID]=[t2].[BarID]); 
+            var builder = new SqlSelectBuilder();
+
+            var foo = new SqlTable("Person.Person");
+            var bar = new SqlSelectBuilder("Person.PersonPhone");
+
+            bar.Columns.Add(new SqlColumn(bar.Table, "BusinessEntityID"));
+            bar.Columns.Add(new SqlColumn(bar.Table, "PhoneNumber"));
+
+            builder.Joins.AddInner(foo, bar, "BusinessEntityID");
+
+            builder.Table = foo;
+            builder.Columns.Add(new SqlColumn(foo, "BusinessEntityID"));
+            builder.Columns.Add(new SqlColumn(bar, "PhoneNumber"));
+
+            var stmt = builder.Render();
+
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(test, stmt.CommandText);
         }
 
     }

@@ -99,37 +99,7 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.WriteSpace();
-
-            if (this.Condition == SubQueryMode.NotInList)
-            {
-                writer.Write(SqlConstants.NOT);
-                writer.WriteSpace();
-            }
-
-            writer.Write(SqlConstants.IN);
-
-            writer.WriteSpace();
-
-            args.AssignAlias(this.SubQueryTable);
-            
-            var builder = new SqlSelectBuilder(this.SubQueryTable);
-            var subQueryColumn = new SqlColumn(this.SubQueryTable, this.SubQueryColumn);
-            builder.Columns.Add(subQueryColumn);
-
-            foreach (var filter in this.SubQueryFilters)
-            {
-                builder.Filters.Add(filter);
-            }
-
-            writer.WriteBeginGroup();
-            builder.Render(writer, args);
-            writer.WriteEndGroup();
-
-            writer.WriteEndGroup();
+            writer.Render(this);
         }
     }
 

@@ -23,40 +23,16 @@ namespace Csg.Data.Sql
 
         public string ColumnName { get; set; }
     
-        public DateTime BeginDate { get; set;}
+        public virtual DateTime BeginDate { get; set;}
 
-        public DateTime EndDate { get; set; }
+        public virtual DateTime EndDate { get; set; }
 
-        protected virtual DateTime GetBeginDate()
-        {
-            return this.BeginDate;
-        }
-
-        protected virtual DateTime GetEndDate()
-        {
-            return this.EndDate;
-        }
-
-        protected virtual void WriteColumnName(SqlTextWriter writer, SqlBuildArguments args)
-        {           
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-        }
         
         #region ISqlStatementElement Members
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            this.WriteColumnName(writer, args);
-            writer.WriteOperator(SqlOperator.GreaterThanOrEqual);
-            writer.WriteParameter(args.CreateParameter(this.GetBeginDate(), System.Data.DbType.DateTime));
-            writer.WriteSpace();
-            writer.Write(SqlConstants.AND);
-            writer.WriteSpace();
-            this.WriteColumnName(writer, args);
-            writer.WriteOperator(SqlOperator.LessThanOrEqual);
-            writer.WriteParameter(args.CreateParameter(this.GetEndDate(), System.Data.DbType.DateTime));
-            writer.WriteEndGroup();
+            writer.Render(this);
         }
 
         #endregion

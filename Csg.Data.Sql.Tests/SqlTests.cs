@@ -19,8 +19,8 @@ namespace TestProject
         [TestMethod]
         public void TestColumnFormatting()
         {
-            var col1 = new SqlDataColumn("[FieldName]");
-            var col2 = new SqlDataColumn("FieldName");            
+            var col1 = SqlTextWriter.FormatSqlServerIdentifier("[FieldName]");
+            var col2 = SqlTextWriter.FormatSqlServerIdentifier("FieldName");            
 
             Assert.AreEqual(col1.ToString(), "[FieldName]");
             Assert.AreEqual(col1.ToString(),col2.ToString());
@@ -36,7 +36,7 @@ namespace TestProject
 
             var s = q.Render();
 
-            Assert.AreEqual(s.CommandText, test);
+            Assert.AreEqual(test, s.CommandText);
         }
 
         [TestMethod]
@@ -221,20 +221,24 @@ namespace TestProject
         [TestMethod]
         public void TestDateFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE (CAST([t0].[CreateDate] as date)>=@p0 AND CAST([t0].[CreateDate] as date)<=@p1) ORDER BY [WidgetName];";
+            string expectedSql = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE (CAST([t0].[CreateDate] AS date)>=@p0 AND CAST([t0].[CreateDate] AS date)<=@p1) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
             DateTime beginDate = DateTime.Parse("2011-01-01 05:00");
             DateTime endDate = DateTime.Parse("2011-01-01 23:30");
 
-            q.Filters.Add(new SqlDateFilter(q.Table, "CreateDate", beginDate, endDate));
+            var dateFilter = new SqlDateFilter(q.Table, "CreateDate", beginDate, endDate);
+
+            q.Filters.Add(dateFilter);
 
             s = q.Render();
 
+            Assert.AreEqual(beginDate.Date, dateFilter.BeginDate, "filter value should not have time");
+            Assert.AreEqual(endDate.Date, dateFilter.EndDate, "filter value should not have time");
             Assert.IsTrue((s.Parameters.Count == 2), "Parameter count should be 2.");
             Assert.IsTrue(s.Parameters.All(x => (DateTime)x.Value == ((DateTime)x.Value).Date), "Date params should not have time in parameter.");
-            Assert.IsTrue(string.Equals(s.CommandText, test, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
+            Assert.AreEqual(expectedSql, s.CommandText, "Output CommandText does not match expected result");
         }
 
         [TestMethod]
@@ -530,8 +534,9 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         public void TestDerivedTableWrapsWithParens()
         {
             var table = new SqlDerivedTable("SELECT * FROM [Foo]");
-            var args = new SqlBuildArguments();
             var writer = new SqlTextWriter();
+            var args = writer.args;
+            
 
             args.AssignAlias(table);            
 
@@ -544,14 +549,13 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         public void TestDerivedTableRemovesSemicolons()
         {
             var table = new SqlDerivedTable("SELECT * FROM [Foo];");
-            var args = new SqlBuildArguments();
             var writer = new SqlTextWriter();
 
-            args.AssignAlias(table);
+            writer.args.AssignAlias(table);
 
-            ((ISqlTable)table).Render(writer, args);
+            ((ISqlTable)table).Render(writer, writer.args);
 
-            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + args.TableName(table) + "]"));
+            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + writer.args.TableName(table) + "]"));
         }
 
 
@@ -560,8 +564,8 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         {
             var outerQuery = new SqlSelectBuilder("SELECT * FROM Stuff ORDER BY [WidgetName];");
             var innerQuery = new SqlSelectBuilder("[Foo]");
-            innerQuery.Columns.Add(new SqlLiteralColumn<int>(1));
 
+            innerQuery.Columns.Add(new SqlLiteralColumn<int>(1));
             outerQuery.Filters.Add(new SqlExistFilter(innerQuery));
 
             var stmt = outerQuery.Render();

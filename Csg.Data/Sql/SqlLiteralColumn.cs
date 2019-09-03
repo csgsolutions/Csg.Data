@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Csg.Data.Abstractions;
 
 namespace Csg.Data.Sql
 {
@@ -67,19 +68,12 @@ namespace Csg.Data.Sql
 
         public void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteLiteralValue(this.Value);
-            if (this.Alias != null)
-            {
-                writer.WriteSpace();
-                writer.Write(SqlConstants.AS);
-                writer.WriteSpace();
-                writer.WriteColumnName(this.Alias);
-            }
+            writer.Render(this);
         }
 
-        public void RenderValueExpression(SqlTextWriter writer, SqlBuildArguments args)
+        public void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteLiteralValue(this.Value);
+            writer.RenderValue(this);
         }
     }
 }

@@ -163,6 +163,36 @@ var query2 = connection.QueryBuilder("dbo.Product")
 // SELECT * FROM dbo.Product WHERE CategoryID IN (1, 0, 1);
 ```
 
+### Sub-Query Matching Filters
+```WHERE IN (SELECT <cols> FROM <table> WHERE <conditions>)``` filters can be built using FieldInSubQuery() and FieldNotInSubQuery().
+
+```csharp
+var query1 = connection.QueryBuilder("dbo.Product")
+    .Where(where => where.FieldInSubQuery("ProductID", "dbo.ProductAttribute", "ProductID",
+        subWhere => subWhere.FieldMatch("AttributeName", SqlOperator.Equal, "Color")
+            .FieldIn("AttributeValue", new string[] { "Red", "Green" })
+    ));
+// SELECT * FROM dbo.Product WHERE ProductID IN (SELECT ProductID FROM dbo.ProductAttribute WHERE AttributeName=='Color' AND AttributeValue IN ('Red','Green'));
+
+var query2 = connection.QueryBuilder("dbo.Product")
+    .Where(where => where.FieldNotInSubQuery("ProductID", "dbo.ProductAttribute", "ProductID",
+        subWhere => subWhere.FieldMatch("AttributeName", SqlOperator.Equal, "Color")
+            .FieldIn("AttributeValue", new string[] { "Blue", "Pink" })
+    ));
+// SELECT * FROM dbo.Product WHERE ProductID NOT IN (SELECT ProductID FROM dbo.ProductAttribute WHERE AttributeName=='Color' AND AttributeValue IN ('Blue','Pink'));
+```
+
+### Sub-Query Counting Filters
+```WHERE (SELECT COUNT(<something>) FROM <table> WHERE <conditions>) <count condition>``` filters can be built using SubQueryCount().
+
+```csharp
+var query1 = connection.QueryBuilder("dbo.Product")
+    .Where(where => where.SubQueryCount("dbo.ProductAttribute", "ProductID", SqlOperator.GreaterThanOrEqual, 2,
+        subWhere => subWhere.FieldEquals("ProductID", builder.Root, "ProductID").FieldMatch("AttributeName", SqlOperator.Equal, "Color")
+    ));
+// SELECT * FROM dbo.Product WHERE (SELECT COUNT(ProductID) FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color') >= 2;
+```
+
 ### Creating multiple groups of filters with OR logic
 
 Multiple conditions can be added using a single .Where() method, but each of these conditions will be joined

@@ -31,11 +31,7 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.LeftColumnName, args.TableName(this.LeftTable));
-            writer.WriteOperator(this.Operator);
-            writer.WriteColumnName(this.RightColumnName, args.TableName(this.RightTable));
-            writer.WriteEndGroup();
+            writer.Render(this);            
         }
 
         #endregion

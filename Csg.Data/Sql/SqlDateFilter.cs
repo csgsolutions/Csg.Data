@@ -14,21 +14,9 @@ namespace Csg.Data.Sql
         {
         }
 
-        protected override DateTime GetBeginDate()
-        {
-            return base.GetBeginDate().Date;
-        }
+        public override DateTime BeginDate { get => base.BeginDate; set => base.BeginDate = value.Date; }
 
-        protected override DateTime GetEndDate()
-        {
-            return base.GetEndDate().Date;
-        }
-
-        protected override void WriteColumnName(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            //TODO: This is causing left-side casting in a filter, which is awful.
-            writer.WriteCast(this.ColumnName, "date", args.TableName(this.Table));
-        }
+        public override DateTime EndDate { get => base.EndDate; set => base.EndDate = value.Date; }
 
     }
 }

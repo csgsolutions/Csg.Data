@@ -13,6 +13,10 @@ namespace Csg.Data.Abstractions
 
         void RenderValue(SqlColumn src);
 
+        void RenderValue(SqlExpressionSelectColumn src);
+
+        void RenderValue<T>(SqlLiteralColumn<T> src);
+
         void Render(SqlColumnCompareFilter src);
 
         void Render(SqlCompareFilter src);
@@ -50,5 +54,7 @@ namespace Csg.Data.Abstractions
         void Render(SqlTable src);
 
         void Render(SqlDerivedTable src);
+
+        void Render(SqlSelectBuilder selectBuilder, bool wrapped = false, bool aliased = false);
     }
 }

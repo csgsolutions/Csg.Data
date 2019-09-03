@@ -29,7 +29,7 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteSortColumn(this.ColumnName, this.SortDirection);
+            writer.Render(this);
         }
 
         #endregion

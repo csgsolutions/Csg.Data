@@ -66,19 +66,7 @@ namespace Csg.Data.Sql
 
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            string s = this.Value;
-            if (s == null)
-            {
-                s = string.Empty;
-            }
-
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.WriteSpace();
-            writer.Write(SqlConstants.LIKE);
-            writer.WriteSpace();
-            writer.WriteParameter(args.CreateParameter(SqlStringMatchFilter.DecorateValue(this.Value, this.Operator), this.DataType));
-            writer.WriteEndGroup();
+            writer.Render(this);            
         }
     }
 }

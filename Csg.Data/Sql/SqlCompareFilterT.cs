@@ -9,15 +9,8 @@ namespace Csg.Data.Sql
     /// Renders a simple comparison filter that compares a column to a value.
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public class SqlCompareFilter<TValue> : ISqlFilter
+    public class SqlCompareFilter<TValue> : SqlCompareFilter, ISqlFilter
     {
-        /// <summary>
-        /// Creates a new instance.
-        /// </summary>
-        public SqlCompareFilter()
-        {
-            this.EncodeValueAsLiteral = false;
-        }
 
         /// <summary>
         /// Creates a new instance with the given table, column, operator, and value
@@ -26,68 +19,33 @@ namespace Csg.Data.Sql
         /// <param name="columnName"></param>
         /// <param name="operator"></param>
         /// <param name="value"></param>
-        public SqlCompareFilter(ISqlTable table, string columnName, SqlOperator @operator, TValue value) : this()
+        public SqlCompareFilter(ISqlTable table, string columnName, SqlOperator @operator, TValue value) : base(table, columnName, @operator, DbConvert.TypeToDbType(typeof(TValue)), value)
         {
-            this.Table = table;
-            this.ColumnName = columnName;
-            this.Operator = @operator;
-            this.DataType = util.ConvertTypeCodeToDbType(Type.GetTypeCode(typeof(TValue)));
-            this.Value = value;            
         }
 
         /// <summary>
-        /// Gets or sets the table associated with the <see cref="ColumnName"/> property.
+        /// Gets the value of <see cref="SqlCompareFilter.Value"/> cast to the correct data type.
         /// </summary>
-        public ISqlTable Table { get; set; }
+        /// <returns></returns>
+        public TValue GetValue()
+        {
+            return (TValue)this.Value;
+        }
 
         /// <summary>
-        /// Gets or sets the column name from <see cref="Table"/> that will be used in the comparison.
+        /// Sets the underlying value for comparison;
         /// </summary>
-        public string ColumnName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the comparison operator.
-        /// </summary>
-        public SqlOperator Operator { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value to compare.
-        /// </summary>
-        public TValue Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value data type.
-        /// </summary>
-        public System.Data.DbType DataType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum size, in bytes, of the value.
-        /// </summary>
-        public int? Size { get; set; }
-        
-        /// <summary>
-        /// Gets or sets whether to encode the <see cref="Value"/> as literal in the rendered SQL statement, or to use parameters.
-        /// </summary>
-        public bool EncodeValueAsLiteral { get; set; }
-
+        /// <param name="value"></param>
+        public void SetValue(TValue value)
+        {
+            this.Value = value;
+        }
+                
         #region ISqlClause Members
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.WriteOperator(this.Operator);
-
-            if (this.EncodeValueAsLiteral) 
-            {
-                writer.WriteLiteralValue(this.Value);
-            }
-            else
-            {
-                writer.WriteParameter(args.CreateParameter(this.Value, this.DataType));
-            }           
-
-            writer.WriteEndGroup();
+            writer.Render(this);
         }
 
         #endregion

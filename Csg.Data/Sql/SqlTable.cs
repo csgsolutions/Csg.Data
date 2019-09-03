@@ -17,7 +17,7 @@ namespace Csg.Data.Sql
 
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteTableName(this.TableName, args.TableName(this));
+            writer.Render(this);
         }
     }
 
@@ -80,13 +80,7 @@ namespace Csg.Data.Sql
 
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            writer.Write(this.CommandText.TrimEnd(new char[] { ';' }));
-            writer.WriteEndGroup();
-            writer.WriteSpace();
-            writer.Write(SqlConstants.AS);
-            writer.WriteSpace();
-            writer.Write(SqlDataColumn.Format(args.TableName(this)));
+            writer.Render(this);            
         }        
     }
 }

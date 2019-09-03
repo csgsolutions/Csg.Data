@@ -41,6 +41,20 @@ namespace Csg.Data
         }
 
         /// <summary>
+        /// Creates a WHERE clause equality comparison for a field and value in the form ([fieldName] = [value]), where the value data type is <see cref="String"/>.
+        /// </summary>
+        /// <param name="where">The query builder instance</param>
+        /// <param name="fieldName">The name of the field to use as the expression on the left of the operator.</param>
+        /// <param name="otherTable">The other table to match against.</param>
+        /// <param name="otherColumn">The name of the column in otherTable. Will use fieldName if not specified</param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause FieldEquals(this IDbQueryWhereClause where, string fieldName, ISqlTable otherTable, string otherColumn)
+        {
+            where.AddFilter(new SqlColumnCompareFilter(where.Root, fieldName, SqlOperator.Equal, otherTable, otherColumn));
+            return where;
+        }
+
+        /// <summary>
         /// Creates a WHERE clause comparison for a field and value in the form ([fieldName] [operator] [value])
         /// </summary>
         /// <typeparam name="TValue"></typeparam>

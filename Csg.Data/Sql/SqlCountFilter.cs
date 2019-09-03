@@ -62,31 +62,7 @@ namespace Csg.Data.Sql
                         
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            args.AssignAlias(this.SubQueryTable);
-            
-            var subquery = new SqlSelectBuilder(this.SubQueryTable);
-            var subQueryColumn = new SqlColumn(this.SubQueryTable, this.SubQueryColumn);
-            subQueryColumn.Aggregate = SqlAggregate.Count;
-            subQueryColumn.Alias = "Cnt";
-            subquery.Columns.Add(subQueryColumn);
-
-            foreach (var filter in this.SubQueryFilters)
-            {
-                subquery.Filters.Add(filter);
-            }
-
-            writer.WriteBeginGroup();
-
-            writer.WriteBeginGroup();
-            subquery.Render(writer, args);
-            writer.WriteEndGroup();
-
-            writer.WriteSpace();
-            writer.WriteOperator(this.CountOperator);
-            writer.WriteSpace();
-            writer.WriteParameter(args.CreateParameter(this.CountValue, System.Data.DbType.Int32));
-
-            writer.WriteEndGroup();
+            writer.Render(this);          
         }
     }
 }

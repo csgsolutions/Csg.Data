@@ -24,11 +24,7 @@ namespace Csg.Data.Sql
 
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            //TODO: Make this impl agnostic
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.Write((this.IsNull) ? " IS NULL" : " IS NOT NULL");
-            writer.WriteEndGroup();
+            writer.Render(this);
         }
     }
 }

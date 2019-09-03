@@ -30,15 +30,6 @@ namespace Csg.Data.Sql
         /// </summary>
         public bool RankDescending { get; set; }
 
-        /// <summary>
-        /// Renders the portion of the SQL statement that contains the value.
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="args"></param>
-        protected override void RenderValueExpression(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            writer.WriteRankOver(this.ColumnName, args.TableName(this.Table), this.Aggregate, this.RankDescending);
-        }
 
         /// <summary>
         /// Renders the entire SQL statement to the writer.
@@ -47,7 +38,7 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         protected override void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteRankOver(this.ColumnName, args.TableName(this.Table), this.Aggregate, this.Alias, this.RankDescending);
+            writer.Render(this);
         }
     }
 }

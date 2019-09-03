@@ -50,7 +50,7 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.RenderJoin(this.LeftTable, this.JoinType, this.RightTable, this.Conditions, args);
+            writer.Render(this);
         }
 
         #endregion

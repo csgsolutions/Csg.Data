@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Csg.Data.Abstractions;
 
 namespace Csg.Data.Sql
 {
@@ -27,45 +28,20 @@ namespace Csg.Data.Sql
         public string Expression { get; set; }
 
         /// <summary>
-        /// Gets a collection of tables that can be referenced in the sql expression.
+        /// Gets a collection of tables and parameter values that can be referenced by index {0}, {1}, etc.
         /// </summary>
-        /// <remarks>
-        /// The first table in the ReferenceTables collection can be represented by the string {1}, the second table {2}, and so forth.
-        /// </remarks>
-        public IList<ISqlTable> ReferenceTables
+        public IList<object> Arguments
         {
             get
             {
-                if (_referenceTables == null)
+                if (_arguments == null)
                 {
-                    _referenceTables = new List<ISqlTable>();
+                    _arguments = new List<object>();
                 }
-                return _referenceTables;
+                return _arguments;
             }
         }
-        private IList<ISqlTable> _referenceTables;
-
-        /// <summary>
-        /// Renders the portion of the SQL statement that will be used as the value.
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="args"></param>
-        protected override void RenderValueExpression(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            var expr = this.Expression;            
-            
-            expr = expr.Replace("{0}", args.TableName(this.Table));
-            if (_referenceTables != null && _referenceTables.Count > 0)
-            {
-                for (var i = 0; i < _referenceTables.Count; i++)
-                {
-                    expr = expr.Replace(string.Concat("{", i + 1, "}"), args.TableName(_referenceTables[i]));
-                }
-            }            
-            writer.WriteBeginGroup();
-            writer.Write(expr);
-            writer.WriteEndGroup();
-        }
+        private IList<object> _arguments;
 
         /// <summary>
         /// Renders the entire SQL statement.
@@ -74,11 +50,12 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         protected override void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            this.RenderValueExpression(writer, args);
-            writer.WriteSpace();
-            writer.Write(SqlConstants.AS);
-            writer.WriteSpace();
-            writer.WriteColumnName(this.Alias);            
+            writer.Render(this);          
+        }
+
+        protected override void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args)
+        {
+            writer.RenderValue(this);
         }
     }
 }

@@ -27,12 +27,7 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            writer.Write("EXISTS ");
-            writer.WriteBeginGroup();
-            this.Statement.Render(writer, args);
-            writer.WriteEndGroup();
-            writer.WriteEndGroup();
+            writer.Render(this);            
         }
     }
 }

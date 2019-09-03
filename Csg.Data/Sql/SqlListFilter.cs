@@ -55,68 +55,7 @@ namespace Csg.Data.Sql
         /// <param name="args">An instance of <see cref="SqlBuildArguments"/> to use for parameters.</param>
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            //TODO: make this impl agnostic
-            bool first = true;
-
-            if (this.Values == null)
-            {
-                throw new InvalidOperationException(string.Format(ErrorMessage.SqlListFilter_CollectionIsEmpty,this.ColumnName));
-            }
-                        
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.WriteSpace();
-
-            if (this.NotInList)
-            {
-                writer.Write(SqlConstants.NOT);
-                writer.WriteSpace();
-            }
-            writer.Write(SqlConstants.IN);
-            writer.WriteSpace();
-            
-            writer.WriteBeginGroup();
-            foreach (var v in this.Values)
-            {
-                if (!first)
-                    writer.Write(",");
-                else
-                    first = false;
-                
-                switch (this.DataType)
-                {
-                    case System.Data.DbType.String:
-                    case System.Data.DbType.StringFixedLength:
-                    case System.Data.DbType.AnsiString:
-                    case System.Data.DbType.AnsiStringFixedLength:
-                    case System.Data.DbType.Object:
-                        writer.WriteParameter(args.CreateParameter(v.ToString(), this.DataType, this.Size)); break;
-                    case System.Data.DbType.Boolean:
-                        writer.Write(Convert.ToBoolean(v) ? 1 : 0); break;
-                    case System.Data.DbType.Int16:
-                    case System.Data.DbType.Int32:
-                    case System.Data.DbType.Int64:
-                        if (this.UseLiteralNumbers)
-                        {
-                            writer.Write(Convert.ToInt64(v).ToString());
-                        }
-                        else
-                        {
-                            writer.WriteParameter(args.CreateParameter(v, this.DataType, this.Size));
-                        }
-                        break;
-                    default:
-                        writer.WriteParameter(args.CreateParameter(v, this.DataType, this.Size)); break;
-                }
-            }
-
-            if (first)
-            {
-                throw new InvalidOperationException(string.Format(ErrorMessage.SqlListFilter_CollectionIsEmpty, this.ColumnName));
-            }
-
-            writer.WriteEndGroup();
-            writer.WriteEndGroup();
+            writer.Render(this);
         }
         
     }

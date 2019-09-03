@@ -93,12 +93,12 @@ namespace TestProject
         [TestMethod]
         public void TestFluentSubQueryCount()
         {
-            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0))) > @p1));";
-            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0))) > @p1));
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[ProductID]=[t0].[ProductID]) AND ([t1].[AttributeName]=@p0))) > @p1));";
+            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[ProductID]=[t0].[ProductID]) AND ([t1].[AttributeName]=@p0))) > @p1));>. 
             IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
 
             builder = builder.Where(where => where.SubQueryCount("dbo.ProductAttribute", "ProductID", SqlOperator.GreaterThan, 1,
-                subWhere => subWhere.FieldMatch("AttributeName", SqlOperator.Equal, "Color", isAnsi: true)
+                subWhere => subWhere.FieldEquals("ProductID", builder.Root, "ProductID").FieldMatch("AttributeName", SqlOperator.Equal, "Color", isAnsi: true)
             ));
 
             var stmt = builder.Render();

@@ -22,11 +22,6 @@ namespace Csg.Data.Sql
             collection.Add(leftTable, SqlJoinType.Inner, rightTable, key);
         }
 
-        //public static void AddInner(this ICollection<ISqlJoin> collection, ISqlTable leftTable, ISqlTable rightTable, string[] keyPairs)
-        //{
-        //    collection.Add(leftTable, SqlJoinType.Inner, rightTable, keyPairs);
-        //}
-
         public static void AddLeft(this ICollection<ISqlJoin> collection, ISqlTable leftTable, ISqlTable rightTable, params ISqlFilter[] conditions)
         {
             collection.Add(leftTable, SqlJoinType.Left, rightTable, conditions);
@@ -37,11 +32,6 @@ namespace Csg.Data.Sql
             collection.Add(leftTable, SqlJoinType.Left, rightTable, key);
         }
 
-        //public static void AddLeft(this ICollection<ISqlJoin> collection, ISqlTable leftTable, ISqlTable rightTable, string[] keyPairs)
-        //{
-        //    collection.Add(leftTable, SqlJoinType.Left, rightTable, keyPairs);
-        //}
-
         public static void Add(this ICollection<ISqlJoin> collection, ISqlTable leftTable, SqlJoinType joinType, ISqlTable rightTable, IEnumerable<ISqlFilter> conditions)
         {
             collection.Add(new SqlJoin(leftTable, joinType, rightTable, conditions));
@@ -50,20 +40,13 @@ namespace Csg.Data.Sql
         public static void Add(this ICollection<ISqlJoin> collection, ISqlTable leftTable, SqlJoinType joinType, ISqlTable rightTable, string key)
         {
             var cond = new List<ISqlFilter>();
-            //TODO: This sucks, Fix it
+
+            //TODO: This sucks, Fix it. 
+            //TODO: Why does this suck?
             cond.Add(new SqlColumnCompareFilter(leftTable, key, SqlOperator.Equal, rightTable));
+
             collection.Add(leftTable, joinType, rightTable, cond);
         }
-
-        //public static void Add(this ICollection<ISqlJoin> collection, ISqlTable leftTable, SqlJoinType joinType, ISqlTable rightTable, string[] keyPairs)
-        //{
-        //    var cond = new List<ISqlFilter>();
-        //    foreach (var keyPair in keyPairs)
-        //    {
-        //        cond.Add(new SqlColumnCompareFilter(leftTable, keyPair[0], SqlOperator.Equal, rightTable, keyPair[1]));
-        //    }
-        //    collection.Add(leftTable, joinType, rightTable, cond);
-        //}
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Csg.Data.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,16 +18,16 @@ namespace Csg.Data.Sql
         bool IsAggregate { get; }        
 
         /// <summary>
-        /// When implemented in a derived class, renders the portion of a SELECT column that would be rendered before the AS keyword.
-        /// </summary>
-        /// <param name="writer">An instance of a T-SQL compatible text writer.</param>
-        /// <param name="args">An instance of <see cref="SqlBuildArguments"/>.</param>
-        void RenderValueExpression(SqlTextWriter writer, SqlBuildArguments args);
-
-        /// <summary>
         /// When implemented in a derived class, gets the portion of a SELECT column that would be renderd after the AS keyword.
         /// </summary>
         /// <returns>A string</returns>
         string GetAlias();
+
+        /// <summary>
+        /// When implemented in a derived class, renders the portion of a SELECT column that would be rendered before the AS keyword.
+        /// </summary>
+        /// <param name="writer">An instance of a SQL compatible text writer.</param>
+        /// <param name="args">An instance of <see cref="SqlBuildArguments"/>.</param>
+        void RenderValueExpression(ISqlTextWriter writer, SqlBuildArguments args);
     }
 }

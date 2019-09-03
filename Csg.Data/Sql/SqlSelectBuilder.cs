@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
+using Csg.Data.Abstractions;
 
 namespace Csg.Data.Sql
 {
@@ -157,26 +158,25 @@ namespace Csg.Data.Sql
         public SqlStatement Render(bool supressEndStatement)
         {
             var writer = new SqlTextWriter() { Format = this.GenerateFormattedSql };
-            var args = new SqlBuildArguments();
 
-            this.CompileInternal(args);
-            this.RenderInternal(writer, args);
+            writer.Render(this);
+
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();
             }
 
-            return new SqlStatement(writer.ToString(), args.Parameters);
+            return new SqlStatement(writer.ToString(), writer.args.Parameters);
         }
 
+
         /// <summary>
-        /// Renders the query.
+        /// Renders the query to the given text writer.
         /// </summary>
-        /// <returns></returns>
-        public void Render(SqlTextWriter writer, SqlBuildArguments args)
+        /// <param name="writer"></param>
+        public void Render(ISqlTextWriter writer)
         {
-            this.CompileInternal(args);
-            this.RenderInternal(writer, args);
+            writer.Render(this, wrapped: false, aliased: false);
         }
 
         /// <summary>
@@ -191,12 +191,12 @@ namespace Csg.Data.Sql
 
             return s;
         }
-        
+
         /// <summary>
         /// Compiles the tables used in the query into the given build arguments object.
         /// </summary>
         /// <param name="args"></param>
-        protected void CompileInternal(SqlBuildArguments args)
+        public void CompileInternal(SqlBuildArguments args)
         {
             this.Table.Compile(args);
             if (this.Joins.Count > 0)
@@ -205,47 +205,18 @@ namespace Csg.Data.Sql
                 {
                     join.JoinedTable.Compile(args);
                 }
-            }
+            }            
         }
 
-        /// <summary>
-        /// Renders the query to the given text writer.
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="args"></param>
-        protected void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            writer.RenderSelect(this.Columns, args, this.SelectDistinct);
-            writer.RenderFrom(this.Table, args);
-            if (this.Joins.Count > 0)
-            {
-                writer.RenderJoins(this.Joins, args);
-            }
-            writer.RenderWhere(this.Filters, SqlLogic.And, args);
-
-            if (this.Columns.Count(x => x.IsAggregate) > 0)
-            {
-                writer.RenderGroupBy(this.Columns.Where(x => !x.IsAggregate), args);
-            }
-
-            writer.RenderOrderBy(this.OrderBy, args);
-        }
-                
         void ISqlTable.Compile(SqlBuildArguments args)
         {
-            args.AssignAlias(this);
             this.CompileInternal(args);
+            args.AssignAlias(this);
         }
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            this.RenderInternal(writer, args);
-            writer.WriteEndGroup();
-            writer.WriteSpace();
-            writer.Write(SqlConstants.AS);
-            writer.WriteSpace();
-            writer.Write(SqlDataColumn.Format(args.TableName(this)));
+            writer.Render(this, wrapped: true, aliased: true);
         }
     }
 }

@@ -42,11 +42,7 @@ namespace Csg.Data.Sql
 
         public void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
-            writer.WriteColumnName(this.ColumnName, args.TableName(this.Table));
-            writer.WriteOperator(this.Operator);
-            writer.Write(this.ParameterName);
-            writer.WriteEndGroup(); 
+            writer.Render(this);            
         }
     }
 }

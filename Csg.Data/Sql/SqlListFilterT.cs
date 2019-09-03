@@ -17,7 +17,7 @@ namespace Csg.Data.Sql
         /// <param name="table">The table source for the column</param>
         /// <param name="columnName">The table column to filter on.</param>
         /// <param name="values">The list of values to compare with.</param>
-        public SqlListFilter(ISqlTable table, string columnName, IEnumerable<T> values): base(table, columnName, util.ConvertTypeCodeToDbType(System.Type.GetTypeCode(typeof(T))), values)
+        public SqlListFilter(ISqlTable table, string columnName, IEnumerable<T> values): base(table, columnName, DbConvert.TypeToDbType(typeof(T)), values)
         {
         }
     }

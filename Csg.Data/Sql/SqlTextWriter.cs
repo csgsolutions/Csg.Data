@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Csg.Data.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,12 @@ using System.Text;
 namespace Csg.Data.Sql
 {
 
-    public class SqlTextWriter : System.IO.TextWriter
+    public class SqlTextWriter : System.IO.TextWriter, ISqlTextWriter
     {
         private System.IO.TextWriter InnerWriter;
-        
+
+        public SqlBuildArguments args { get; set; }
+
         private const string COLUMN_SEPERATOR = ",";
         private const string JOIN_SEPERATOR = " ";
         private const string QUOTE = "\"";
@@ -18,16 +21,19 @@ namespace Csg.Data.Sql
         public SqlTextWriter() : base()
         {
             this.InnerWriter = new System.IO.StringWriter();
+            this.args = new SqlBuildArguments();
         }
 
         public SqlTextWriter(System.IO.TextWriter writer) : base()
         {
             this.InnerWriter = writer;
+            this.args = new SqlBuildArguments();
         }        
 
         public SqlTextWriter(StringBuilder sb) : base()
         {
             this.InnerWriter = new System.IO.StringWriter(sb);
+            this.args = new SqlBuildArguments();
         }
 
         /// <summary>
@@ -297,11 +303,11 @@ namespace Csg.Data.Sql
             {
                 if (this.Format)
                 {
-                    this.RenderAll(items, args, string.Concat(COLUMN_SEPERATOR, "\r\n"));
+                    this.RenderAll(items, string.Concat(COLUMN_SEPERATOR, "\r\n"));
                 }
                 else
                 {
-                    this.RenderAll(items, args, COLUMN_SEPERATOR);
+                    this.RenderAll(items, COLUMN_SEPERATOR);
                 }
             }
             else
@@ -348,7 +354,7 @@ namespace Csg.Data.Sql
             if (items.Length > 0)
             {
                 this.WriteWhere();
-                this.RenderAll(items, args, string.Concat(SqlConstants.SPACE,ConvertSqlLogicToString(logic),SqlConstants.SPACE));
+                this.RenderAll(items, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(logic), SqlConstants.SPACE));
             }
         }
 
@@ -370,7 +376,7 @@ namespace Csg.Data.Sql
             if (items.Length > 0)
             {
                 this.WriteGroupBy();                
-                this.RenderAll(items, args, COLUMN_SEPERATOR, (a, b, c) => { a.RenderValueExpression(b,c); });               
+                this.RenderAll(items, COLUMN_SEPERATOR, (a, b) => { a.RenderValueExpression(b, args); });               
             }
             this.WriteNewLine();
         }
@@ -394,7 +400,7 @@ namespace Csg.Data.Sql
             if (items.Length > 0)
             {
                 this.WriteOrderBy();                
-                this.RenderAll(items, args, COLUMN_SEPERATOR);
+                this.RenderAll(items, COLUMN_SEPERATOR);
             }
             this.WriteNewLine();
         }
@@ -408,6 +414,8 @@ namespace Csg.Data.Sql
                 this.Write(ConvertDbSortDirectionToString(direction));
             }
         }
+
+        
 
         public void WriteDerivedTable(string commandText, string alias)
         {
@@ -471,14 +479,14 @@ namespace Csg.Data.Sql
                 this.WriteSpace();
                 this.Write(SqlConstants.ON);
                 this.WriteSpace();
-                this.RenderAll<ISqlFilter>(conditions, args, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(SqlLogic.And), SqlConstants.SPACE));
+                this.RenderAll<ISqlFilter>(conditions, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(SqlLogic.And), SqlConstants.SPACE));
             }
             this.WriteNewLine();
         }
 
         public virtual void RenderJoins(IEnumerable<ISqlJoin> joins, SqlBuildArguments args)
         {
-            this.RenderAll(joins, args, string.Empty);
+            this.RenderAll(joins, string.Empty);
         }
 
         public virtual void WriteCast(string columnName, string sqlDataTypeName, string tableName)
@@ -493,11 +501,11 @@ namespace Csg.Data.Sql
             WriteEndGroup();
         }
 
-        public virtual void WriteCast(string literal, string sqlDataTypeName)
+        public virtual void WriteCast(string sqlDataTypeName, Action content)
         {
             Write(SqlConstants.CAST);
             WriteBeginGroup();
-            Write(literal);
+            content.Invoke();
             WriteSpace();
             Write(SqlConstants.AS);
             WriteSpace();
@@ -526,12 +534,30 @@ namespace Csg.Data.Sql
             }
         }
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator) where T: ISqlStatementElement
+        //public virtual void RenderAll<T>(IEnumerable<T> items, string seperator)
+        //{
+        //    bool first = true;
+        //    foreach (var item in items)
+        //    {
+        //        if (first)
+        //        {
+        //            first = false;
+        //        }
+        //        else
+        //        {
+        //            this.Write(seperator);
+        //        }
+
+        //        RenderObject(item);
+        //    }
+        //}
+
+        public virtual void RenderAll<T>(IEnumerable<T> items, string seperator) where T : ISqlStatementElement
         {
-            this.RenderAll(items, args, seperator, (a, b, c) => { a.Render(b, c); });
+            this.RenderAll(items, seperator, (a, b) => { a.Render(b, args); });
         }
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator, Action<T,SqlTextWriter, SqlBuildArguments> renderAction) where T : ISqlStatementElement
+        public virtual void RenderAll<T>(IEnumerable<T> items, string seperator, Action<T, SqlTextWriter> renderAction) where T : ISqlStatementElement
         {
             bool first = true;
             foreach (var item in items)
@@ -544,8 +570,21 @@ namespace Csg.Data.Sql
                 {
                     this.Write(seperator);
                 }
-                renderAction(item, this, args);
+
+                renderAction(item, this);
             }
+        }
+
+        public void RenderObject(object obj)
+        {
+            //TODO: Consider typeof(ISqlTextWriter) intead???
+            var renderMethod = this.GetType().GetMethod("Render", new Type[] { obj.GetType() });
+            if (renderMethod == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            renderMethod.Invoke(this, new object[] { obj });
         }
 
         #endregion
@@ -579,6 +618,31 @@ namespace Csg.Data.Sql
             WriteColumnName(alias);
         }
 
+        public virtual void WriteExpression(string expression, IList<object> arguments)
+        {
+            var resolvedArguments = arguments.Select(arg =>
+            {
+                if (arg is ISqlTable table)
+                {
+                    return this.FormatQualifiedIdentifierName(args.TableName(table));
+                }
+                else if (arg is System.Data.Common.DbParameter dbParam)
+                {
+                    return string.Concat("@", args.CreateParameter(dbParam.Value, dbParam.DbType));
+                }
+                else if (arg is DbParameterValue paramValue)
+                {
+                    return string.Concat("@", args.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
+                }
+                else
+                {
+                    return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                }
+            }).ToArray();
+
+            this.Write(string.Format(expression, resolvedArguments));
+        }
+
         #endregion
 
         public override Encoding Encoding
@@ -590,6 +654,460 @@ namespace Csg.Data.Sql
         {
             return this.InnerWriter.ToString();
         }
+
+
+        #region ISqlTextWriter
+        // -----------------------------------------------
+
+        public void Render(SqlColumn src)
+        {
+            if (src.Aggregate == SqlAggregate.None)
+            {
+                this.WriteColumnName(src.ColumnName, args.TableName(src.Table), src.Alias);
+            }
+            else
+            {
+                this.WriteAggregateColumn(src.ColumnName, args.TableName(src.Table), src.Aggregate, src.Alias);
+            }
+        }
+
+        public void Render(SqlColumnCompareFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.LeftColumnName, args.TableName(src.LeftTable));
+            this.WriteOperator(src.Operator);
+            this.WriteColumnName(src.RightColumnName, args.TableName(src.RightTable));
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlCompareFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteOperator(src.Operator);
+
+            if (src.EncodeValueAsLiteral)
+            {
+                this.WriteLiteralValue(src.Value);
+            }
+            else
+            {
+                this.WriteParameter(args.CreateParameter(src.Value, src.DataType));
+            }
+
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlCountFilter src)
+        {
+            args.AssignAlias(src.SubQueryTable);
+
+            var subquery = new SqlSelectBuilder(src.SubQueryTable);
+            var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
+            subQueryColumn.Aggregate = SqlAggregate.Count;
+            subQueryColumn.Alias = "Cnt";
+            subquery.Columns.Add(subQueryColumn);
+
+            foreach (var filter in src.SubQueryFilters)
+            {
+                subquery.Filters.Add(filter);
+            }
+
+            this.WriteBeginGroup();
+
+            this.Render(subquery, wrapped: true);
+            this.WriteSpace();
+            this.WriteOperator(src.CountOperator);
+            this.WriteSpace();
+            this.WriteParameter(args.CreateParameter(src.CountValue, System.Data.DbType.Int32));
+
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlDateFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteOperator(SqlOperator.GreaterThanOrEqual);
+            this.WriteParameter(args.CreateParameter(src.BeginDate.Date, System.Data.DbType.DateTime));
+            this.WriteSpace();
+            this.Write(SqlConstants.AND);
+            this.WriteSpace();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteOperator(SqlOperator.LessThanOrEqual);
+            //TODO: Get data type from object
+            this.WriteParameter(args.CreateParameter(src.EndDate.Date, System.Data.DbType.DateTime));
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlDateTimeFilter src)
+        {
+            this.WriteBeginGroup();
+            if (src is SqlDateFilter)
+            {
+                this.WriteCast("date", () =>
+                {
+                    this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                });
+            }
+            else
+            {
+                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            }
+
+            this.WriteOperator(SqlOperator.GreaterThanOrEqual);
+            this.WriteParameter(args.CreateParameter(src.BeginDate, System.Data.DbType.DateTime));
+            this.WriteSpace();
+            this.Write(SqlConstants.AND);
+            this.WriteSpace();
+
+            if (src is SqlDateFilter)
+            {
+                this.WriteCast("date", () =>
+                {
+                    this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+                });
+            }
+            else
+            {
+                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            }
+
+            this.WriteOperator(SqlOperator.LessThanOrEqual);
+            //TODO: Get data type from object
+            this.WriteParameter(args.CreateParameter(src.EndDate, System.Data.DbType.DateTime));
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlExistFilter src)
+        {
+            // (EXISTS ( <src.Statement> ))
+            this.WriteBeginGroup();
+            this.Write("EXISTS ");
+            this.WriteBeginGroup();
+//            this.Render(src.Statement, wrapped: true, aliased: false);
+            src.Statement.Render(this);
+            this.WriteEndGroup();
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlExpressionSelectColumn src)
+        {
+            // (( <src.Expression> ) AS <alias>)
+            this.WriteBeginGroup();
+            
+            this.RenderValue(src);
+            this.WriteEndGroup();
+
+            this.WriteSpace();
+            this.Write(SqlConstants.AS);
+            this.WriteSpace();
+            this.WriteColumnName(src.Alias);
+        }
+
+        public void Render(SqlFilterCollection src)
+        {
+            if (src.Count <= 0)
+                return;
+            this.WriteBeginGroup();
+
+            this.RenderAll(src, string.Concat(" ", ((src.Logic == SqlLogic.And) ? SqlConstants.AND : SqlConstants.OR).ToString().ToUpper(), " "));
+
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlJoin src)
+        {
+            this.WriteSpace();
+            this.Write(src.JoinType.ToString().ToUpper());
+            this.WriteSpace();
+            this.Write("JOIN");
+            this.WriteSpace();
+
+            //TODO: This is causing joined tables to render their conditions here, which is not right.
+            src.RightTable.Render(this, args);
+
+            if (src.JoinType != SqlJoinType.Cross)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.ON);
+                this.WriteSpace();
+                this.RenderAll<ISqlFilter>(src.Conditions, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(SqlLogic.And), SqlConstants.SPACE));
+            }
+
+            this.WriteNewLine();
+        }
+
+        public void Render(SqlListFilter src)
+        {
+            //TODO: make this impl agnostic
+            bool first = true;
+
+            if (src.Values == null)
+            {
+                throw new InvalidOperationException(string.Format(ErrorMessage.SqlListFilter_CollectionIsEmpty, src.ColumnName));
+            }
+
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteSpace();
+
+            if (src.NotInList)
+            {
+                this.Write(SqlConstants.NOT);
+                this.WriteSpace();
+            }
+            this.Write(SqlConstants.IN);
+            this.WriteSpace();
+
+            this.WriteBeginGroup();
+            foreach (var v in src.Values)
+            {
+                if (!first)
+                    this.Write(",");
+                else
+                    first = false;
+
+                switch (src.DataType)
+                {
+                    case System.Data.DbType.String:
+                    case System.Data.DbType.StringFixedLength:
+                    case System.Data.DbType.AnsiString:
+                    case System.Data.DbType.AnsiStringFixedLength:
+                    case System.Data.DbType.Object:
+                        this.WriteParameter(args.CreateParameter(v.ToString(), src.DataType, src.Size)); break;
+                    case System.Data.DbType.Boolean:
+                        this.Write(Convert.ToBoolean(v) ? 1 : 0); break;
+                    case System.Data.DbType.Int16:
+                    case System.Data.DbType.Int32:
+                    case System.Data.DbType.Int64:
+                        if (src.UseLiteralNumbers)
+                        {
+                            this.Write(Convert.ToInt64(v).ToString());
+                        }
+                        else
+                        {
+                            this.WriteParameter(args.CreateParameter(v, src.DataType, src.Size));
+                        }
+                        break;
+                    default:
+                        this.WriteParameter(args.CreateParameter(v, src.DataType, src.Size)); break;
+                }
+            }
+
+            if (first)
+            {
+                throw new InvalidOperationException(string.Format(ErrorMessage.SqlListFilter_CollectionIsEmpty, src.ColumnName));
+            }
+
+            this.WriteEndGroup();
+            this.WriteEndGroup();
+        }
+
+        public void Render<T>(SqlLiteralColumn<T> src)
+        {
+            this.RenderValue(src);
+            if (src.Alias != null)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.AS);
+                this.WriteSpace();
+                this.WriteColumnName(src.Alias);
+            }
+        }
+
+        public void Render(SqlNullFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.Write((src.IsNull) ? " IS NULL" : " IS NOT NULL");
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlOrderColumn src)
+        {
+            this.WriteSortColumn(src.ColumnName, src.SortDirection);
+        }
+
+        public void Render(SqlParameterFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteOperator(src.Operator);
+            this.Write(src.ParameterName);
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlRankColumn src)
+        {
+            this.WriteRankOver(src.ColumnName, args.TableName(src.Table), src.Aggregate, src.Alias, src.RankDescending);
+        }
+
+        public void Render(SqlRawFilter src)
+        {
+            var resolvedArguments = src.Arguments.Select(arg =>
+            {
+                if (arg is ISqlTable table)
+                {
+                    return this.FormatQualifiedIdentifierName(args.TableName(table));
+                }
+                else if (arg is System.Data.Common.DbParameter dbParam)
+                {
+                    return string.Concat("@", args.CreateParameter(dbParam.Value, dbParam.DbType));
+                }
+                else if (arg is DbParameterValue paramValue)
+                {
+                    return string.Concat("@", args.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
+                }
+                else
+                {
+                    return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                }
+            }).ToArray();
+
+            this.WriteBeginGroup();
+            this.Write(string.Format(src.SqlText, resolvedArguments));
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlStringMatchFilter src)
+        {
+            string s = src.Value;
+            if (s == null)
+            {
+                s = string.Empty;
+            }
+
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteSpace();
+            this.Write(SqlConstants.LIKE);
+            this.WriteSpace();
+            this.WriteParameter(args.CreateParameter(SqlStringMatchFilter.DecorateValue(src.Value, src.Operator), src.DataType));
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlSubQueryFilter src)
+        {
+            this.WriteBeginGroup();
+            this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            this.WriteSpace();
+
+            if (src.Condition == SubQueryMode.NotInList)
+            {
+                this.Write(SqlConstants.NOT);
+                this.WriteSpace();
+            }
+
+            this.Write(SqlConstants.IN);
+
+            this.WriteSpace();
+
+            args.AssignAlias(src.SubQueryTable);
+
+            var builder = new SqlSelectBuilder(src.SubQueryTable);
+            var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
+
+            builder.Columns.Add(subQueryColumn);
+
+            foreach (var filter in src.SubQueryFilters)
+            {
+                builder.Filters.Add(filter);
+            }
+            
+            this.Render(builder, wrapped: true);
+
+            this.WriteEndGroup();
+        }
+
+        public void Render(SqlTable src)
+        {
+            this.WriteTableName(src.TableName, args.TableName(src));
+        }
+
+        public void Render(SqlDerivedTable src)
+        {
+            this.WriteBeginGroup();
+            this.Write(src.CommandText.TrimEnd(new char[] { ';' }));
+            this.WriteEndGroup();
+            this.WriteSpace();
+            this.Write(SqlConstants.AS);
+            this.WriteSpace();
+            this.WriteTableName(args.TableName(src));
+        }
+
+        public void RenderValue(SqlColumn src)
+        {
+            if (src.Aggregate == SqlAggregate.None)
+            {
+                this.WriteColumnName(src.ColumnName, args.TableName(src.Table));
+            }
+            else
+            {
+                this.WriteAggregate(src.ColumnName, args.TableName(src.Table), src.Aggregate);
+            }
+        }
+
+        public void Render(SqlSelectBuilder selectBuilder, bool wrapped = false, bool aliased = false)
+        {
+            // build refs for all the referenced tables            
+            selectBuilder.CompileInternal(args);
+
+            if (wrapped)
+            {
+                this.WriteBeginGroup();
+            }
+
+            // SELECT
+            this.RenderSelect(selectBuilder.Columns, args, selectBuilder.SelectDistinct);
+
+            // FROM
+            this.RenderFrom(selectBuilder.Table, args);
+
+            // JOINS
+            if (selectBuilder.Joins.Count > 0)
+            {
+                this.RenderJoins(selectBuilder.Joins, args);
+            }
+
+            // WHERE
+            this.RenderWhere(selectBuilder.Filters, SqlLogic.And, args);
+
+            // GROUP BY
+            if (selectBuilder.Columns.Count(x => x.IsAggregate) > 0)
+            {
+                this.RenderGroupBy(selectBuilder.Columns.Where(x => !x.IsAggregate), args);
+            }
+
+            // ORDER BY
+            this.RenderOrderBy(selectBuilder.OrderBy, args);
+
+            // if we are using this as a subquery, or in a join, we need to wrap/alias it.
+            if (wrapped)
+            {
+                this.WriteEndGroup();
+
+                if (aliased)
+                {
+                    this.WriteSpace();
+                    this.Write(SqlConstants.AS);
+                    this.WriteSpace();
+                    this.WriteTableName(args.TableName(selectBuilder));
+                }
+            }
+        }
+
+        public void RenderValue(SqlExpressionSelectColumn src)
+        {
+            this.WriteExpression(src.Expression, src.Arguments);
+        }
+
+        public void RenderValue<T>(SqlLiteralColumn<T> src)
+        {
+            this.WriteLiteralValue(src.Value);
+        }
+
+        #endregion
 
     }
 
