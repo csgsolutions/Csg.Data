@@ -12,16 +12,13 @@ namespace Csg.Data.Sql.Tests
     {
         static DbQueryBuilderTests()
         {
-            Csg.Data.DbQueryBuilder.GenerateFormattedSql = false;
+            Csg.Data.DbQueryBuilder.DefaultGenerateFormattedSql = false;
         }
 
         [TestMethod]
         public void TestCreateCommandPopulatesCommandParameters()
         {
             var conn = new MockConnection();
-
-            var builder = new Csg.Data.Sql.SqlSelectBuilder();
-
             var query = new DbQueryBuilder("dbo.TableName", conn);
 
             query.Parameters.Add(new DbParameterValue()

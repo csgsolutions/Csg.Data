@@ -7,10 +7,18 @@ using System.Threading.Tasks;
 
 namespace Csg.Data.Abstractions
 {
+    /// <summary>
+    /// Represents a class that is responsible for rendering query components to the appropriate SQL representation.
+    /// </summary>
     public interface ISqlTextWriter
     {
 
+        ISqlProvider Provider { get; }
+
         SqlBuildArguments BuildArguments { get; }
+
+        
+        bool Format { get; set; }
 
         void Render(SqlColumn src);
 
@@ -59,5 +67,9 @@ namespace Csg.Data.Abstractions
         void Render(SqlDerivedTable src);
 
         void Render(SqlSelectBuilder selectBuilder, bool wrapped = false, bool aliased = false);
+
+        void WriteEndStatement();
+
+        string ToString();
     }
 }

@@ -199,7 +199,7 @@ namespace Csg.Data
         public static IDbQueryBuilder Distinct(this IDbQueryBuilder query)
         {
             var fork = query.Fork();
-            fork.Distinct = true;
+            fork.SelectDistinct = true;
             return fork;
         }
 

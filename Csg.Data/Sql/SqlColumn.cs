@@ -47,7 +47,7 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         protected override void Render(Abstractions.ISqlTextWriter writer)
         {
-            writer.Render(this);            
+            writer.Render(this);
         }
 
         /// <summary>

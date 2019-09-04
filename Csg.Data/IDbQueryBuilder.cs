@@ -26,7 +26,7 @@ namespace Csg.Data
         /// <summary>
         /// When implemented in a derived class, gets or sets a value that indicates if SELECT DISTINCT should be used.
         /// </summary>
-        bool Distinct { get; set; }
+        bool SelectDistinct { get; set; }
 
         /// <summary>
         /// When implemented in a derived class, adds a JOIN to the FROM clause of the query.

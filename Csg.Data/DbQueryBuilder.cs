@@ -12,17 +12,31 @@ namespace Csg.Data
     /// <summary>
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
-    public class DbQueryBuilder : IDbQueryBuilder
-    { 
+    public class DbQueryBuilder : SqlSelectBuilder, IDbQueryBuilder
+    {
+        /// <summary>
+        /// Gets or sets the default <see cref="Abstractions.ISqlProvider"/> to use when rendering queries.
+        /// </summary>
+        /// <remarks>The default value is  SqlServer.SqlServerProvider.Default</remarks>
+        public static Abstractions.ISqlProvider DefaultProvider = SqlServer.SqlServerProvider.Instance;
+
         /// <summary>
         /// Gets or sets a value that indicates if the query builder will generate formatted SQL by default. Applies to all instances.
         /// </summary>
-        public static bool GenerateFormattedSql = true;
+        public static bool DefaultGenerateFormattedSql = true;
 
-        private DbQueryBuilder(System.Data.IDbConnection connection, System.Data.IDbTransaction transaction)
+        /// <summary>
+        /// Creates a new instance using the given table expression and connection.
+        /// </summary>
+        /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
+        /// <param name="connection">The database connection.</param>
+        public DbQueryBuilder(string sql, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(sql, provider ?? DefaultProvider)
         {
             _connection = connection;
-            _transaction = transaction;            
+            _transaction = transaction;
+            this.GenerateFormattedSql = DefaultGenerateFormattedSql;
+            this.Parameters = new List<DbParameterValue>();
+            //TODO: Detect the sql connection type and create an appropriate text writer???
         }
 
         /// <summary>
@@ -30,46 +44,19 @@ namespace Csg.Data
         /// </summary>
         /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
         /// <param name="connection">The database connection.</param>
-        public DbQueryBuilder(string sql, System.Data.IDbConnection connection) : this(connection, null)
+        public DbQueryBuilder(ISqlTable table, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(table, provider ?? DefaultProvider)
         {
-            this.Root = Csg.Data.Sql.SqlTable.Create(sql);
-            this.Parameters = new List<DbParameterValue>();
-            this.SelectColumns = new List<ISqlColumn>();
-            this.Joins = new List<ISqlJoin>();
-            this.Filters = new List<ISqlFilter>();
-            this.OrderBy = new List<SqlOrderColumn>();
-        }
-
-        /// <summary>
-        /// Creates a new instance using the given table expression, connection, and transaction.
-        /// </summary>
-        /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
-        /// <param name="connection">The database connection.</param>
-        /// <param name="transaction">The database transaction.</param>
-        public DbQueryBuilder(string sql, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction) : this(sql, connection)
-        {
+            _connection = connection;
             _transaction = transaction;
+            this.GenerateFormattedSql = DefaultGenerateFormattedSql;
+            this.Parameters = new List<DbParameterValue>();
+            //TODO: Detect the sql connection type and create an appropriate text writer???
         }
-        
-        /// <summary>
-        /// Gets or sets the collection of joins..
-        /// </summary>
-        protected ICollection<ISqlJoin> Joins { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of filters.
-        /// </summary>
-        protected ICollection<ISqlFilter> Filters { get; set; }
 
         /// <summary>
         /// Returns the root table of the query. This is the table listed immmediately after the FROM clause
         /// </summary>
-        public ISqlTable Root { get; protected set; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets a collection of SELECT columns.
-        /// </summary>
-        public IList<ISqlColumn> SelectColumns { get; protected set; }
+        public ISqlTable Root { get => this.Table; }
 
         /// <summary>
         /// Adds a JOIN to the FROM clause of the query.
@@ -88,11 +75,6 @@ namespace Csg.Data
         {
             this.Filters.Add(filter);
         }
-
-        /// <summary>
-        /// Gets the list of columns to order by.
-        /// </summary>
-        public IList<SqlOrderColumn> OrderBy { get; protected set; }
 
         /// <summary>
         /// Gets the connection associated with the query.
@@ -124,11 +106,6 @@ namespace Csg.Data
         public int CommandTimeout { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that indicates if SELECT DISTINCT will be used.
-        /// </summary>
-        public bool Distinct { get; set; }
-
-        /// <summary>
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
@@ -140,14 +117,7 @@ namespace Csg.Data
         /// <returns></returns>
         public SqlStatement Render(bool? generateFormattedSql = null)
         {
-            var builder = new SqlSelectBuilder(this.Root, this.Joins, this.SelectColumns, this.Filters, this.OrderBy)
-            {
-                SelectDistinct = this.Distinct,
-                GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
-            };
-
-            //TODO: To support xplat db platforms, we would need to pass in a writer and build args here
-            var stmt = builder.Render();
+            var stmt = base.Render();
 
             foreach(var param in this.Parameters)
             {
@@ -178,15 +148,16 @@ namespace Csg.Data
         /// <returns></returns>
         public IDbQueryBuilder Fork()
         {
-            var builder = new DbQueryBuilder(this.Connection, this.Transaction);
+            var builder = new DbQueryBuilder(this.Table, this.Connection, this.Transaction);
+            builder.Joins.AddRange(this.Joins);
+            builder.Filters.AddRange(this.Filters);
+            builder.SelectColumns.AddRange(this.SelectColumns);
+            builder.Parameters.AddRange(this.Parameters);
+            builder.OrderBy.AddRange(this.OrderBy);
             builder.CommandTimeout = this.CommandTimeout;
-            builder.Root = this.Root;
-            builder.Joins = new List<ISqlJoin>(this.Joins);
-            builder.Filters = new List<ISqlFilter>(this.Filters);
-            builder.SelectColumns = new List<ISqlColumn>(this.SelectColumns);
-            builder.Distinct = this.Distinct;
-            builder.Parameters = new List<DbParameterValue>(this.Parameters);
-            builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
+            builder.SelectDistinct = this.SelectDistinct;
+            builder.Provider = this.Provider;
+            builder.GenerateFormattedSql = this.GenerateFormattedSql;
             return builder;
         }
 

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Csg.Data.Sql
 {
+    /// <summary>
+    /// The collection of tables and parameters accumulated during a query render.
+    /// </summary>
     public class SqlBuildArguments
     {
-        public const string SqlParameterPrefix = "@";
-        public const string SqlTableNameFormat = "t{0}";
-
-        private List<DbParameterValue> _params;        
+        private const string SqlTableNameFormat = "t{0}";
+        private List<DbParameterValue> _params;
         private List<ISqlTable> _tables;     
-
-        private int _paramIndex;
+        private int _paramIndex = 0;
 
         public SqlBuildArguments()
         {
@@ -25,6 +25,9 @@ namespace Csg.Data.Sql
         /// </summary>
         public bool Cancel { get; set; }
 
+        /// <summary>
+        /// Gets the collection of parameters accumulated during query rendering.
+        /// </summary>
         public IList<DbParameterValue> Parameters
         {
             get
@@ -57,6 +60,10 @@ namespace Csg.Data.Sql
             return p.ParameterName;
         }
 
+        /// <summary>
+        /// Assigns an alias to a table if it does not already exist.
+        /// </summary>
+        /// <param name="table"></param>
         public void AssignAlias(ISqlTable table)
         {
             int index = _tables.IndexOf(table);
@@ -66,6 +73,11 @@ namespace Csg.Data.Sql
             }
         }
 
+        /// <summary>
+        /// Gets the table alias assigned to a given table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
         public string TableName(ISqlTable table)
         {
             int index = _tables.IndexOf(table);

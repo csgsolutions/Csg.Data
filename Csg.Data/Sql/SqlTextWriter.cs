@@ -16,23 +16,28 @@ namespace Csg.Data.Sql
         private const string QUOTE = "\"";
         private const string QUOTEQUOTE = "\"\"";
         
-        public SqlTextWriter() : base()
+        public SqlTextWriter(ISqlProvider provider) : base()
         {
             this.InnerWriter = new System.IO.StringWriter();
             this.BuildArguments = new SqlBuildArguments();
+            this.Provider = provider;
         }
 
-        public SqlTextWriter(System.IO.TextWriter writer) : base()
+        public SqlTextWriter(System.IO.TextWriter writer, ISqlProvider provider) : base()
         {
             this.InnerWriter = writer;
             this.BuildArguments = new SqlBuildArguments();
+            this.Provider = provider;
         }        
 
-        public SqlTextWriter(StringBuilder sb) : base()
+        public SqlTextWriter(StringBuilder sb, ISqlProvider provider) : base()
         {
             this.InnerWriter = new System.IO.StringWriter(sb);
             this.BuildArguments = new SqlBuildArguments();
+            this.Provider = provider;
         }
+
+        public Abstractions.ISqlProvider Provider { get; private set; }
 
         /// <summary>
         /// Gets or sets a value that indicates if the writer should output "pretty" SQL that includes un-necessary line breaks and such.
@@ -678,11 +683,11 @@ namespace Csg.Data.Sql
         {
             BuildArguments.AssignAlias(src.SubQueryTable);
 
-            var subquery = new SqlSelectBuilder(src.SubQueryTable);
+            var subquery = new SqlSelectBuilder(src.SubQueryTable, this.Provider);
             var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
             subQueryColumn.Aggregate = SqlAggregate.Count;
             subQueryColumn.Alias = "Cnt";
-            subquery.Columns.Add(subQueryColumn);
+            subquery.SelectColumns.Add(subQueryColumn);
 
             foreach (var filter in src.SubQueryFilters)
             {
@@ -981,10 +986,10 @@ namespace Csg.Data.Sql
 
             BuildArguments.AssignAlias(src.SubQueryTable);
 
-            var builder = new SqlSelectBuilder(src.SubQueryTable);
+            var builder = new SqlSelectBuilder(src.SubQueryTable, this.Provider);
             var subQueryColumn = new SqlColumn(src.SubQueryTable, src.SubQueryColumn);
 
-            builder.Columns.Add(subQueryColumn);
+            builder.SelectColumns.Add(subQueryColumn);
 
             foreach (var filter in src.SubQueryFilters)
             {
@@ -1035,7 +1040,7 @@ namespace Csg.Data.Sql
             }
 
             // SELECT
-            this.RenderSelect(selectBuilder.Columns, BuildArguments, selectBuilder.SelectDistinct);
+            this.RenderSelect(selectBuilder.SelectColumns, BuildArguments, selectBuilder.SelectDistinct);
 
             // FROM
             this.RenderFrom(selectBuilder.Table, BuildArguments);
@@ -1050,9 +1055,9 @@ namespace Csg.Data.Sql
             this.RenderWhere(selectBuilder.Filters, SqlLogic.And, BuildArguments);
 
             // GROUP BY
-            if (selectBuilder.Columns.Count(x => x.IsAggregate) > 0)
+            if (selectBuilder.SelectColumns.Count(x => x.IsAggregate) > 0)
             {
-                this.RenderGroupBy(selectBuilder.Columns.Where(x => !x.IsAggregate), BuildArguments);
+                this.RenderGroupBy(selectBuilder.SelectColumns.Where(x => !x.IsAggregate), BuildArguments);
             }
 
             // ORDER BY

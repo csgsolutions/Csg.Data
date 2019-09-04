@@ -32,7 +32,8 @@ namespace TestProject
             string test = "SELECT [t0].[Foo] AS [Bar] FROM [TableName] AS [t0];";
 
             var q = new SqlSelectBuilder("TableName");
-            q.Columns.Add(new SqlColumn(q.Table, "Foo", "Bar"));
+
+            q.SelectColumns.Add(new SqlColumn(q.Table, "Foo", "Bar"));
 
             var s = q.Render();
 
@@ -46,7 +47,7 @@ namespace TestProject
 
             var q = new SqlSelectBuilder("TableName");
             var col = new SqlExpressionSelectColumn(q.Table, "Foo + 1", "Bar");
-            q.Columns.Add(col);
+            q.SelectColumns.Add(col);
             var s = q.Render();
 
             Assert.AreEqual(s.CommandText, test);
@@ -215,13 +216,15 @@ namespace TestProject
             Assert.IsTrue((s.Parameters.Count > 0), "Parameter count should be 1.");
             Assert.IsTrue(((DateTime)s.Parameters.ToList()[0].Value == beginDate), "Begin date does not match parameter");
             Assert.IsTrue(((DateTime)s.Parameters.ToList()[1].Value == endDate), "End date does not match parameter");
-            Assert.IsTrue(string.Equals(s.CommandText, test, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
+            Assert.AreEqual(test, s.CommandText, "Output CommandText does not match expected result");
         }
 
         [TestMethod]
         public void TestDateFilter()
         {
             string expectedSql = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE (CAST([t0].[CreateDate] AS date)>=@p0 AND CAST([t0].[CreateDate] AS date)<=@p1) ORDER BY [WidgetName];";
+            //                    SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE (CAST([t0].[CreateDate] AS date)>=@p0 AND CAST([t0].[CreateDate] AS date)<=@p1) ORDER BY [WidgetName],[WidgetName];
+
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -302,8 +305,8 @@ namespace TestProject
             SqlStatement s;
             var cols = new List<ISqlColumn>();
 
-            q.Columns.Add(new SqlColumn(q.Table,"OfficeKey"));
-            q.Columns.Add(new SqlColumn(q.Table, "WidgetID", "MeterCount") { Aggregate = SqlAggregate.Count });
+            q.SelectColumns.Add(new SqlColumn(q.Table,"OfficeKey"));
+            q.SelectColumns.Add(new SqlColumn(q.Table, "WidgetID", "MeterCount") { Aggregate = SqlAggregate.Count });
                        
             s = q.Render();
 
@@ -432,15 +435,15 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             SqlSelectBuilder q = new SqlSelectBuilder("facGadget");
             SqlStatement s;
 
-            q.Columns.Clear();
-            q.Columns.Add(new SqlColumn(q.Table, "WidgetID"));
-            q.Columns.Add(new SqlRankColumn(q.Table, "DataVolumeYesterday", SqlAggregate.Sum, "DataVolumeRank", false));
+            q.SelectColumns.Clear();
+            q.SelectColumns.Add(new SqlColumn(q.Table, "WidgetID"));
+            q.SelectColumns.Add(new SqlRankColumn(q.Table, "DataVolumeYesterday", SqlAggregate.Sum, "DataVolumeRank", false));
             s = q.Render();
             Assert.IsTrue(string.Equals(s.CommandText, test1, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
 
-            q.Columns.Clear();
-            q.Columns.Add(new SqlColumn(q.Table, "WidgetID"));
-            q.Columns.Add(new SqlRankColumn(q.Table, "DataVolumeYesterday", SqlAggregate.Sum, "DataVolumeRank", true));
+            q.SelectColumns.Clear();
+            q.SelectColumns.Add(new SqlColumn(q.Table, "WidgetID"));
+            q.SelectColumns.Add(new SqlRankColumn(q.Table, "DataVolumeYesterday", SqlAggregate.Sum, "DataVolumeRank", true));
             s = q.Render();
 
             Assert.IsTrue(string.Equals(s.CommandText, test2, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
@@ -490,16 +493,16 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             var table2 = new SqlTable("dbo.Table2");
             q.Joins.AddInner(q.Table, table2, new ISqlFilter[] { new SqlColumnCompareFilter(table2, "Table1ID", SqlOperator.Equal, q.Table, "Table1ID") });            
-            q.Columns.Add(new SqlColumn(table2, "Foo"));
-            q.Columns.Add(new SqlColumn(table2, "Bar"));
+            q.SelectColumns.Add(new SqlColumn(table2, "Foo"));
+            q.SelectColumns.Add(new SqlColumn(table2, "Bar"));
 
             var table3 = new SqlTable("dbo.Table3");
             q.Joins.AddLeft(q.Table, table3, new ISqlFilter[] { 
                 new SqlColumnCompareFilter(table3,"Table1ID", SqlOperator.Equal, q.Table, "Table1ID"),
                 new SqlColumnCompareFilter(table3, "Table2ID", SqlOperator.Equal, table2, "Table2ID")
             });
-            q.Columns.Add(new SqlColumn(table3, "Test1"));
-            q.Columns.Add(new SqlColumn(table3, "Test2"));
+            q.SelectColumns.Add(new SqlColumn(table3, "Test1"));
+            q.SelectColumns.Add(new SqlColumn(table3, "Test2"));
                                               
             s = q.Render();
             Assert.IsTrue(string.Equals(s.CommandText, test1, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
@@ -511,7 +514,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             q.Filters.Clear();
             var table4 = new SqlTable("dbo.Table4");
             q.Joins.AddCross(q.Table, table4);
-            q.Columns.Add(new SqlColumn(table4, "Test1"));
+            q.SelectColumns.Add(new SqlColumn(table4, "Test1"));
             s = q.Render();
             Assert.IsTrue(string.Equals(s.CommandText, test4, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");            
         }
@@ -522,8 +525,8 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             string test1 = "SELECT COUNT(DISTINCT [t0].[Foo]) AS [FooCount],[t0].[Bar] FROM [dbo].[FooBar] AS [t0] GROUP BY [t0].[Bar];";
             SqlSelectBuilder q = new SqlSelectBuilder("dbo.FooBar");
 
-            q.Columns.Add(new SqlColumn(q.Table, "Foo", "FooCount") { Aggregate = SqlAggregate.CountDistinct });            
-            q.Columns.Add(new SqlColumn(q.Table, "Bar"));
+            q.SelectColumns.Add(new SqlColumn(q.Table, "Foo", "FooCount") { Aggregate = SqlAggregate.CountDistinct });            
+            q.SelectColumns.Add(new SqlColumn(q.Table, "Bar"));
 
             var stmt = q.Render();
 
@@ -534,9 +537,8 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         public void TestDerivedTableWrapsWithParens()
         {
             var table = new SqlDerivedTable("SELECT * FROM [Foo]");
-            var writer = new SqlTextWriter();
+            var writer = new SqlTextWriter(Csg.Data.SqlServer.SqlServerProvider.Instance);
             var args = writer.BuildArguments;
-            
 
             args.AssignAlias(table);            
 
@@ -549,7 +551,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         public void TestDerivedTableRemovesSemicolons()
         {
             var table = new SqlDerivedTable("SELECT * FROM [Foo];");
-            var writer = new SqlTextWriter();
+            var writer = new SqlTextWriter(Csg.Data.SqlServer.SqlServerProvider.Instance);
 
             writer.BuildArguments.AssignAlias(table);
 
@@ -565,7 +567,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             var outerQuery = new SqlSelectBuilder("SELECT * FROM Stuff ORDER BY [WidgetName];");
             var innerQuery = new SqlSelectBuilder("[Foo]");
 
-            innerQuery.Columns.Add(new SqlLiteralColumn<int>(1));
+            innerQuery.SelectColumns.Add(new SqlLiteralColumn<int>(1));
             outerQuery.Filters.Add(new SqlExistFilter(innerQuery));
 
             var stmt = outerQuery.Render();
@@ -578,8 +580,8 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         {
             var query = new SqlSelectBuilder("[Foo]");
 
-            query.Columns.Add(new SqlLiteralColumn<int>(1));
-            query.Columns.Add(new SqlLiteralColumn<string>("2", "Two"));
+            query.SelectColumns.Add(new SqlLiteralColumn<int>(1));
+            query.SelectColumns.Add(new SqlLiteralColumn<string>("2", "Two"));
 
             var stmt = query.Render();
 

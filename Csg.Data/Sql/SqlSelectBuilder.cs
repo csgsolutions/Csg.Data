@@ -46,39 +46,54 @@ namespace Csg.Data.Sql
             }
         }
 
-        internal SqlSelectBuilder(ISqlTable table, IEnumerable<ISqlJoin> joins, IList<ISqlColumn> columns, IEnumerable<ISqlFilter> filters, IList<SqlOrderColumn> orderBy) : this()
-        {
-            this.Table = table;
-            _joins = joins.ToList();
-            _columns = columns;
-            _filters = filters.ToList();
-            _orderBy = orderBy;
-        }
-
-        public SqlSelectBuilder()
+        public SqlSelectBuilder(ISqlProvider provider)
         {
             this.GenerateFormattedSql = false;
+            this.Provider = provider;
+            this.SelectColumns = new List<ISqlColumn>();
+            this.Joins = new List<ISqlJoin>();
+            this.Filters = new List<ISqlFilter>();
+            this.OrderBy = new List<SqlOrderColumn>();
         }
 
-        public SqlSelectBuilder(string commandText) : this()
+        public SqlSelectBuilder(string commandText, ISqlProvider provider) : this(provider)
         {
             this.ParseInternal(commandText);
         }
 
-        public SqlSelectBuilder(ISqlTable table) : this()
+        public SqlSelectBuilder(ISqlTable table, ISqlProvider provider) : this(provider)
         {
             this.Table = table;
+        }
+
+        /// <summary>
+        /// Creates a new instance.
+        /// </summary>
+        [Obsolete("Used SqlSelectBuilder(ISqlProvider provider) instead.")]
+
+        public SqlSelectBuilder() : this(SqlServer.SqlServerProvider.Instance)
+        { 
+        }
+
+        /// <summary>
+        /// Creates an instance using the given command text for the <see cref="Table"/>.
+        /// </summary>
+        /// <param name="commandText"></param>
+        [Obsolete("Used SqlSelectBuilder(string commandText, ISqlProvider provider) instead.")]
+
+        public SqlSelectBuilder(string commandText) : this(commandText, SqlServer.SqlServerProvider.Instance)
+        {
         }
 
         /// <summary>
         /// Gets a value that indicates if the output SQL text should have line breaks and other formatting.
         /// </summary>
-        public bool GenerateFormattedSql { get; set; }
+        public virtual bool GenerateFormattedSql { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates if only distinct values should be returned from the query.
         /// </summary>
-        public bool SelectDistinct { get; set; }
+        public virtual bool SelectDistinct { get; set; }
         
         /// <summary>
         /// Gets or sets the primary table used in the query. This will be used as the first table rendered directly after the FROM keyword.
@@ -88,59 +103,28 @@ namespace Csg.Data.Sql
         /// <summary>
         /// Gets a collection of table joins used to join other tables into the resulting query.
         /// </summary>
-        public IList<ISqlJoin> Joins
-        {
-            get
-            {
-                if (_joins == null)
-                    _joins = new List<ISqlJoin>();
-                return _joins;
-            }
-        }
-        private IList<ISqlJoin> _joins;
+        public IList<ISqlJoin> Joins { get; set; } 
 
         /// <summary>
         /// Gets a collection of columns to be used in the query.
         /// </summary>
-        public IList<ISqlColumn> Columns
-        {
-            get
-            {
-                if (_columns == null)
-                    _columns = new List<ISqlColumn>();
-                return _columns;
-            }
-        }
-        private IList<ISqlColumn> _columns;
+        public IList<ISqlColumn> SelectColumns { get; set; }
 
         /// <summary>
         /// Gets a collection of <see cref="SqlOrderColumn"/> which control how the ORDER BY keyword is rendered, if at all.
         /// </summary>
-        public IList<SqlOrderColumn> OrderBy
-        {
-            get
-            {
-                if (_orderBy == null)
-                    _orderBy = new List<SqlOrderColumn>();
-                return _orderBy;
-            }
-        }
-        private IList<SqlOrderColumn> _orderBy;
+        public IList<SqlOrderColumn> OrderBy { get; set; }
 
         /// <summary>
         /// Gets a collection of filter objects that will follow the WHERE keyword.
         /// </summary>
-        public IList<ISqlFilter> Filters
-        {
-            get
-            {
-                if (_filters == null)
-                    _filters = new List<ISqlFilter>();
-                return _filters;
-            }
-        }
-        private IList<ISqlFilter> _filters;
+        public IList<ISqlFilter> Filters { get; set; }
 
+        /// <summary>
+        /// Gets the sql text writer used when this query is rendered.
+        /// </summary>
+        public ISqlProvider Provider { get; set; }
+       
         /// <summary>
         /// Renders the query.
         /// </summary>
@@ -157,8 +141,9 @@ namespace Csg.Data.Sql
         /// <returns></returns>
         public SqlStatement Render(bool supressEndStatement)
         {
-            var writer = new SqlTextWriter() { Format = this.GenerateFormattedSql };
+            var writer = this.Provider.CreateWriter();
 
+            writer.Format = this.GenerateFormattedSql;
             writer.Render(this);
 
             if (!supressEndStatement)
@@ -168,8 +153,7 @@ namespace Csg.Data.Sql
 
             return new SqlStatement(writer.ToString(), writer.BuildArguments.Parameters);
         }
-
-
+        
         /// <summary>
         /// Renders the query to the given text writer.
         /// </summary>

@@ -23,5 +23,15 @@ namespace Csg.Data.Sql
             }
         }
 
+        internal static void AddRange<T>(this ICollection<T> items, IEnumerable<T> itemsToAdd)
+        {
+            itemsToAdd = itemsToAdd ?? throw new ArgumentNullException(nameof(itemsToAdd));
+            foreach (var item in itemsToAdd)
+            {
+                items.Add(item);
+            }
+        }
+
+
     }
 }

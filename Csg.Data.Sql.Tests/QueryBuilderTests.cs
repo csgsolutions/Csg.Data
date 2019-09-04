@@ -12,7 +12,7 @@ namespace TestProject
     {
         static QueryBuilderTests()
         {
-            Csg.Data.DbQueryBuilder.GenerateFormattedSql = false;
+            Csg.Data.DbQueryBuilder.DefaultGenerateFormattedSql = false;
         }
 
         [TestMethod]
@@ -34,9 +34,9 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
             
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FullName", "DisplayName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FullName", "DisplayName"));
             
             var stmt = builder.Render();
             
@@ -51,8 +51,8 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
 
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
             builder.OrderBy.Add(new SqlOrderColumn() { ColumnName = "LastName", SortDirection = DbSortDirection.Ascending });
             builder.OrderBy.Add(new SqlOrderColumn() { ColumnName = "FirstName", SortDirection = DbSortDirection.Descending });
 
@@ -69,8 +69,8 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
                         
             builder.Table = new SqlTable("dbo.Contact");            
-            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
             builder.OrderBy.Add(new SqlOrderColumn() { ColumnName = "LastName", SortDirection = DbSortDirection.Ascending });
             builder.OrderBy.Add(new SqlOrderColumn() { ColumnName = "FirstName", SortDirection = DbSortDirection.Descending });
             builder.Filters.Add(new SqlCompareFilter<string>(builder.Table, "LastName", SqlOperator.Equal,  "Buchanan"));
@@ -91,8 +91,8 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
 
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName", "Count") { Aggregate = SqlAggregate.Count });
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName", "Count") { Aggregate = SqlAggregate.Count });
             builder.OrderBy.Add(new SqlOrderColumn() { ColumnName = "Count", SortDirection = DbSortDirection.Descending });            
 
             var stmt = builder.Render();
@@ -113,8 +113,8 @@ namespace TestProject
             builder.Joins.AddInner(foo, bar, "BarID");
 
             builder.Table = foo;
-            builder.Columns.Add(new SqlColumn(foo, "FooID"));
-            builder.Columns.Add(new SqlColumn(bar, "Name","BarName"));
+            builder.SelectColumns.Add(new SqlColumn(foo, "FooID"));
+            builder.SelectColumns.Add(new SqlColumn(bar, "Name","BarName"));
 
             var stmt = builder.Render();
 
@@ -152,9 +152,9 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
 
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "LastName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
-            builder.Columns.Add(new SqlColumn(builder.Table, "FullName", "DisplayName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "LastName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FullName", "DisplayName"));
             builder.SelectDistinct = true;
 
             var stmt = builder.Render();
@@ -205,14 +205,14 @@ namespace TestProject
             var foo = new SqlTable("Person.Person");
             var bar = new SqlSelectBuilder("Person.PersonPhone");
 
-            bar.Columns.Add(new SqlColumn(bar.Table, "BusinessEntityID"));
-            bar.Columns.Add(new SqlColumn(bar.Table, "PhoneNumber"));
+            bar.SelectColumns.Add(new SqlColumn(bar.Table, "BusinessEntityID"));
+            bar.SelectColumns.Add(new SqlColumn(bar.Table, "PhoneNumber"));
 
             builder.Joins.AddInner(foo, bar, "BusinessEntityID");
 
             builder.Table = foo;
-            builder.Columns.Add(new SqlColumn(foo, "BusinessEntityID"));
-            builder.Columns.Add(new SqlColumn(bar, "PhoneNumber"));
+            builder.SelectColumns.Add(new SqlColumn(foo, "BusinessEntityID"));
+            builder.SelectColumns.Add(new SqlColumn(bar, "PhoneNumber"));
 
             var stmt = builder.Render();
 
