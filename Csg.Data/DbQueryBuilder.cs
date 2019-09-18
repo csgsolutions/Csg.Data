@@ -129,6 +129,11 @@ namespace Csg.Data
         public bool Distinct { get; set; }
 
         /// <summary>
+        /// Gets the paging options used with the query
+        /// </summary>
+        public SqlPagingOptions? PagingOptions { get; set; }
+
+        /// <summary>
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
@@ -187,6 +192,7 @@ namespace Csg.Data
             builder.Distinct = this.Distinct;
             builder.Parameters = new List<DbParameterValue>(this.Parameters);
             builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
+            builder.PagingOptions = this.PagingOptions;
             return builder;
         }
 

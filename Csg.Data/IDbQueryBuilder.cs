@@ -80,5 +80,10 @@ namespace Csg.Data
         /// </summary>
         /// <returns></returns>
         IDbQueryBuilder Fork();
+
+        /// <summary>
+        /// When implemented in a derived class, gets or sets the paging options for the query.
+        /// </summary>
+        SqlPagingOptions? PagingOptions { get; set; }
     }
 }

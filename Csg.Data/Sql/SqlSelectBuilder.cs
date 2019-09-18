@@ -141,6 +141,11 @@ namespace Csg.Data.Sql
         private IList<ISqlFilter> _filters;
 
         /// <summary>
+        /// Gets the paging options that will be applied to the query.
+        /// </summary>
+        public SqlPagingOptions? PagingOptions { get; set; }
+
+        /// <summary>
         /// Renders the query.
         /// </summary>
         /// <returns></returns>
@@ -229,6 +234,10 @@ namespace Csg.Data.Sql
             }
 
             writer.RenderOrderBy(this.OrderBy, args);
+            if (this.PagingOptions.HasValue)
+            {
+                writer.RenderOffsetLimit(this.PagingOptions.Value, args);
+            }
         }
                 
         void ISqlTable.Compile(SqlBuildArguments args)
