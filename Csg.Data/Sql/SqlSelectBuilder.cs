@@ -26,12 +26,7 @@ namespace Csg.Data.Sql
                 throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
             }
 
-            commandText = commandText.Trim();
-
-            if (commandText.EndsWith(";"))
-            {
-                commandText = commandText.Substring(0, commandText.Length - 1);
-            }
+            commandText = commandText.Trim().TrimEnd(new char[] { '\r', '\n', ';', ' ', '\t' });
 
             if (i >= 0)
             {
@@ -125,6 +120,11 @@ namespace Csg.Data.Sql
         /// </summary>
         public ISqlProvider Provider { get; set; }
        
+        /// <summary>
+        /// Gets the paging options that will be applied to the query.
+        /// </summary>
+        public SqlPagingOptions? PagingOptions { get; set; }
+
         /// <summary>
         /// Renders the query.
         /// </summary>

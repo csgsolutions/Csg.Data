@@ -106,6 +106,11 @@ namespace Csg.Data
         public int CommandTimeout { get; set; }
 
         /// <summary>
+        /// Gets the paging options used with the query
+        /// </summary>
+        public SqlPagingOptions? PagingOptions { get; set; }
+
+        /// <summary>
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
@@ -158,6 +163,7 @@ namespace Csg.Data
             builder.SelectDistinct = this.SelectDistinct;
             builder.Provider = this.Provider;
             builder.GenerateFormattedSql = this.GenerateFormattedSql;
+            builder.PagingOptions = this.PagingOptions;
             return builder;
         }
 
