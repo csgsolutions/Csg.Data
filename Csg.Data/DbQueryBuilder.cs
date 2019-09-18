@@ -113,7 +113,7 @@ namespace Csg.Data
         {
             var stmt = base.Render();
 
-            foreach(var param in this.Parameters)
+            foreach (var param in this.Parameters)
             {
                 stmt.Parameters.Add(param);
             }
@@ -152,6 +152,7 @@ namespace Csg.Data
             builder.SelectDistinct = this.SelectDistinct;
             builder.Provider = this.Provider;
             builder.GenerateFormattedSql = this.GenerateFormattedSql;
+            builder.PagingOptions = this.PagingOptions;
             return builder;
         }
 

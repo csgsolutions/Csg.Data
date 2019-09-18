@@ -125,6 +125,11 @@ namespace Csg.Data.Sql
         public ISqlProvider Provider { get; set; }
        
         /// <summary>
+        /// Gets the paging options that will be applied to the query.
+        /// </summary>
+        public SqlPagingOptions? PagingOptions { get; set; }
+
+        /// <summary>
         /// Renders the query.
         /// </summary>
         /// <returns></returns>

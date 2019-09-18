@@ -554,7 +554,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             ((ISqlTable)table).Render(writer);
 
-            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + writer.BuildArguments.TableName(table) + "]"));
+            Assert.AreEqual("(SELECT * FROM [Foo]) AS [" + writer.BuildArguments.TableName(table) + "]", writer.ToString());
         }
 
 
@@ -642,8 +642,45 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         public void SqlOrderColumn_ConstructorTrimsCommandText()
         {
             string expected = "SELECT [Foo] FROM [Bar]";
-            var table = new SqlOrderColumn();
+            var table = new SqlDerivedTable("SELECT [Foo] FROM [Bar]; \r\n");
             Assert.AreEqual(expected, table.CommandText);
+        }
+
+        [TestMethod]
+        public void TestPagingOptions()
+        {
+            string test = "SELECT * FROM [DimWidget] AS [t0] ORDER BY [WidgetID] OFFSET 50 ROWS FETCH NEXT 10 ROWS ONLY;";
+            //             SELECT * FROM [DimWidget] AS [t0] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
+            SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
+
+            q.OrderBy.Add(new SqlOrderColumn() { ColumnName = "WidgetID" });
+            q.PagingOptions = new SqlPagingOptions()
+            {
+                Limit = 10,
+                Offset = 50
+            };
+
+            var s = q.Render();
+
+            Assert.AreEqual(test, s.CommandText, true);
+        }
+
+        [TestMethod]
+        public void TestPagingOffsetOnly()
+        {
+            string test = "SELECT * FROM [DimWidget] AS [t0] ORDER BY [WidgetID] OFFSET 50 ROWS;";
+            //             SELECT * FROM [DimWidget] AS [t0] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
+            SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
+
+            q.OrderBy.Add(new SqlOrderColumn() { ColumnName = "WidgetID" });
+            q.PagingOptions = new SqlPagingOptions()
+            {
+                Offset = 50
+            };
+
+            var s = q.Render();
+
+            Assert.AreEqual(test, s.CommandText, true);
         }
     }
 }

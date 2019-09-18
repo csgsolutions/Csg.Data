@@ -44,5 +44,50 @@ namespace Csg.Data.Sql.Tests
             Assert.AreEqual(4, ((IDbDataParameter)cmd.Parameters[0]).Size);
             Assert.AreEqual(123, ((IDbDataParameter)cmd.Parameters[0]).Value);
         }
+
+        [TestMethod]
+        public void TestForkCreatesShallowClone()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("dbo.TableName", conn);
+
+            query.OrderBy.Add(new SqlOrderColumn() { ColumnName = "Foo" });
+            query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("Blah")));
+            query.AddFilter(new SqlNullFilter(query.Root, "Foo", false));
+            query.SelectColumns.Add(new SqlColumn(query.Root, "Foo"));
+            query.PagingOptions = new SqlPagingOptions()
+            {
+                Offset = 10,
+                Limit = 100
+            };
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Param1",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+            query.SelectDistinct = true;
+            query.CommandTimeout = 123;
+
+            var fork = query.Fork();
+
+            query.OrderBy.Clear();
+            query.AddFilter(new SqlNullFilter(query.Root, "Bar", false));
+            query.SelectColumns.Clear();
+            query.PagingOptions = null;
+            query.Parameters.Clear();
+            query.CommandTimeout = 999;
+            query.SelectDistinct = false;
+            query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("blah2")));
+
+            Assert.AreEqual(1, fork.OrderBy.Count);
+            Assert.AreEqual(1, fork.SelectColumns.Count);
+            Assert.AreEqual(1, fork.Parameters.Count);
+            Assert.AreEqual(10, fork.PagingOptions.Value.Offset);
+            Assert.AreEqual(100, fork.PagingOptions.Value.Limit);
+            Assert.AreEqual(true, fork.SelectDistinct);
+            Assert.AreEqual(123, fork.CommandTimeout);
+        }
     }
 }

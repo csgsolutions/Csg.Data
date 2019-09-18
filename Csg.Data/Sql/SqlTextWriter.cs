@@ -638,6 +638,22 @@ namespace Csg.Data.Sql
             this.Write(string.Format(expression, resolvedArguments));
         }
 
+        public void WriteOffsetLimit(SqlPagingOptions options)
+        {
+            //https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-2017#using-offset-and-fetch-to-limit-the-rows-returned
+            //e.g. OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY
+
+            if (options.Offset > 0)
+            {
+                this.Write($" OFFSET {options.Offset} ROWS");
+            }
+
+            if (options.Limit > 0)
+            {
+                this.Write($" FETCH NEXT {options.Limit} ROWS ONLY");
+            }
+        }
+
         #endregion
 
 
@@ -1067,6 +1083,11 @@ namespace Csg.Data.Sql
 
             // ORDER BY
             this.RenderOrderBy(selectBuilder.OrderBy, BuildArguments);
+
+            if (selectBuilder.PagingOptions.HasValue)
+            {
+                this.WriteOffsetLimit(selectBuilder.PagingOptions.Value);
+            }
 
             // if we are using this as a subquery, or in a join, we need to wrap/alias it.
             if (wrapped)
