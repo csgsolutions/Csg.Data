@@ -55,7 +55,7 @@ namespace TestProject
         [TestMethod]
         public void TestParse()
         {
-            string test = "SELECT * FROM (SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%' ) AS [t0] ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%') AS [t0] ORDER BY [WidgetName];";
             var q = new SqlSelectBuilder("SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%' ORDER BY [WidgetName];");
             SqlStatement s;
                                    
@@ -67,7 +67,7 @@ namespace TestProject
         [TestMethod]
         public void TestParseOrderBy()
         {
-            string expected = "SELECT * FROM (SELECT * FROM Report_Nrt ) AS [t0] ORDER BY [DivisionName];";
+            string expected = "SELECT * FROM (SELECT * FROM Report_Nrt) AS [t0] ORDER BY [DivisionName];";
             string query = "SELECT * FROM Report_Nrt ORDER BY DivisionName";
             SqlSelectBuilder q = new SqlSelectBuilder(query);
             SqlStatement s;
@@ -80,7 +80,7 @@ namespace TestProject
         [TestMethod]
         public void TestSort()
         {
-            string test = "SELECT * FROM (SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%' ) AS [t0] ORDER BY [WidgetName],[WidgetID];";
+            string test = "SELECT * FROM (SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%') AS [t0] ORDER BY [WidgetName],[WidgetID];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT * FROM DimWidget WHERE WidgetID LIKE 'a%' ORDER BY [WidgetName];");
 
             q.OrderBy.Add("[WidgetID]");
@@ -95,7 +95,7 @@ namespace TestProject
         [TestMethod]
         public void TestEqualFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[WidgetID]=@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[WidgetID]=@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
 
@@ -117,7 +117,7 @@ namespace TestProject
         [TestMethod]
         public void TestNotEqualFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[OfficeKey]<>@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[OfficeKey]<>@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -134,7 +134,7 @@ namespace TestProject
         [TestMethod]
         public void TestGreaterThanFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[OfficeKey]>@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[OfficeKey]>@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -150,7 +150,7 @@ namespace TestProject
         [TestMethod]
         public void TestLessThanFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[OfficeKey]<@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[OfficeKey]<@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -167,7 +167,7 @@ namespace TestProject
         [TestMethod]
         public void TestGreaterThanOrEqualFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[OfficeKey]>=@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[OfficeKey]>=@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -184,7 +184,7 @@ namespace TestProject
         [TestMethod]
         public void TestLessThanOrEqualFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[OfficeKey]<=@p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[OfficeKey]<=@p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -201,7 +201,7 @@ namespace TestProject
         [TestMethod]
         public void TestDateTimeFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[CreateDate]>=@p0 AND [t0].[CreateDate]<=@p1) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[CreateDate]>=@p0 AND [t0].[CreateDate]<=@p1) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -221,7 +221,7 @@ namespace TestProject
         [TestMethod]
         public void TestDateFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE (CAST([t0].[CreateDate] as date)>=@p0 AND CAST([t0].[CreateDate] as date)<=@p1) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE (CAST([t0].[CreateDate] as date)>=@p0 AND CAST([t0].[CreateDate] as date)<=@p1) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -240,7 +240,7 @@ namespace TestProject
         [TestMethod]
         public void TestNullFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[Foreman] IS NULL) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[Foreman] IS NULL) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -252,7 +252,7 @@ namespace TestProject
             Assert.IsTrue((s.Parameters.Count <= 0), "Parameter count should be 0.");            
             Assert.IsTrue(string.Equals(s.CommandText, test, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
 
-            test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[Foreman] IS NOT NULL) ORDER BY [WidgetName];";
+            test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[Foreman] IS NOT NULL) ORDER BY [WidgetName];";
             q.Filters.Clear();
             q.Filters.Add(new SqlNullFilter(q.Table, "Foreman", false));
             s = q.Render();
@@ -262,7 +262,7 @@ namespace TestProject
         [TestMethod]
         public void TestStringFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget ) AS [t0] WHERE ([t0].[Foreman] LIKE @p0) ORDER BY [WidgetName];";
+            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE ([t0].[Foreman] LIKE @p0) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -293,7 +293,7 @@ namespace TestProject
         [TestMethod]
         public void TestGroupBy()
         {
-            string test = "SELECT [t0].[OfficeKey],COUNT([t0].[WidgetID]) AS [MeterCount] FROM (SELECT WidgetName,WidgetID,OfficeKey FROM DimWidget ) AS [t0] GROUP BY [t0].[OfficeKey] ORDER BY [WidgetName];";
+            string test = "SELECT [t0].[OfficeKey],COUNT([t0].[WidgetID]) AS [MeterCount] FROM (SELECT WidgetName,WidgetID,OfficeKey FROM DimWidget) AS [t0] GROUP BY [t0].[OfficeKey] ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID,OfficeKey FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             var cols = new List<ISqlColumn>();
@@ -309,7 +309,7 @@ namespace TestProject
         [TestMethod]
         public void TestListFilterInt32()
         {
-            string test = "SELECT * FROM (SELECT * FROM Products ) AS [t0] WHERE ([t0].[ProductID] IN (@p0,@p1,@p2)) ORDER BY [ProductName];";
+            string test = "SELECT * FROM (SELECT * FROM Products) AS [t0] WHERE ([t0].[ProductID] IN (@p0,@p1,@p2)) ORDER BY [ProductName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT * FROM Products ORDER BY [ProductName]");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -329,7 +329,7 @@ namespace TestProject
         [TestMethod]
         public void TestListFilterInt32Literal()
         {
-            string test = "SELECT * FROM (SELECT * FROM Products ) AS [t0] WHERE ([t0].[ProductID] IN (1,2,3)) ORDER BY [ProductName];";
+            string test = "SELECT * FROM (SELECT * FROM Products) AS [t0] WHERE ([t0].[ProductID] IN (1,2,3)) ORDER BY [ProductName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT * FROM Products ORDER BY [ProductName]");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -349,7 +349,7 @@ namespace TestProject
         [TestMethod]
         public void TestListFilterBoolean()
         {
-            string test = "SELECT * FROM (SELECT * FROM Products ) AS [t0] WHERE ([t0].[ProductID] IN (1,0,1)) ORDER BY [ProductName];";
+            string test = "SELECT * FROM (SELECT * FROM Products) AS [t0] WHERE ([t0].[ProductID] IN (1,0,1)) ORDER BY [ProductName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT * FROM Products ORDER BY [ProductName]");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -368,7 +368,7 @@ namespace TestProject
         [TestMethod]
         public void TestListFilterString()
         {
-            string test = "SELECT * FROM (SELECT * FROM Products ) AS [t0] WHERE ([t0].[ProductName] IN (@p0,@p1,@p2)) ORDER BY [ProductName];";
+            string test = "SELECT * FROM (SELECT * FROM Products) AS [t0] WHERE ([t0].[ProductName] IN (@p0,@p1,@p2)) ORDER BY [ProductName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT * FROM Products ORDER BY [ProductName]");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -551,7 +551,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             ((ISqlTable)table).Render(writer, args);
 
-            Assert.IsTrue(string.Equals(writer.ToString(), "(SELECT * FROM [Foo]) AS [" + args.TableName(table) + "]"));
+            Assert.AreEqual("(SELECT * FROM [Foo]) AS [" + args.TableName(table) + "]", writer.ToString());
         }
 
 
@@ -566,7 +566,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             var stmt = outerQuery.Render();
 
-            Assert.AreEqual("SELECT * FROM (SELECT * FROM Stuff ) AS [t0] WHERE (EXISTS (SELECT 1 FROM [Foo] AS [t1])) ORDER BY [WidgetName];", stmt.CommandText);          
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM Stuff) AS [t0] WHERE (EXISTS (SELECT 1 FROM [Foo] AS [t1])) ORDER BY [WidgetName];", stmt.CommandText);          
         }
 
         [TestMethod]

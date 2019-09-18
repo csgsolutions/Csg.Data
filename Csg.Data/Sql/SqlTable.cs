@@ -81,7 +81,7 @@ namespace Csg.Data.Sql
         protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
             writer.WriteBeginGroup();
-            writer.Write(this.CommandText.TrimEnd(new char[] { ';' }));
+            writer.Write(this.CommandText.TrimEnd(new char[] { '\r', '\n', ';', ' ', '\t' }));
             writer.WriteEndGroup();
             writer.WriteSpace();
             writer.Write(SqlConstants.AS);
