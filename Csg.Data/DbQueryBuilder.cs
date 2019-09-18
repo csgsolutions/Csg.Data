@@ -149,6 +149,7 @@ namespace Csg.Data
             {
                 SelectDistinct = this.Distinct,
                 GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
+                PagingOptions = this.PagingOptions
             };
 
             //TODO: To support xplat db platforms, we would need to pass in a writer and build args here
