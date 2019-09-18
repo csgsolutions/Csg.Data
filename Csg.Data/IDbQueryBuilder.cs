@@ -25,7 +25,7 @@ namespace Csg.Data
 
         /// <summary>
         /// When implemented in a derived class, gets or sets a value that indicates if SELECT DISTINCT should be used.
-        /// </summary>
+        /// </summary>   
         bool SelectDistinct { get; set; }
 
         /// <summary>

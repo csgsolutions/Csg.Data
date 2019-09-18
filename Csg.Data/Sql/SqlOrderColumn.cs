@@ -7,23 +7,24 @@ namespace Csg.Data.Sql
 {
     public class SqlOrderColumn : ISqlStatementElement
     {
-        public string ColumnName { get; set; }
-        public DbSortDirection SortDirection { get; set; }
-
-        public static SqlOrderColumn Parse(string s)
+        public static SqlOrderColumn Parse(string sortSegment)
         {
-            var parts = s.Split(' ');
+            var parts = sortSegment.Split(' ');
             var result = new SqlOrderColumn();
 
             result.ColumnName = parts[0];
-            
+
             if (parts.Length == 2)
             {
                 result.SortDirection = parts[1].StartsWith("ASC", StringComparison.OrdinalIgnoreCase) ? DbSortDirection.Ascending : DbSortDirection.Descending;
             }
-            
+
             return result;
         }
+
+        public string ColumnName { get; set; }
+
+        public DbSortDirection SortDirection { get; set; }
 
         #region ISqlStatementElement Members
 

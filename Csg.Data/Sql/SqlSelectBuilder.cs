@@ -17,32 +17,31 @@ namespace Csg.Data.Sql
 
         private void ParseInternal(string commandText)
         {
-            //TODO: check sortExpression for SQL injection            
-            string orderBy;
-            int i = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
+            //TODO: check sortExpression for SQL injection
+            int indexOfOrderBy = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
                         
             if (string.IsNullOrEmpty(commandText))
             {
                 throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
             }
 
-            commandText = commandText.Trim();
+            //commandText = commandText.Trim();
 
-            if (commandText.EndsWith(";"))
-            {
-                commandText = commandText.Substring(0, commandText.Length - 1);
-            }
+            //if (commandText.EndsWith(";"))
+            //{
+            //    commandText = commandText.Substring(0, commandText.Length - 1);
+            //}
 
-            if (i >= 0)
+            commandText = SqlDerivedTable.TrimCommandText(commandText);
+
+            if (indexOfOrderBy >= 0)
             {
-                this.Table = SqlTableBase.Create(commandText.Substring(0, i));
-                orderBy = commandText.Substring(i + TSQL_ORDER_BY.Length + 1);
-                this.OrderBy.Add(orderBy);
+                this.Table = SqlTableBase.Create(commandText.Substring(0, indexOfOrderBy));
+                this.OrderBy.Add(commandText.Substring(indexOfOrderBy + TSQL_ORDER_BY.Length + 1));
             }
             else
             {
                 this.Table = SqlTableBase.Create(commandText);
-                orderBy = null;
             }
         }
 

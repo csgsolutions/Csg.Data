@@ -10,51 +10,67 @@ using System.Data.Common;
 namespace Csg.Data
 {
     /// <summary>
-    /// Provides extension methods for the <see cref="IDbQueryBuilder"/>.
+    /// Provides extension methods for the <see cref="IDbQueryBuilder2"/>.
     /// </summary>
-    public static partial class DbQueryBuilderExtensions
+    public static partial class DbQueryBuilder2Extensions
     {
         /// <summary>
-        /// Creates a <see cref="IDbQueryBuilder"/> associated with the given <see cref="IDbScope"/> which can be used to build and execute a SQL statement.
+        /// Creates a <see cref="IDbQueryBuilder2"/> associated with the given <see cref="IDbScope"/> which can be used to build and execute a SQL statement.
         /// </summary>
-        /// <param name="scope">The connection with which the resulting <see cref="IDbQueryBuilder"/> will be associated with.</param>
+        /// <param name="scope">The connection with which the resulting <see cref="IDbQueryBuilder2"/> will be associated with.</param>
         /// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
         /// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
         /// <returns></returns>
-        //public static IDbQueryBuilder QueryBuilder(this Csg.Data.IDbScope scope, string commandText, Abstractions.ISqlProvider provider = null)
-        //{
-        //    return new DbQueryBuilder(commandText, scope.Connection, scope.Transaction, provider ?? Sql.SqlProviderFactory.GetProvider(scope.Connection));
-        //}
+        public static IDbQueryBuilder2 QueryBuilder(this Csg.Data.IDbScope scope, string commandText, Abstractions.ISqlProvider provider = null)
+        {
+            return new DbQueryBuilder(commandText, scope.Connection, scope.Transaction, provider ?? Sql.SqlProviderFactory.GetProvider(scope.Connection));
+        }
 
-        ///// <summary>
-        ///// Creates a <see cref="IDbQueryBuilder"/> associated with the given <see cref="IDbConnection"/> which can be used to build and execute a SQL statement.
-        ///// </summary>
-        ///// <param name="connection">The connection with which the resulting <see cref="IDbCommand"/> will be associated with.</param>
-        ///// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
-        ///// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
-        ///// <returns></returns>
-        //public static IDbQueryBuilder QueryBuilder(this System.Data.IDbConnection connection, string commandText, Abstractions.ISqlProvider provider = null)
-        //{
-        //    return new DbQueryBuilder(commandText, connection, transaction: null, provider: provider ?? Sql.SqlProviderFactory.GetProvider(connection));
-        //}
+        /// <summary>
+        /// Creates a <see cref="IDbQueryBuilder2"/> associated with the given <see cref="IDbConnection"/> which can be used to build and execute a SQL statement.
+        /// </summary>
+        /// <param name="connection">The connection with which the resulting <see cref="IDbCommand"/> will be associated with.</param>
+        /// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
+        /// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
+        /// <returns></returns>
+        public static IDbQueryBuilder2 QueryBuilder(this System.Data.IDbConnection connection, string commandText, Abstractions.ISqlProvider provider = null)
+        {
+            return new DbQueryBuilder(commandText, connection, transaction: null, provider: provider ?? Sql.SqlProviderFactory.GetProvider(connection));
+        }
 
-        ///// <summary>
-        ///// Creates a <see cref="IDbQueryBuilder"/> associated with the given <see cref="IDbTransaction"/> which can be used to build and execute a SQL SELECT statement.
-        ///// </summary>
-        ///// <param name="transaction">The transaction with which the resulting <see cref="IDbCommand"/> will be associated with.</param>
-        ///// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
-        ///// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
-        ///// <returns></returns>
-        //public static IDbQueryBuilder QueryBuilder(this System.Data.IDbTransaction transaction, string commandText, Abstractions.ISqlProvider provider = null)
-        //{
-        //    return new DbQueryBuilder(commandText, transaction.Connection, transaction: transaction, provider: provider ?? Sql.SqlProviderFactory.GetProvider(transaction.Connection));
-        //}
+        /// <summary>
+        /// Creates a <see cref="IDbQueryBuilder2"/> associated with the given <see cref="IDbTransaction"/> which can be used to build and execute a SQL SELECT statement.
+        /// </summary>
+        /// <param name="transaction">The transaction with which the resulting <see cref="IDbCommand"/> will be associated with.</param>
+        /// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
+        /// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
+        /// <returns></returns>
+        public static IDbQueryBuilder2 QueryBuilder(this System.Data.IDbTransaction transaction, string commandText, Abstractions.ISqlProvider provider = null)
+        {
+            return new DbQueryBuilder(commandText, transaction.Connection, transaction: transaction, provider: provider ?? Sql.SqlProviderFactory.GetProvider(transaction.Connection));
+        }
+
+        /// <summary>
+        /// Returns an initalized database command.
+        /// </summary>
+        /// <returns></returns>
+        public static System.Data.IDbCommand CreateCommand(this IDbQueryBuilder2 query)
+        {
+            var stmt = query.Render();
+
+            var cmd = stmt.CreateCommand(query.Configuration.Connection);
+
+            cmd.Transaction = query.Configuration.Transaction;
+            cmd.CommandTimeout = query.Configuration.CommandTimeout;
+
+            return cmd;
+        }
 
         /// <summary>
         /// Executes the query and returns an open data reader.
         /// </summary>
         /// <returns></returns>
-        public static IDataReader ExecuteReader(this IDbQueryBuilder query)
+        public static IDataReader ExecuteReader(this IDbQueryBuilder2 query)
         {
             return query.CreateCommand().ExecuteReader();
         }
@@ -64,7 +80,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="query">The query builder instance.</param>
         /// <returns></returns>
-        public static object ExecuteScalar(this IDbQueryBuilder query)
+        public static object ExecuteScalar(this IDbQueryBuilder2 query)
         {
             return query.CreateCommand().ExecuteScalar();
         }
@@ -73,7 +89,7 @@ namespace Csg.Data
         /// Executes the query and returns the first column from the first row in the result set, casted to the given type.
         /// </summary>
         /// <param name="query">The query builder instance.</param>
-        public static T ExecuteScalar<T>(this IDbQueryBuilder query) where T : struct
+        public static T ExecuteScalar<T>(this IDbQueryBuilder2 query) where T : struct
         {
             var value = query.ExecuteScalar();
 
@@ -94,7 +110,7 @@ namespace Csg.Data
         /// <param name="schema">Outputs the query metadata.</param>
         /// <param name="errors">Outputs any validation or execution errors encountered.</param>
         /// <returns></returns>
-        public static bool GetSchemaTable(this IDbQueryBuilder query, out DataTable schema, out ICollection<Exception> errors)
+        public static bool GetSchemaTable(this IDbQueryBuilder2 query, out DataTable schema, out ICollection<Exception> errors)
         {
             var cmd = query.CreateCommand();
 
@@ -130,7 +146,7 @@ namespace Csg.Data
         /// <param name="schema"></param>
         /// <param name="errors"></param>
         /// <returns></returns>
-        public static bool GetColumnSchema(this IDbQueryBuilder query, out ReadOnlyCollection<DbColumn> schema, out ICollection<Exception> errors)
+        public static bool GetColumnSchema(this IDbQueryBuilder2 query, out ReadOnlyCollection<DbColumn> schema, out ICollection<Exception> errors)
         {
             var cmd = query.CreateCommand();
 
@@ -171,7 +187,7 @@ namespace Csg.Data
         /// <param name="query">The query builder instance.</param>
         /// <param name="fields">A set of field names to select.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder Select(this IDbQueryBuilder query, params string[] fields)
+        public static IDbQueryBuilder2 Select(this IDbQueryBuilder2 query, params string[] fields)
         {             
             return query.Select((IEnumerable<string>)fields);
         }
@@ -182,13 +198,13 @@ namespace Csg.Data
         /// <param name="query">The query builder instance.</param>
         /// <param name="fields">A set of field names to select.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder Select(this IDbQueryBuilder query, IEnumerable<string> fields)
+        public static IDbQueryBuilder2 Select(this IDbQueryBuilder2 query, IEnumerable<string> fields)
         {
             var fork = query.Fork();
 
             foreach (var field in fields)
             {
-                fork.SelectColumns.Add(SqlColumn.Parse(fork.Root, field));
+                fork.Configuration.SelectColumns.Add(SqlColumn.Parse(fork.Root, field));
             }
 
             return fork;
@@ -199,10 +215,10 @@ namespace Csg.Data
         /// </summary>
         /// <param name="query">The query builder instance.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder Distinct(this IDbQueryBuilder query)
+        public static IDbQueryBuilder2 Distinct(this IDbQueryBuilder2 query)
         {
             var fork = query.Fork();
-            fork.SelectDistinct = true;
+            fork.Configuration.SelectDistinct = true;
             return fork;
         }
 
@@ -212,13 +228,12 @@ namespace Csg.Data
         /// <param name="query"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static IDbQueryBuilder Where(this IDbQueryBuilder query, Action<IDbQueryWhereClause> expression)
+        public static IDbQueryBuilder2 Where(this IDbQueryBuilder2 query, Action<IDbQueryWhereClause> expression)
         {
             query = query.Fork();
             var group = new DbQueryWhereClause(query.Root, SqlLogic.And);
 
             expression.Invoke(group);
-
             group.ApplyToQuery(query);
 
             return query;
@@ -230,14 +245,13 @@ namespace Csg.Data
         /// <param name="query"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static IDbQueryBuilder WhereAny(this IDbQueryBuilder query, Action<IDbQueryWhereClause> expression)
+        public static IDbQueryBuilder2 WhereAny(this IDbQueryBuilder2 query, Action<IDbQueryWhereClause> expression)
         {
             query = query.Fork();
             var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
 
             expression.Invoke(group);
-
-            query.AddFilter(group.Filters);
+            group.ApplyToQuery(query);
 
             return query;
         }
@@ -249,7 +263,7 @@ namespace Csg.Data
         /// <param name="collection"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static IDbQueryBuilder WhereAny<TItem>(this IDbQueryBuilder query, IEnumerable<TItem> collection, Action<IDbQueryWhereClause, TItem> expression)
+        public static IDbQueryBuilder2 WhereAny<TItem>(this IDbQueryBuilder2 query, IEnumerable<TItem> collection, Action<IDbQueryWhereClause, TItem> expression)
         {
             query = query.Fork();
             var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
@@ -261,7 +275,7 @@ namespace Csg.Data
                 group.AddFilter(innerGroup.Filters);
             }
 
-            query.AddFilter(group.Filters);
+            group.ApplyToQuery(query);
 
             return query;
         }
@@ -273,7 +287,7 @@ namespace Csg.Data
         /// <param name="collection"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static IDbQueryBuilder WhereAny<TItem>(this IDbQueryBuilder query, IList<TItem> list, Action<IDbQueryWhereClause, TItem, int> expression)
+        public static IDbQueryBuilder2 WhereAny<TItem>(this IDbQueryBuilder2 query, IList<TItem> list, Action<IDbQueryWhereClause, TItem, int> expression)
         {
             query = query.Fork();
             var group = new DbQueryWhereClause(query.Root, SqlLogic.Or);
@@ -285,7 +299,7 @@ namespace Csg.Data
                 group.AddFilter(innerGroup.Filters);
             }
 
-            query.AddFilter(group.Filters);
+            group.ApplyToQuery(query);
 
             return query;
         }
@@ -297,13 +311,13 @@ namespace Csg.Data
         /// <param name="query">The query builder instance</param>
         /// <param name="fields">A set of field expressions to order the query by.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder OrderBy(this IDbQueryBuilder query, params string[] fields) 
+        public static IDbQueryBuilder2 OrderBy(this IDbQueryBuilder2 query, params string[] fields) 
         {
             var fork = query.Fork();
 
             foreach (var field in fields)
             {
-                fork.OrderBy.Add(new Csg.Data.Sql.SqlOrderColumn() { ColumnName = field, SortDirection = Csg.Data.Sql.DbSortDirection.Ascending });
+                fork.Configuration.OrderBy.Add(new Csg.Data.Sql.SqlOrderColumn() { ColumnName = field, SortDirection = Csg.Data.Sql.DbSortDirection.Ascending });
             }
 
             return fork;
@@ -315,12 +329,12 @@ namespace Csg.Data
         /// <param name="query">The query builder instance</param>
         /// <param name="fields">A set of field expressions to order the query by.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder OrderByDescending(this IDbQueryBuilder query, params string[] fields)
+        public static IDbQueryBuilder2 OrderByDescending(this IDbQueryBuilder2 query, params string[] fields)
         {
             var fork = query.Fork();
             foreach (var field in fields)
             {
-                fork.OrderBy.Add(new Csg.Data.Sql.SqlOrderColumn() { ColumnName = field, SortDirection = Csg.Data.Sql.DbSortDirection.Descending });
+                fork.Configuration.OrderBy.Add(new Csg.Data.Sql.SqlOrderColumn() { ColumnName = field, SortDirection = Csg.Data.Sql.DbSortDirection.Descending });
             }
             return fork;
         }
@@ -331,10 +345,10 @@ namespace Csg.Data
         /// <param name="query">The query builder instance</param>
         /// <param name="timeout">The timeout value in seconds.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder Timeout(this IDbQueryBuilder query, int timeout) 
+        public static IDbQueryBuilder2 Timeout(this IDbQueryBuilder2 query, int timeout) 
         {
             var fork = query.Fork();
-            fork.CommandTimeout = timeout;
+            fork.Configuration.CommandTimeout = timeout;
             return fork;
         }
 
@@ -347,11 +361,11 @@ namespace Csg.Data
         /// <param name="dbType">The data type of the parameter.</param>
         /// <param name="size">The size of the parameter.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder AddParameter(this IDbQueryBuilder query, string name, object value, DbType dbType, int? size = null)
+        public static IDbQueryBuilder2 AddParameter(this IDbQueryBuilder2 query, string name, object value, DbType dbType, int? size = null)
         {
             var fork = query.Fork();
 
-            fork.Parameters.Add(new DbParameterValue() { 
+            fork.Configuration.Parameters.Add(new DbParameterValue() { 
                 ParameterName = name,
                 DbType = dbType,                
                 Value = value,

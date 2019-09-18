@@ -35,6 +35,14 @@ namespace Csg.Data
             return this;
         }
 
+        public void ApplyToQuery(IDbQueryBuilder2 builder)
+        {
+            if (this.Filters.Count > 0)
+            {
+                builder.Configuration.Filters.Add(this.Filters);
+            }
+        }
+
         public void ApplyToQuery(IDbQueryBuilder builder)
         {
             if (this.Filters.Count > 0)

@@ -12,14 +12,8 @@ namespace Csg.Data
     /// <summary>
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
-    public class DbQueryBuilder : SqlSelectBuilder, IDbQueryBuilder
+    public class DbQueryBuilder : SqlSelectBuilder, IDbQueryBuilder, IDbQueryBuilder2, IDbQueryBuilderOptions
     {
-        /// <summary>
-        /// Gets or sets the default <see cref="Abstractions.ISqlProvider"/> to use when rendering queries.
-        /// </summary>
-        /// <remarks>The default value is  SqlServer.SqlServerProvider.Default</remarks>
-        public static Abstractions.ISqlProvider DefaultProvider = SqlServer.SqlServerProvider.Instance;
-
         /// <summary>
         /// Gets or sets a value that indicates if the query builder will generate formatted SQL by default. Applies to all instances.
         /// </summary>
@@ -30,7 +24,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
         /// <param name="connection">The database connection.</param>
-        public DbQueryBuilder(string sql, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(sql, provider ?? DefaultProvider)
+        public DbQueryBuilder(string sql, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(sql, provider ?? SqlProviderFactory.DefaultProvider)
         {
             _connection = connection;
             _transaction = transaction;
@@ -44,7 +38,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
         /// <param name="connection">The database connection.</param>
-        public DbQueryBuilder(ISqlTable table, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(table, provider ?? DefaultProvider)
+        public DbQueryBuilder(ISqlTable table, System.Data.IDbConnection connection, System.Data.IDbTransaction transaction = null, Abstractions.ISqlProvider provider = null) : base(table, provider ?? SqlProviderFactory.DefaultProvider)
         {
             _connection = connection;
             _transaction = transaction;
@@ -146,7 +140,7 @@ namespace Csg.Data
         /// Creates a new instance of <see cref="DbQueryBuilder"/> configured in the same manner as the existing one.
         /// </summary>
         /// <returns></returns>
-        public IDbQueryBuilder Fork()
+        public DbQueryBuilder Fork()
         {
             var builder = new DbQueryBuilder(this.Table, this.Connection, this.Transaction);
             builder.Joins.AddRange(this.Joins);
@@ -174,5 +168,47 @@ namespace Csg.Data
         {
             return this.Render();
         }
+
+        IDbQueryBuilder IDbQueryBuilder.Fork() => this.Fork();        
+
+        #region Builder options
+
+        int IDbQueryBuilderOptions.CommandTimeout { get => this.CommandTimeout; set => this.CommandTimeout = value; }
+
+        bool IDbQueryBuilderOptions.SelectDistinct { get => this.SelectDistinct; set => this.SelectDistinct = value; }
+
+        IDbTransaction IDbQueryBuilderOptions.Transaction { get => this.Transaction; set => _transaction = value; }
+
+        IDbConnection IDbQueryBuilderOptions.Connection => this.Connection;
+
+        ICollection<DbParameterValue> IDbQueryBuilderOptions.Parameters => this.Parameters;
+
+        ICollection<ISqlFilter> IDbQueryBuilderOptions.Filters => this.Filters;
+
+        ICollection<ISqlJoin> IDbQueryBuilderOptions.Joins => this.Joins;
+
+        IList<SqlOrderColumn> IDbQueryBuilderOptions.OrderBy => this.OrderBy;
+
+        IList<ISqlColumn> IDbQueryBuilderOptions.SelectColumns => this.SelectColumns;
+
+        #endregion
+
+        #region querybuilder2
+
+        SqlStatement IDbQueryBuilder2.Render()
+        {
+            return this.Render();
+        }
+
+        IDbQueryBuilder2 IDbQueryBuilder2.Fork()
+        {
+            return this.Fork();
+        }
+
+        ISqlTable IDbQueryBuilder2.Root => this.Root;
+
+        IDbQueryBuilderOptions IDbQueryBuilder2.Configuration => this;
+
+        #endregion
     }
 }

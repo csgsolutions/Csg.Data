@@ -7,6 +7,9 @@ using System.Text;
 namespace Csg.Data.Sql
 {
 
+    /// <summary>
+    /// A SQL text writer for Microsoft SQL Server 2008 and later
+    /// </summary>
     public class SqlTextWriter : System.IO.TextWriter, ISqlTextWriter
     {
         private System.IO.TextWriter InnerWriter;
@@ -1009,6 +1012,8 @@ namespace Csg.Data.Sql
         public void Render(SqlDerivedTable src)
         {
             this.WriteBeginGroup();
+            // This needs to do something better than this. We need to remove all ending whitespace characters in reverse
+            // until we hit the first non-whitespace char or non-semicolon
             this.Write(src.CommandText.TrimEnd(new char[] { ';' }));
             this.WriteEndGroup();
             this.WriteSpace();
