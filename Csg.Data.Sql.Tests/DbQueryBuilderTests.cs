@@ -67,7 +67,7 @@ namespace Csg.Data.Sql.Tests
                 Size = 4,
                 Value = 123
             });
-            query.Distinct = true;
+            query.SelectDistinct = true;
             query.CommandTimeout = 123;
 
             var fork = query.Fork();
@@ -78,7 +78,7 @@ namespace Csg.Data.Sql.Tests
             query.PagingOptions = null;
             query.Parameters.Clear();
             query.CommandTimeout = 999;
-            query.Distinct = false;
+            query.SelectDistinct = false;
             query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("blah2")));
 
             Assert.AreEqual(1, fork.OrderBy.Count);
@@ -86,7 +86,7 @@ namespace Csg.Data.Sql.Tests
             Assert.AreEqual(1, fork.Parameters.Count);
             Assert.AreEqual(10, fork.PagingOptions.Value.Offset);
             Assert.AreEqual(100, fork.PagingOptions.Value.Limit);
-            Assert.AreEqual(true, fork.Distinct);
+            Assert.AreEqual(true, fork.SelectDistinct);
             Assert.AreEqual(123, fork.CommandTimeout);
         }
     }

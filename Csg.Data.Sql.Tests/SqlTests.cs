@@ -222,7 +222,7 @@ namespace TestProject
         [TestMethod]
         public void TestDateFilter()
         {
-            string test = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE (CAST([t0].[CreateDate] as date)>=@p0 AND CAST([t0].[CreateDate] as date)<=@p1) ORDER BY [WidgetName];";
+            string expectedSql = "SELECT * FROM (SELECT WidgetName,WidgetID FROM DimWidget) AS [t0] WHERE (CAST([t0].[CreateDate] as date)>=@p0 AND CAST([t0].[CreateDate] as date)<=@p1) ORDER BY [WidgetName];";
             SqlSelectBuilder q = new SqlSelectBuilder("SELECT WidgetName,WidgetID FROM DimWidget ORDER BY [WidgetName];");
             SqlStatement s;
             SqlFilterCollection filters = new SqlFilterCollection();
@@ -555,7 +555,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             ((ISqlTable)table).Render(writer);
 
-            Assert.AreEqual("(SELECT * FROM [Foo]) AS [" + args.TableName(table) + "]", writer.ToString());
+            Assert.AreEqual("(SELECT * FROM [Foo]) AS [" + writer.BuildArguments.TableName(table) + "]", writer.ToString());
         }
 
 
