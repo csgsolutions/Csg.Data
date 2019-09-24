@@ -583,6 +583,19 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         }
 
         [TestMethod]
+        public void TestRawColumn()
+        {
+            var query = new SqlSelectBuilder("[Foo]");
+
+            query.Columns.Add(new SqlRawColumn("NULL", "Nothing"));
+            query.Columns.Add(new SqlRawColumn("1234"));
+
+            var stmt = query.Render();
+
+            Assert.AreEqual("SELECT NULL AS [Nothing],1234 FROM [Foo] AS [t0];", stmt.CommandText);
+        }
+
+        [TestMethod]
         public void TestRawFilter()
         {
             string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ((SELECT COUNT(*) FROM dbo.WidgetComment WHERE WidgetID = [t0].WidgetID) > @p0);";
