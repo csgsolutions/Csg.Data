@@ -12,7 +12,7 @@ namespace Csg.Data
     /// <summary>
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
-    public class DbQueryBuilder : IDbQueryBuilder
+    public class DbQueryBuilder : IDbQueryBuilder, ISqlStatementElement
     { 
         /// <summary>
         /// Gets or sets a value that indicates if the query builder will generate formatted SQL by default. Applies to all instances.
@@ -145,14 +145,8 @@ namespace Csg.Data
         /// <returns></returns>
         public SqlStatement Render(bool? generateFormattedSql = null)
         {
-            var builder = new SqlSelectBuilder(this.Root, this.Joins, this.SelectColumns, this.Filters, this.OrderBy)
-            {
-                SelectDistinct = this.Distinct,
-                GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
-                PagingOptions = this.PagingOptions
-            };
+            var builder = this.CreateSelectBuilder(generateFormattedSql);
 
-            //TODO: To support xplat db platforms, we would need to pass in a writer and build args here
             var stmt = builder.Render();
 
             foreach(var param in this.Parameters)
@@ -161,6 +155,21 @@ namespace Csg.Data
             }
 
             return stmt;
+        }
+
+        /// <summary>
+        /// Gets a SQL statement for the given query.
+        /// </summary>
+        /// <param name="generateFormattedSql">Indicates if SQL should be indented, have new-line characters, etc.</param>
+        /// <returns></returns>
+        protected SqlSelectBuilder CreateSelectBuilder(bool? generateFormattedSql = null)
+        {
+            return new SqlSelectBuilder(this.Root, this.Joins, this.SelectColumns, this.Filters, this.OrderBy)
+            {
+                SelectDistinct = this.Distinct,
+                GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
+                PagingOptions = this.PagingOptions
+            };
         }
 
         /// <summary>
@@ -209,6 +218,11 @@ namespace Csg.Data
         SqlStatement IDbQueryBuilder.Render()
         {
             return this.Render();
+        }
+
+        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+        {
+            this.CreateSelectBuilder(false).Render(writer, args);
         }
     }
 }

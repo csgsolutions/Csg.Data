@@ -20,25 +20,34 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            var resolvedArguments = this.Arguments.Select(arg =>
+            string[] resolvedArguments = new string[0];
+
+            if (this.Arguments != null)
             {
-                if (arg is ISqlTable table)
+                resolvedArguments = this.Arguments.Select(arg =>
                 {
-                    return writer.FormatQualifiedIdentifierName(args.TableName(table));
-                }
-                else if (arg is System.Data.Common.DbParameter dbParam)
-                {
-                    return string.Concat("@", args.CreateParameter(dbParam.Value, dbParam.DbType));
-                }
-                else if (arg is DbParameterValue paramValue)
-                {
-                    return string.Concat("@", args.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
-                }
-                else
-                {
-                    return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
-                }
-            }).ToArray();
+                    if (arg is ISqlTable table)
+                    {
+                        return writer.FormatQualifiedIdentifierName(args.TableName(table));
+                    }
+                    else if (arg is System.Data.Common.DbParameter dbParam)
+                    {
+                        return string.Concat("@", dbParam.ParameterName);
+                    }
+                    else if (arg is DbParameterValue paramValue)
+                    {
+                        return string.Concat("@", args.CreateParameter(paramValue.ParameterName, paramValue.DbType, paramValue.Size));
+                    }
+                    else if (arg is string)
+                    {
+                        return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                    }
+                    else
+                    {
+                        return string.Concat("@", args.CreateParameter(arg, System.Data.DbType.String));
+                    }
+                }).ToArray();
+            }
 
             writer.WriteBeginGroup();
             writer.Write(string.Format(this.SqlText, resolvedArguments));

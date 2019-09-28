@@ -243,13 +243,14 @@ namespace Csg.Data.Sql
 
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.WriteBeginGroup();
+            this.CompileInternal(args);
+            //writer.WriteBeginGroup();
             this.RenderInternal(writer, args);
-            writer.WriteEndGroup();
-            writer.WriteSpace();
-            writer.Write(SqlConstants.AS);
-            writer.WriteSpace();
-            writer.Write(SqlDataColumn.Format(args.TableName(this)));
+            //writer.WriteEndGroup();
+            //writer.WriteSpace();
+            //writer.Write(SqlConstants.AS);
+            //writer.WriteSpace();
+            //writer.Write(SqlDataColumn.Format(args.TableName(this)));
         }
     }
 }

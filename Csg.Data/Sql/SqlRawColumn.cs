@@ -13,18 +13,21 @@ namespace Csg.Data.Sql
         /// <summary>
         /// Initializes a new instance with the given value.
         /// </summary>
-        /// <param name="value"></param>
-        public SqlRawColumn(string value)
+        /// <param name="value">The raw value expression to be rendered</param>
+        /// <param name="args">Argument values referenced in the value</param>
+        public SqlRawColumn(string value, params object[] args)
         {
             this.Value = value;
+            this.Arguments = args;
         }
 
         /// <summary>
         /// Initializes a new instance with the given value and alias.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="alias"></param>
-        public SqlRawColumn(string value, string alias)
+        /// <param name="value">The raw value expression to be rendered</param>
+        /// <param name="alias">The column alias to asssign</param>
+        /// <param name="args">Argument values referenced in the value</param>
+        public SqlRawColumn(string value, string alias, params object[] args)
         {
             this.Value = value;
             this.Alias = alias;
@@ -57,6 +60,11 @@ namespace Csg.Data.Sql
         public string Alias { get; set; }
 
         /// <summary>
+        /// A collection of arguments that will be used to replace string format placeholders {0}, {1}, etc. Argument values can be tables, parameters, or literal values.
+        /// </summary>
+        public object[] Arguments { get; set; }
+
+        /// <summary>
         /// Gets the column alias to use when rendering the SELECT statement.
         /// </summary>
         /// <returns>The name of the column to use.</returns>
@@ -65,6 +73,7 @@ namespace Csg.Data.Sql
             return this.Alias;
         }
 
+
         /// <summary>
         /// Renders the raw value to the writer with its alias, if it exists
         /// </summary>
@@ -72,7 +81,8 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         public void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.Write(this.Value);
+            RenderValueExpression(writer, args);
+
             if (this.Alias != null)
             {
                 writer.WriteSpace();
@@ -89,7 +99,36 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         public void RenderValueExpression(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.Write(this.Value);
+            string[] resolvedArguments = new string[0];
+
+            if (this.Arguments != null)
+            {
+                resolvedArguments = this.Arguments.Select(arg =>
+                {
+                    if (arg is ISqlTable table)
+                    {
+                        return writer.FormatQualifiedIdentifierName(args.TableName(table));
+                    }
+                    else if (arg is System.Data.Common.DbParameter dbParam)
+                    {
+                        return string.Concat("@", dbParam.ParameterName);
+                    }
+                    else if (arg is DbParameterValue paramValue)
+                    {
+                        return string.Concat("@", paramValue.ParameterName);
+                    }
+                    else if (arg is string)
+                    {
+                        return string.Concat("@", args.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                    }
+                    else
+                    {
+                        return string.Concat("@", args.CreateParameter(arg, System.Data.DbType.String));
+                    }
+                }).ToArray();
+            }
+
+            writer.Write(string.Format(this.Value, resolvedArguments));
         }
     }
 }
