@@ -688,6 +688,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             var stmt = collection.RenderBatch();
 
+            Assert.AreEqual(3, stmt.Count);
             Assert.AreEqual(3, stmt.Parameters.Count);
             Assert.AreEqual(1, stmt.Parameters.First().Value);
             Assert.AreEqual(2, stmt.Parameters.Skip(1).First().Value);
