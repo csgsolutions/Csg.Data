@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Csg.Data
 {
+    /// <summary>
+    /// Extensions for adding filters to a <see cref="IDbQueryWhereClause"/>.
+    /// </summary>
     public static class DbWhereClauseExtensions
     {
         /// <summary>

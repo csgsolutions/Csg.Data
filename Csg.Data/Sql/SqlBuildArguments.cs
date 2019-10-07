@@ -3,9 +3,18 @@ using System.Collections.Generic;
 
 namespace Csg.Data.Sql
 {
+    /// <summary>
+    /// The arguments object tracks the parameters and tables used in a query rendering process.
+    /// </summary>
     public class SqlBuildArguments
     {
+        /// <summary>
+        /// The parameter prefix that will be used when rendering parameter names.
+        /// </summary>
         public const string SqlParameterPrefix = "@";
+        /// <summary>
+        /// The format of a table name that will be used when rendering.
+        /// </summary>
         public const string SqlTableNameFormat = "t{0}";
 
         private List<DbParameterValue> _params;        

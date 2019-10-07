@@ -106,5 +106,31 @@ namespace TestProject
             Assert.AreEqual(expectSql, stmt.CommandText);
             Assert.AreEqual(2, stmt.Parameters.Count);
         }
+
+        [TestMethod]
+        public void TestFluentPagingOptions()
+        {
+            string test = "SELECT * FROM [dbo].[Product] AS [t0] ORDER BY [PersonID] ASC OFFSET 50 ROWS FETCH NEXT 10 ROWS ONLY;";
+           
+            var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .OrderBy("PersonID")
+                .Limit(10, 50)
+                .Render();
+
+            Assert.AreEqual(test, stmt.CommandText, true);
+        }
+
+        [TestMethod]
+        public void TestFluentLimit_WithoutAnyOrderBy_Throws()
+        {
+            var ex = Assert.ThrowsException<InvalidOperationException>(() =>
+            {
+                var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .Limit(10, 50);
+            });
+
+            Assert.AreEqual("A query cannot have a limit or offset without an order by expression.", ex.Message);
+        }
+
     }
 }

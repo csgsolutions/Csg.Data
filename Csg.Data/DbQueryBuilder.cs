@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Csg.Data
     /// <summary>
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
+    [DebuggerDisplay("CommandText = {Render().CommandText}, Parameters = {ParameterString()}")]
     public class DbQueryBuilder : IDbQueryBuilder, ISqlStatementElement
     { 
         /// <summary>
@@ -37,7 +39,7 @@ namespace Csg.Data
             this.SelectColumns = new List<ISqlColumn>();
             this.Joins = new List<ISqlJoin>();
             this.Filters = new List<ISqlFilter>();
-            this.OrderBy = new List<SqlOrderColumn>();
+            this.OrderBy = new List<SqlOrderColumn>();            
         }
 
         /// <summary>
@@ -223,6 +225,11 @@ namespace Csg.Data
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
             this.CreateSelectBuilder(false).Render(writer, args);
+        }
+
+        internal string ParameterString()
+        {
+            return string.Join(", ", this.Render().Parameters.Select(s => s.ParameterName + "=" +s.Value));
         }
     }
 }

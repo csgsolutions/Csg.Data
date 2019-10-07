@@ -267,7 +267,7 @@ namespace Csg.Data
         /// Adds a set of WHERE clause conditions by looping over the given collection, and then joining them together with the given logic.
         /// </summary>
         /// <param name="query"></param>
-        /// <param name="collection"></param>
+        /// <param name="list"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
         public static IDbQueryBuilder WhereAny<TItem>(this IDbQueryBuilder query, IList<TItem> list, Action<IDbQueryWhereClause, TItem, int> expression)
@@ -358,7 +358,28 @@ namespace Csg.Data
             return fork;
         }
 
-        
+        /// <summary>
+        /// Adds limit or offset conditions to the query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="limit">The maximum number of rows to return.</param>
+        /// <param name="offset">The zero-based index of the first row to return.</param>
+        /// <returns></returns>
+        public static IDbQueryBuilder Limit(this IDbQueryBuilder query, int limit=0, int offset=0)
+        {
+            if (query.OrderBy.Count <= 0)
+            {
+                throw new InvalidOperationException("A query cannot have a limit or offset without an order by expression.");    
+            }
+
+            query = query.Fork();
+            query.PagingOptions = new SqlPagingOptions()
+            {
+                Limit = limit,
+                Offset = offset
+            };
+            return query;
+        }       
 
     }
 }
