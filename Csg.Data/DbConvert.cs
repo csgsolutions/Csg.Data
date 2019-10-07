@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Csg.Data
 {
+    /// <summary>
+    /// Utilities for converting and mapping various database related types.
+    /// </summary>
     public static class DbConvert
     {
         /// <summary>

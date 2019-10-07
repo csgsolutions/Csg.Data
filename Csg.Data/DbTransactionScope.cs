@@ -13,6 +13,11 @@ namespace Csg.Data
     {
         private readonly IDbScope _scope;
 
+        /// <summary>
+        /// Initializes a transaction scope with the given isolation level.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="isoLevel"></param>
         public DbTransactionScope(IDbScope scope, IsolationLevel isoLevel)
         {
             _scope = scope;
@@ -42,6 +47,9 @@ namespace Csg.Data
             }
         }
 
+        /// <summary>
+        /// Rolls back the underlying transaction if <see cref="OwnsTransaction"/> is true.
+        /// </summary>
         public void Dispose()
         {
             if (this.OwnsTransaction)

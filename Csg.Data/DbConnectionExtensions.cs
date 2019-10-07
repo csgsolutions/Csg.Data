@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Csg.Data
 {
+    /// <summary>
+    /// Extension methods for database connections
+    /// </summary>
     public static class DbConnectionExtensions
     {
         /// <summary>
