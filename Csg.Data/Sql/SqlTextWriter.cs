@@ -404,7 +404,7 @@ namespace Csg.Data.Sql
             //https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-2017#using-offset-and-fetch-to-limit-the-rows-returned
             //e.g. OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY
 
-            if (options.Offset > 0)
+            if (options.Offset > 0 || options.Limit > 0)
             {
                 this.Write($" OFFSET {options.Offset} ROWS");
             }
