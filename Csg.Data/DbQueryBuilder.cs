@@ -198,12 +198,12 @@ namespace Csg.Data
             var builder = new DbQueryBuilder(this.Connection, this.Transaction);
             builder.CommandTimeout = this.CommandTimeout;
             builder.Root = this.Root;
-            builder.Joins = new List<ISqlJoin>(this.Joins);
-            builder.Filters = new List<ISqlFilter>(this.Filters);
-            builder.SelectColumns = new List<ISqlColumn>(this.SelectColumns);
+            builder.Joins = new Internal.ChildCollection<ISqlJoin>(this.Joins);
+            builder.Filters = new Internal.ChildCollection<ISqlFilter>(this.Filters);
+            builder.SelectColumns = new Internal.ChildList<ISqlColumn>(this.SelectColumns);
             builder.Distinct = this.Distinct;
-            builder.Parameters = new List<DbParameterValue>(this.Parameters);
-            builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
+            builder.Parameters = new Internal.ChildCollection<DbParameterValue>(this.Parameters);
+            builder.OrderBy = new Internal.ChildList<SqlOrderColumn>(this.OrderBy);
             builder.PagingOptions = this.PagingOptions;
             return builder;
         }
