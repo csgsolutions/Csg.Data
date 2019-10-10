@@ -19,7 +19,7 @@ namespace TestProject
         [TestMethod]
         public void TestFluentJoinMultipleFilterCollectionsWithOrLogic()
         {
-            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (([t0].[IsActive]=@p0)) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))));";
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE ([t0].[IsActive]=@p0) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))));";
             IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
 
             var listOfThings1 = new string[] { "a", "b", "c" };
@@ -47,7 +47,7 @@ namespace TestProject
         [TestMethod]
         public void TestFluentJoinMultipleFilterCollectionsWithOrLogicIndexed()
         {
-            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (([t0].[IsActive]=@p0)) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))));";
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE ([t0].[IsActive]=@p0) AND ((([t0].[ProductCategoryID]=@p1) AND ([t0].[SupplierID]=@p2) AND ([t0].[ThingName] IN (@p3,@p4,@p5))) OR (([t0].[ProductCategoryID]=@p6) AND ([t0].[SupplierID]=@p7) AND ([t0].[ThingName] IN (@p8,@p9,@p10))));";
             IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
 
             var listOfThings1 = new string[] { "a", "b", "c" };
@@ -75,8 +75,8 @@ namespace TestProject
         [TestMethod]
         public void TestFluentFieldInSubQuery()
         {
-            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (([t0].[ProductID] IN (SELECT [t1].[ProductID] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0) AND ([t1].[AttributeValue] IN (@p1,@p2))))));";
-            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE (([t0].[ProductID] IN (SELECT [t1].[ProductID] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t0].[AttributeName]=@p0) AND ([t0].[AttributeValue] IN (@p1,@p2))))));
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE ([t0].[ProductID] IN (SELECT [t1].[ProductID] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0) AND ([t1].[AttributeValue] IN (@p1,@p2)))));";
+            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE ([t0].[ProductID] IN (SELECT [t1].[ProductID] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t0].[AttributeName]=@p0) AND ([t0].[AttributeValue] IN (@p1,@p2)))));
             IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
 
             builder = builder.Where(where => where.FieldInSubQuery("ProductID", "dbo.ProductAttribute", "ProductID",
@@ -93,8 +93,8 @@ namespace TestProject
         [TestMethod]
         public void TestFluentSubQueryCount()
         {
-            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0))) > @p1));";
-            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE (((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE (([t1].[AttributeName]=@p0))) > @p1));
+            var expectSql = "SELECT * FROM [dbo].[Product] AS [t0] WHERE ((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE ([t1].[AttributeName]=@p0)) > @p1);";
+            //               SELECT * FROM [dbo].[Product] AS [t0] WHERE ((SELECT COUNT([t1].[ProductID]) AS [Cnt] FROM [dbo].[ProductAttribute] AS [t1] WHERE ([t1].[AttributeName]=@p0)) > @p1);
             IDbQueryBuilder builder = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection());
 
             builder = builder.Where(where => where.SubQueryCount("dbo.ProductAttribute", "ProductID", SqlOperator.GreaterThan, 1,

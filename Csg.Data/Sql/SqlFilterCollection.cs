@@ -62,9 +62,19 @@ namespace Csg.Data.Sql
         {
             if (_innerList.Count <= 0)
                 return;
-            writer.WriteBeginGroup();
-            writer.RenderAll(this, args, string.Concat(" ",((this.Logic == SqlLogic.And) ? SqlConstants.AND : SqlConstants.OR).ToString().ToUpper()," "));
-            writer.WriteEndGroup();
+
+            if (this.Count > 1)
+            {
+                writer.WriteBeginGroup();
+            }
+
+            writer.RenderAll(this, args, string.Concat(" ", ((this.Logic == SqlLogic.And) ? SqlConstants.AND : SqlConstants.OR).ToString().ToUpper(), " "));
+
+            if (this.Count > 1)
+            {
+                writer.WriteEndGroup();
+            }
+            
         }
 
         #endregion
