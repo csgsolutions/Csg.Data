@@ -2,7 +2,7 @@
   <PropertyGroup>
     <BuildNumber>$(BUILD_BUILDNUMBER)</BuildNumber>
     <VersionPrefix>3.3.0</VersionPrefix>
-    <VersionSuffix>preview</VersionSuffix>
+    <VersionSuffix>rc1</VersionSuffix>
     <PackageVersion Condition="'$(VersionSuffix)' == '' ">$(VersionPrefix)</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t0000</BuildNumber>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
