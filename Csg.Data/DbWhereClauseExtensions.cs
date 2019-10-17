@@ -372,5 +372,15 @@ namespace Csg.Data
             where.AddFilter(sqf);
             return where;
         }
+
+        public static IDbQueryWhereClause Any(this Csg.Data.IDbQueryWhereClause where, Action<IDbQueryWhereClause> whereClause)
+        {
+            var orWhere = new Csg.Data.DbQueryWhereClause(where.Root, SqlLogic.Or);
+
+            whereClause(orWhere);
+            where.AddFilter(orWhere.Filters);
+
+            return where;
+        }
     }
 }

@@ -121,6 +121,18 @@ namespace TestProject
         }
 
         [TestMethod]
+        public void TestFluentAny()
+        {
+            string test = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (([t0].[ProductID]=@p0) OR ([t0].[ProductID]=@p1));";
+
+            var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .Where(x => x.Any(y => y.FieldEquals("ProductID", 1).FieldEquals("ProductID",2)))
+                .Render();
+
+            Assert.AreEqual(test, stmt.CommandText, true);
+        }
+
+        [TestMethod]
         public void TestFluentLimit_WithoutAnyOrderBy_Throws()
         {
             var ex = Assert.ThrowsException<InvalidOperationException>(() =>
