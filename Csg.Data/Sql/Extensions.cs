@@ -62,5 +62,31 @@ namespace Csg.Data.Sql
 
             return new SqlStatementBatch(count, writer.ToString(), args.Parameters);
         }
+
+        /// <summary>
+        /// Creates a column referencing the given table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <param name="alias"></param>
+        /// <returns></returns>
+        public static ISqlColumn Column(this ISqlTable table, string columnName, string alias)
+        {
+            return new SqlColumn(table, columnName, alias);
+        }
+
+        /// <summary>
+        /// Creates a set of columns referencing the given table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="columnExpressions"></param>
+        /// <returns></returns>
+        public static IEnumerable<ISqlColumn> Columns(this ISqlTable table, params string[] columnExpressions)
+        {
+            foreach (var columnExpr in columnExpressions)
+            {
+                yield return SqlColumn.Parse(table, columnExpr);
+            }
+        }
     }
 }

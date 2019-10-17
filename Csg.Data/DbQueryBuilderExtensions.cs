@@ -174,18 +174,48 @@ namespace Csg.Data
         }
 
         /// <summary>
-        /// Populates the field select list for the resulting SELECT statement with the given field names.
+        /// Adds the given fields to the selection list.
         /// </summary>
         /// <param name="query">The query builder instance.</param>
         /// <param name="fields">A set of field names to select.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder Select(this IDbQueryBuilder query, IEnumerable<string> fields)
+        /// <remarks>Adds to existing selections.</remarks>
+        public static IDbQueryBuilder Select(this IDbQueryBuilder query, params ISqlColumn[] fields)
+        {
+            return Select(query, fields, replace: false);
+        }
+
+        /// <summary>
+        /// Adds the given fields to the selection list, optionally replacing existing selections.
+        /// </summary>
+        /// <param name="query">The query builder instance.</param>
+        /// <param name="fields">A set of field names to select.</param>
+        /// <param name="replace">If true, replaces any existing selections, if false, adds to existing selectoins.</param>
+        /// <returns></returns>
+        public static IDbQueryBuilder Select(this IDbQueryBuilder query, IEnumerable<string> fields, bool replace = false)
+        {
+            return Select(query, fields.Select(f => SqlColumn.Parse(query.Root, f)), replace: replace);
+        }
+
+        /// <summary>
+        /// Adds the given fields to the selection list, optionally replacing existing selections.
+        /// </summary>
+        /// <param name="query">The query builder instance.</param>
+        /// <param name="fields">A set of field names to select.</param>
+        /// <param name="replace">If true, replaces any existing selections, if false, adds to existing selectoins.</param>
+        /// <returns></returns>
+        public static IDbQueryBuilder Select(this IDbQueryBuilder query, IEnumerable<ISqlColumn> fields, bool replace = false)
         {
             var fork = query.Fork();
 
+            if (replace)
+            {
+                query.SelectColumns.Clear();
+            }
+
             foreach (var field in fields)
             {
-                fork.SelectColumns.Add(SqlColumn.Parse(fork.Root, field));
+                fork.SelectColumns.Add(field);
             }
 
             return fork;
@@ -330,6 +360,11 @@ namespace Csg.Data
         /// <returns></returns>
         public static IDbQueryBuilder Timeout(this IDbQueryBuilder query, int timeout) 
         {
+            if (timeout <= 0)
+            {
+                throw new ArgumentException(ErrorMessage.TimeoutValueMustBeGreater, nameof(timeout));
+            }
+
             var fork = query.Fork();
             fork.CommandTimeout = timeout;
             return fork;
@@ -369,7 +404,7 @@ namespace Csg.Data
         {
             if (query.OrderBy.Count <= 0)
             {
-                throw new InvalidOperationException("A query cannot have a limit or offset without an order by expression.");    
+                throw new InvalidOperationException(ErrorMessage.LimitOrOffsetWithoutOrderBy);    
             }
 
             query = query.Fork();
