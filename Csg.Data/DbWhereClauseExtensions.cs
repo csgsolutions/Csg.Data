@@ -16,7 +16,6 @@ namespace Csg.Data
         /// <summary>
         /// Creates a WHERE clause equality comparison for a field and value in the form ([fieldName] = [equalsValue])
         /// </summary>
-        /// <typeparam name="T">The type of the query builder.</typeparam>
         /// <typeparam name="TValue">The data type of the right operand</typeparam>
         /// <param name="where">The query builder instance</param>
         /// <param name="fieldName">The name of the field to use as the expression on the left of the operator.</param>
@@ -300,11 +299,12 @@ namespace Csg.Data
         /// <summary>
         /// Adds a {columnName} IN | NOT IN (SELECT {subQueryColumnName} FROM {sqlText} WHERE {SubQueryConditions})
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="where"></param>
         /// <param name="columnName"></param>
-        /// <param name="subQuery"></param>
-        /// <param name="subQueryColumn"></param>
+        /// <param name="sqlText"></param>
+        /// <param name="subQueryColumnName"></param>
+        /// <param name="condition"></param>
+        /// <param name="subQueryFilters"></param>
         /// <returns></returns>
         internal static IDbQueryWhereClause FieldSubQuery(IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, SubQueryMode condition, Action<IDbQueryWhereClause> subQueryFilters)
         {

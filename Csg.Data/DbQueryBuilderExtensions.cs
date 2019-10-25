@@ -320,7 +320,6 @@ namespace Csg.Data
         /// <summary>
         /// Adds ORDER BY fields to a query for ascending sort.
         /// </summary>
-        /// <typeparam name="T">The type of the query builder.</typeparam>
         /// <param name="query">The query builder instance</param>
         /// <param name="fields">A set of field expressions to order the query by.</param>
         /// <returns></returns>

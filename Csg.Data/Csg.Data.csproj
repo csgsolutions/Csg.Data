@@ -3,20 +3,20 @@
   <PropertyGroup>
     <Description>Tools for data access and database query generation.</Description>
     <TargetFrameworks>net461;net451;net472;netstandard2.0</TargetFrameworks>
-    <DebugType>portable</DebugType>
-    <AssemblyName>Csg.Data</AssemblyName>
-    <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Csg.Data</PackageId>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/csgsolutions/Csg.Data.git</RepositoryUrl>
+    <AssemblyName>Csg.Data</AssemblyName>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
-
+    
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net461|AnyCPU'">
+    <NoWarn>1701;1702;</NoWarn>
+  </PropertyGroup>
+    
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.1.0" />
   </ItemGroup>
@@ -40,7 +40,7 @@
     <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
     <PackageReference Include="System.Reflection" Version="4.1.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Update="ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>
