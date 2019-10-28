@@ -132,5 +132,17 @@ namespace TestProject
             Assert.AreEqual("A query cannot have a limit or offset without an order by expression.", ex.Message);
         }
 
+        [TestMethod]
+        public void TestFluentExists()
+        {
+            string test = "SELECT * FROM [dbo].[Product] AS [t0] WHERE (EXISTS (SELECT 1 FROM [dbo].[ProductColor] AS [t1] WHERE (([t1].[ProductID]=@p0) AND ([t1].[Color]=@p1))));";
+                         //SELECT * FROM [dbo].[Product] AS [t0] WHERE (EXISTS (SELECT 1 FROM [dbo].[ProductColor] AS [t1] WHERE (([t1].[ProductID]=@p0) AND ([t1].[Color]=@p1))));
+            var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .Where(x => x.Exists("dbo.ProductColor", sub => sub.FieldEquals("ProductID", 1).FieldEquals("Color","Red")))
+                .Render();
+
+            Assert.AreEqual(test, stmt.CommandText, true);
+        }
+
     }
 }

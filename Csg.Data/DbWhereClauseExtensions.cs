@@ -286,13 +286,31 @@ namespace Csg.Data
         /// <summary>
         /// Adds an EXISTS(selectStatement) filter critera.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="where"></param>
         /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause Exists<T>(this IDbQueryWhereClause where, SqlSelectBuilder innerQuery)
+        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, SqlSelectBuilder innerQuery)
         {
             where.AddFilter(new Csg.Data.Sql.SqlExistFilter(innerQuery));
+            return where;
+        }
+
+        /// <summary>
+        /// Adds an EXISTS(selectStatement) filter critera.
+        /// </summary>
+        /// <param name="where"></param>
+        /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, string sqlText, Action<IDbQueryWhereClause> subQueryFilters)
+        {
+            var innerTable = SqlTable.Create(sqlText);
+            var innerQuery = new SqlSelectBuilder(innerTable);
+            var innerWhere = new DbQueryWhereClause(innerTable, SqlLogic.And);
+            innerQuery.Columns.Add(new SqlRawColumn("1"));
+            subQueryFilters(innerWhere);
+            innerWhere.ApplyTo(innerQuery.Filters);            
+            where.AddFilter(new Sql.SqlExistFilter(innerQuery));
+
             return where;
         }
 
