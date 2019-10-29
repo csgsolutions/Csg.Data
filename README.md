@@ -203,6 +203,18 @@ var query1 = connection.QueryBuilder("dbo.Product")
 // SELECT * FROM dbo.Product WHERE (SELECT COUNT(ProductID) FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color') >= 2;
 ```
 
+### Sub-Query Exists Filters
+```WHERE EXISTS (<query expression>)``` filters can be built using Exists().
+
+```csharp
+var query1 = connection.QueryBuilder("dbo.Product")
+    .Where(where => where.Exists("dbo.ProductAttribute",
+        subWhere => subWhere.FieldEquals("ProductID", builder.Root, "ProductID").FieldMatch("AttributeName", SqlOperator.Equal, "Color")
+    ));
+// SELECT * FROM dbo.Product WHERE EXISTS (SELECT 1 FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color');
+```
+
+
 ### Creating multiple groups of filters with OR logic
 
 Multiple conditions can be added using a single .Where() method, but each of these conditions will be joined
