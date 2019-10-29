@@ -1,9 +1,19 @@
-# Csg.Data
-Tools for data access and database query generation.
+# CSG QueryBuilder and Data Tools
+This package provides an SQL query builder for generating dynamic-SQL statements in .NET and .NET Core applications.
+
+# CI and Pre-Release Feed
+
+[![Build status](https://ci.appveyor.com/api/projects/status/hx4so74ja1y42lfw/branch/master?svg=true)](https://ci.appveyor.com/project/jusbuc2k/csg-data/branch/master)
+
+Early releases can be found on the [CSG Public MyGet feed](https://www.myget.org/feed/csgsolutions/package/nuget/Csg.Data).
+
+# Get Started
+Install the [NuGet package](https://www.nuget.org/packages/Csg.Data/)
 
 # APIs
 
-You can use the QueryBuilder using the Fluent API or the native object model.
+You can use the QueryBuilder using the Fluent API or the native object model. You may also want to use
+the QueryBuilder together with [Csg.Data.Dapper](https://github.com/csgsolutions/csg.data.dapper).
 
 ## Fluent API
 
