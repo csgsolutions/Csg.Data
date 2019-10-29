@@ -10,7 +10,6 @@
     <Company>CSG</Company>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/csgsolutions/Csg.Data</PackageProjectUrl>
-    <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>false</IncludeSymbols>
     <DebugSymbols>true</DebugSymbols>
