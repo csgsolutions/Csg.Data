@@ -37,7 +37,7 @@ namespace Csg.Data
         {
             if (this.OwnsTransaction)
             {
-                _scope.Transaction.Commit();
+                _scope.Commit();
                 this.OwnsTransaction = false;
                 return true;
             }
@@ -54,7 +54,7 @@ namespace Csg.Data
         {
             if (this.OwnsTransaction)
             {
-                _scope.Transaction.Rollback();
+                _scope.RollbackTransaction();
             }
         }
     }
