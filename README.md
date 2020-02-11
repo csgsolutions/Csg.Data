@@ -378,18 +378,18 @@ var query = connection.QueryBuilder("dbo.Product");
 var listOfThings1 = new string[] { "a", "b", "c" };
 var listOfThings2 = new string[] { "d", "e", "f" };
 
-var listOfCriteria = new Tuple<int, int, string[]>[]
+var listOfCriteria = new List<(int ProductCategoryID, int SupplierID, string[] Names)>
 {
-    new Tuple<int,int,string[]>(123, 456, listOfThings1),
-    new Tuple<int,int,string[]>(123, 456, listOfThings2)
+    (ProductCategoryID: 123, SupplierID: 456, Names: listOfThings1),
+    (ProductCategoryID: 999, SupplierID: 888, Names: listOfThings2),
 };
 
-query = query.Where(x => x.FieldEquals("Foo", "Bar"));
-query = query.WhereAny(
+builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
+builder = builder.WhereAny(
     listOfCriteria,
-    (x, f, i) => x.FieldEquals("ProductCategoryID", f.Item1)
-            .FieldEquals("SupplierID", f.Item2)
-            .FieldIn("ThingName", f.Item3)
+    (x, f) => x.FieldEquals("ProductCategoryID", f.ProductCategoryID)
+            .FieldEquals("SupplierID", f.SupplierID)
+            .FieldIn("ThingName", f.Names)
 );
 
 
