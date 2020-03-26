@@ -217,6 +217,8 @@ namespace Csg.Data
             builder.Parameters = new List<DbParameterValue>(this.Parameters);
             builder.OrderBy = new List<SqlOrderColumn>(this.OrderBy);
             builder.PagingOptions = this.PagingOptions;
+            builder.Prefix = this.Prefix;
+            builder.Suffix = this.Suffix;
             return builder;
         }
 

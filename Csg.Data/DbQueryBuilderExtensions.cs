@@ -413,7 +413,33 @@ namespace Csg.Data
                 Offset = offset
             };
             return query;
-        }       
+        }
+
+        /// <summary>
+        /// Sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards. This can be used to set query options.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        public static IDbQueryBuilder Prefix(this IDbQueryBuilder query, string prefix)
+        {
+            query = query.Fork();
+            query.Prefix = prefix;
+            return query;
+        }
+
+        /// <summary>
+        /// Sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter (semicolon).
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="suffix"></param>
+        /// <returns></returns>
+        public static IDbQueryBuilder Suffix(this IDbQueryBuilder query, string suffix)
+        {
+            query = query.Fork();
+            query.Suffix = suffix;
+            return query;
+        }
 
     }
 }

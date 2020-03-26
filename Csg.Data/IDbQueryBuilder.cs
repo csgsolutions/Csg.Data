@@ -59,6 +59,16 @@ namespace Csg.Data
         ICollection<DbParameterValue> Parameters { get; }
 
         /// <summary>
+        /// When implemented in a derived class, gets or sets the query prefix.
+        /// </summary>
+        string Suffix { get; set; }
+
+        /// <summary>
+        /// When implemented in a derived class, gets or sets the query suffix.
+        /// </summary>
+        string Prefix { get; set; }
+
+        /// <summary>
         /// When implemented in a derived class, gets or sets the command timeout.
         /// </summary>
         int CommandTimeout { get; set; }

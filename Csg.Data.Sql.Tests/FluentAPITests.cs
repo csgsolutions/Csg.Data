@@ -144,5 +144,27 @@ namespace TestProject
             Assert.AreEqual(test, stmt.CommandText, true);
         }
 
+        [TestMethod]
+        public void TestFluentPrefix()
+        {
+            string test = "Prefix Value;SELECT * FROM [dbo].[Product] AS [t0];";
+            var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .Prefix("Prefix Value")
+                .Render();
+
+            Assert.AreEqual(test, stmt.CommandText, true);
+        }
+
+        [TestMethod]
+        public void TestFluentSuffix()
+        {
+            string test = "SELECT * FROM [dbo].[Product] AS [t0];Suffix Value;";
+            var stmt = new Csg.Data.DbQueryBuilder("dbo.Product", new MockConnection())
+                .Suffix("Suffix Value")
+                .Render();
+
+            Assert.AreEqual(test, stmt.CommandText, true);
+        }
+
     }
 }
