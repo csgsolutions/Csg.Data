@@ -74,6 +74,16 @@ namespace Csg.Data
         public IList<ISqlColumn> SelectColumns { get; protected set; }
 
         /// <summary>
+        /// Gets or sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards. This can be used to set query options.
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter (semicolon).
+        /// </summary>
+        public string Suffix { get; set; }
+
+        /// <summary>
         /// Adds a JOIN to the FROM clause of the query.
         /// </summary>
         /// <param name="join"></param>
@@ -170,7 +180,9 @@ namespace Csg.Data
             {
                 SelectDistinct = this.Distinct,
                 GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
-                PagingOptions = this.PagingOptions
+                PagingOptions = this.PagingOptions,
+                Prefix = this.Prefix,
+                Suffix = this.Suffix
             };
         }
 

@@ -150,6 +150,16 @@ namespace Csg.Data.Sql
         }
 
         /// <summary>
+        /// Gets or sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards. This can be used to set query options.
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter (semicolon).
+        /// </summary>
+        public string Suffix { get; set; }
+
+        /// <summary>
         /// Renders the query.
         /// </summary>
         /// <param name="supressEndStatement">True if you want to supress statement terminating characters (semicolon)</param>
@@ -160,10 +170,30 @@ namespace Csg.Data.Sql
             var args = new SqlBuildArguments();
 
             this.CompileInternal(args);
+
+            if (this.Prefix != null)
+            {
+                writer.Write(this.Prefix);
+                if (!supressEndStatement)
+                {
+                    writer.WriteEndStatement();
+                }
+            }
+
             this.RenderInternal(writer, args);
+
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();
+            }
+
+            if (this.Suffix != null)
+            {
+                writer.Write(this.Suffix);
+                if (!supressEndStatement)
+                {
+                    writer.WriteEndStatement();
+                }
             }
 
             return new SqlStatement(writer.ToString(), args.Parameters);
