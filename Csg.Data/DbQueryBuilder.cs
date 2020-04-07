@@ -78,11 +78,6 @@ namespace Csg.Data
         public int? CommandTimeout { get; set; }
 
         /// <summary>
-        /// Gets the paging options used with the query
-        /// </summary>
-        public SqlPagingOptions? PagingOptions { get; set; }
-
-        /// <summary>
         /// Gets the parameter value collection.
         /// </summary>
         public ICollection<DbParameterValue> Parameters { get; protected set; }
