@@ -7,9 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Csg.Data;
+using Csg.Data.Common;
 using Csg.Data.Sql;
 
-namespace Csg.Data.Common
+namespace Csg.Data
 {
     public static class CommonQueryBuilderExtensions
     {
@@ -20,7 +21,7 @@ namespace Csg.Data.Common
         /// <param name="commandText">The table expression, table name, or object name to use as the target of the query.</param>
         /// <param name="provider">The SQL text provider to use for query generation. If not specified <see cref="Sql.SqlProviderFactory.GetProvider(Type)"/> will be used.</param>
         /// <returns></returns>
-        public static IDbQueryBuilder QueryBuilder(this Csg.Data.IDbScope scope, string commandText, Abstractions.ISqlProvider provider = null)
+        public static IDbQueryBuilder QueryBuilder(this Csg.Data.Common.IDbScope scope, string commandText, Abstractions.ISqlProvider provider = null)
         {
             var adapter = new DbFeatureAdapter(scope.Connection, scope.Transaction);
 
@@ -59,7 +60,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static IDataReader ExecuteReader(this IDbQueryBuilder query)
         {
-            return query.CommandAdapter.GetFeature<IDbCommand>(query).ExecuteReader();
+            return query.Features.Get<IDbCommand>(query).ExecuteReader();
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static object ExecuteScalar(this IDbQueryBuilder query)
         {
-            return query.CommandAdapter.GetFeature<IDbCommand>(query).ExecuteScalar();
+            return query.Features.Get<IDbCommand>(query).ExecuteScalar();
         }
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static bool GetSchemaTable(this IDbQueryBuilder query, out DataTable schema, out ICollection<Exception> errors)
         {
-            var cmd = query.CommandAdapter.GetFeature<IDbCommand>(query);
+            var cmd = query.Features.Get<IDbCommand>(query);
 
             errors = null;
             schema = null;
@@ -135,7 +136,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static bool GetColumnSchema(this IDbQueryBuilder query, out ReadOnlyCollection<DbColumn> schema, out ICollection<Exception> errors)
         {
-            var cmd = query.CommandAdapter.GetFeature<IDbCommand>(query);
+            var cmd = query.Features.Get<IDbCommand>(query);
 
             errors = null;
             schema = null;

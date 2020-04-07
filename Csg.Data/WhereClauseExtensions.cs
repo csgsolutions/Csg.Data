@@ -1,4 +1,6 @@
-﻿using Csg.Data.Sql;
+﻿using Csg.Data.Abstractions;
+using Csg.Data.Common;
+using Csg.Data.Sql;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,9 +11,9 @@ using System.Threading.Tasks;
 namespace Csg.Data
 {
     /// <summary>
-    /// Extensions for adding filters to a <see cref="IDbQueryWhereClause"/>.
+    /// Extensions for adding filters to a <see cref="IWhereClause"/>.
     /// </summary>
-    public static class DbWhereClauseExtensions
+    public static class WhereClauseExtensions
     {
         /// <summary>
         /// Creates a WHERE clause equality comparison for a field and value in the form ([fieldName] = [equalsValue])
@@ -23,7 +25,7 @@ namespace Csg.Data
         /// <param name="dbType">The data type of the database field.</param>
         /// <param name="size">The size of the database field (for fixed length data types).</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldEquals<TValue>(this IDbQueryWhereClause where, string fieldName, TValue equalsValue, DbType? dbType = null, int? size = null)
+        public static IWhereClause FieldEquals<TValue>(this IWhereClause where, string fieldName, TValue equalsValue, DbType? dbType = null, int? size = null)
         {
             return where.FieldMatch<TValue>(fieldName, SqlOperator.Equal, equalsValue, dbType: dbType, size: size);
         }
@@ -37,7 +39,7 @@ namespace Csg.Data
         /// <param name="isAnsi">Is the database field an ANSI string or Unicode string?</param>
         /// <param name="length">Is the database field fixed length or variable length?</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldEquals(this IDbQueryWhereClause where, string fieldName, string equalsValue, bool isAnsi = false, int? length = null)
+        public static IWhereClause FieldEquals(this IWhereClause where, string fieldName, string equalsValue, bool isAnsi = false, int? length = null)
         {
             return where.FieldMatch(fieldName, SqlOperator.Equal, equalsValue, isAnsi, length);
         }
@@ -50,7 +52,7 @@ namespace Csg.Data
         /// <param name="otherTable">The other table to match against.</param>
         /// <param name="otherColumn">The name of the column in otherTable. Will use fieldName if not specified</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldEquals(this IDbQueryWhereClause where, string fieldName, ISqlTable otherTable, string otherColumn)
+        public static IWhereClause FieldEquals(this IWhereClause where, string fieldName, ISqlTable otherTable, string otherColumn)
         {
             where.AddFilter(new SqlColumnCompareFilter(where.Root, fieldName, SqlOperator.Equal, otherTable, otherColumn));
             return where;
@@ -67,7 +69,7 @@ namespace Csg.Data
         /// <param name="dbType">The data type of the database field.</param>
         /// <param name="size">The size of the database field (for fixed length data types).</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldMatch<TValue>(this IDbQueryWhereClause where, string fieldName, Csg.Data.Sql.SqlOperator @operator, TValue value, DbType? dbType = null, int? size = null)
+        public static IWhereClause FieldMatch<TValue>(this IWhereClause where, string fieldName, Csg.Data.Sql.SqlOperator @operator, TValue value, DbType? dbType = null, int? size = null)
         {
             if (value is IDbTypeProvider)
             {
@@ -96,7 +98,7 @@ namespace Csg.Data
         /// <param name="isAnsi">Is the database field an ANSI string or Unicode string?</param>
         /// <param name="length">Is the database field fixed length or variable length?</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldMatch(this IDbQueryWhereClause where, string fieldName, Csg.Data.Sql.SqlOperator @operator, string value, bool isAnsi = false, int? length = null)
+        public static IWhereClause FieldMatch(this IWhereClause where, string fieldName, Csg.Data.Sql.SqlOperator @operator, string value, bool isAnsi = false, int? length = null)
         {
             var filter = new Csg.Data.Sql.SqlCompareFilter<string>(where.Root, fieldName, @operator, value);
 
@@ -137,7 +139,7 @@ namespace Csg.Data
         /// <param name="isAnsi">Is the database field an ANSI string or Unicode string?</param>
         /// <param name="length">Is the database field fixed length or variable length?</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause StringMatch(this IDbQueryWhereClause where, string fieldName, Csg.Data.Sql.SqlWildcardDecoration @operator, string value, bool isAnsi = false, int? length = null)
+        public static IWhereClause StringMatch(this IWhereClause where, string fieldName, Csg.Data.Sql.SqlWildcardDecoration @operator, string value, bool isAnsi = false, int? length = null)
         {
             var filter = new Csg.Data.Sql.SqlStringMatchFilter(where.Root, fieldName, @operator, value);
 
@@ -174,7 +176,7 @@ namespace Csg.Data
         /// <param name="where">The query builder instance</param>
         /// <param name="fieldName">The name of the field to use as the expression on the left of the operator.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldIsNull(this IDbQueryWhereClause where, string fieldName)
+        public static IWhereClause FieldIsNull(this IWhereClause where, string fieldName)
         {
             where.AddFilter(new SqlNullFilter(where.Root, fieldName, true));
             return where;
@@ -186,7 +188,7 @@ namespace Csg.Data
         /// <param name="where">The query builder instance</param>
         /// <param name="fieldName">The name of the field to use as the expression on the left of the operator.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldIsNotNull(this IDbQueryWhereClause where, string fieldName)
+        public static IWhereClause FieldIsNotNull(this IWhereClause where, string fieldName)
         {
             where.AddFilter(new SqlNullFilter(where.Root, fieldName, false));
             return where;
@@ -200,7 +202,7 @@ namespace Csg.Data
         /// <param name="operator">The comparison operator to use.</param>
         /// <param name="value">The value of the parameter created for the right side of the operator.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldMatch(this IDbQueryWhereClause where, string fieldName, SqlOperator @operator, DateTime value)
+        public static IWhereClause FieldMatch(this IWhereClause where, string fieldName, SqlOperator @operator, DateTime value)
         {
             where.AddFilter(new Csg.Data.Sql.SqlCompareFilter(where.Root, fieldName, @operator, DbType.DateTime2, value));
             return where;
@@ -214,7 +216,7 @@ namespace Csg.Data
         /// <param name="operator">The comparison operator to use.</param>
         /// <param name="value">The value of the parameter created for the right side of the operator.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldMatch(this IDbQueryWhereClause where, string fieldName, SqlOperator @operator, DateTimeOffset value)
+        public static IWhereClause FieldMatch(this IWhereClause where, string fieldName, SqlOperator @operator, DateTimeOffset value)
         {
             where.AddFilter(new Csg.Data.Sql.SqlCompareFilter(where.Root, fieldName, @operator, DbType.DateTimeOffset, value));
             return where;
@@ -230,7 +232,7 @@ namespace Csg.Data
         /// <param name="dbType">The data type of the database field.</param>
         /// <param name="size">The size of the database field (for fixed length data types).</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldBetween<TValue>(this IDbQueryWhereClause where, string fieldName, TValue begin, TValue end, DbType? dbType = null, int? size = null)
+        public static IWhereClause FieldBetween<TValue>(this IWhereClause where, string fieldName, TValue begin, TValue end, DbType? dbType = null, int? size = null)
         {
             return where
                 .FieldMatch(fieldName, SqlOperator.GreaterThanOrEqual, begin, dbType: dbType, size: size)
@@ -245,7 +247,7 @@ namespace Csg.Data
         /// <param name="begin">The begin date/time of the range.</param>
         /// <param name="end">The end date/time of the range.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldBetween(this IDbQueryWhereClause where, string fieldName, DateTime begin, DateTime end)
+        public static IWhereClause FieldBetween(this IWhereClause where, string fieldName, DateTime begin, DateTime end)
         {
             return where
                 .FieldMatch(fieldName, SqlOperator.GreaterThanOrEqual, begin)
@@ -260,7 +262,7 @@ namespace Csg.Data
         /// <param name="begin">The begin date/time of the range.</param>
         /// <param name="end">The end date/time of the range.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldBetween(this IDbQueryWhereClause where, string fieldName, DateTimeOffset begin, DateTimeOffset end)
+        public static IWhereClause FieldBetween(this IWhereClause where, string fieldName, DateTimeOffset begin, DateTimeOffset end)
         {
             return where
                 .FieldMatch(fieldName, SqlOperator.GreaterThanOrEqual, begin)
@@ -276,7 +278,7 @@ namespace Csg.Data
         /// <param name="values">A list of values to compare</param>
         /// <param name="useLiteralNumbers">When true, numeric types will rendered as literals intead of as parameters.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldIn<T>(this IDbQueryWhereClause where, string fieldName, IEnumerable<T> values, bool useLiteralNumbers = false)
+        public static IWhereClause FieldIn<T>(this IWhereClause where, string fieldName, IEnumerable<T> values, bool useLiteralNumbers = false)
         {
             where.AddFilter(new Csg.Data.Sql.SqlListFilter<T>(where.Root, fieldName, values) { UseLiteralNumbers = useLiteralNumbers });
             return where;
@@ -291,7 +293,7 @@ namespace Csg.Data
         /// <param name="values">A list of values to compare</param>
         /// <param name="useLiteralNumbers">When true, numeric types will rendered as literals intead of as parameters.</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldNotIn<T>(this IDbQueryWhereClause where, string fieldName, IEnumerable<T> values, bool useLiteralNumbers = false)
+        public static IWhereClause FieldNotIn<T>(this IWhereClause where, string fieldName, IEnumerable<T> values, bool useLiteralNumbers = false)
         {
             where.AddFilter(new Csg.Data.Sql.SqlListFilter<T>(where.Root, fieldName, values) { NotInList = true, UseLiteralNumbers = useLiteralNumbers });
             return where;
@@ -303,7 +305,7 @@ namespace Csg.Data
         /// <param name="where"></param>
         /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, SqlSelectBuilder innerQuery)
+        public static IWhereClause Exists(this IWhereClause where, SqlSelectBuilder innerQuery)
         {
             where.AddFilter(new Csg.Data.Sql.SqlExistFilter(innerQuery));
             return where;
@@ -315,11 +317,11 @@ namespace Csg.Data
         /// <param name="where"></param>
         /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, string sqlText, Action<IDbQueryWhereClause> subQueryFilters)
+        public static IWhereClause Exists(this IWhereClause where, string sqlText, Action<IWhereClause> subQueryFilters)
         {
             var innerTable = SqlTable.Create(sqlText);
             var innerQuery = new SqlSelectBuilder(innerTable, null);
-            var innerWhere = new DbQueryWhereClause(innerTable, SqlLogic.And);
+            var innerWhere = new WhereClause(innerTable, SqlLogic.And);
             innerQuery.SelectColumns.Add(new SqlLiteralColumn<int>(1));
             subQueryFilters(innerWhere);
             innerWhere.ApplyTo(innerQuery.Filters);            
@@ -338,7 +340,7 @@ namespace Csg.Data
         /// <param name="condition"></param>
         /// <param name="subQueryFilters"></param>
         /// <returns></returns>
-        internal static IDbQueryWhereClause FieldSubQuery(IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, SubQueryMode condition, Action<IDbQueryWhereClause> subQueryFilters)
+        internal static IWhereClause FieldSubQuery(IWhereClause where, string columnName, string sqlText, string subQueryColumnName, SubQueryMode condition, Action<IWhereClause> subQueryFilters)
         {
             var subQueryFilter = new Csg.Data.Sql.SqlSubQueryFilter(where.Root, SqlTable.Create(sqlText))
             {
@@ -347,7 +349,7 @@ namespace Csg.Data
                 SubQueryColumn = subQueryColumnName,
             };
 
-            var subQueryWhere = new DbQueryWhereClause(subQueryFilter.SubQueryTable, SqlLogic.And);
+            var subQueryWhere = new WhereClause(subQueryFilter.SubQueryTable, SqlLogic.And);
 
             subQueryFilters(subQueryWhere);
             subQueryWhere.ApplyTo(subQueryFilter.SubQueryFilters);
@@ -366,7 +368,7 @@ namespace Csg.Data
         /// <param name="subQueryColumnName">The column to select from the sub query and match against <paramref name="columnName"/></param>
         /// <param name="subQueryFilters">A set of filters to narrow the sub-query</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldInSubQuery(this IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IDbQueryWhereClause> subQueryFilters)
+        public static IWhereClause FieldInSubQuery(this IWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IWhereClause> subQueryFilters)
         {
             return FieldSubQuery(where, columnName, sqlText, subQueryColumnName, SubQueryMode.InList, subQueryFilters);
         }
@@ -380,7 +382,7 @@ namespace Csg.Data
         /// <param name="subQueryColumnName">The column to select from the sub query and match against <paramref name="columnName"/></param>
         /// <param name="subQueryFilters">A set of filters to narrow the sub-query</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause FieldNotInSubQuery(this IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IDbQueryWhereClause> subQueryFilters)
+        public static IWhereClause FieldNotInSubQuery(this IWhereClause where, string columnName, string sqlText, string subQueryColumnName, Action<IWhereClause> subQueryFilters)
         {
             return FieldSubQuery(where, columnName, sqlText, subQueryColumnName, SubQueryMode.NotInList, subQueryFilters);
         }
@@ -395,10 +397,10 @@ namespace Csg.Data
         /// <param name="countValue"></param>
         /// <param name="subQueryWhere"></param>
         /// <returns></returns>
-        public static IDbQueryWhereClause SubQueryCount(this IDbQueryWhereClause where, string sqlText, string countColumnName, SqlOperator @operator, int countValue, Action<IDbQueryWhereClause> subQueryWhere)
+        public static IWhereClause SubQueryCount(this IWhereClause where, string sqlText, string countColumnName, SqlOperator @operator, int countValue, Action<IWhereClause> subQueryWhere)
         {
             var sqf = new SqlCountFilter(where.Root, SqlTable.Create(sqlText), countColumnName, @operator, countValue);
-            var sqfWhere = new DbQueryWhereClause(sqf.SubQueryTable, SqlLogic.And);
+            var sqfWhere = new WhereClause(sqf.SubQueryTable, SqlLogic.And);
             subQueryWhere(sqfWhere);
             sqfWhere.ApplyTo(sqf.SubQueryFilters);
             where.AddFilter(sqf);

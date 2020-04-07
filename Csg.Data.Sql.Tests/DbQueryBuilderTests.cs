@@ -13,7 +13,7 @@ namespace Csg.Data.Sql.Tests
     {
         static DbQueryBuilderTests()
         {
-            Csg.Data.DbQueryBuilder.DefaultGenerateFormattedSql = false;
+            Csg.Data.Common.DbQueryBuilder.DefaultGenerateFormattedSql = false;
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace Csg.Data.Sql.Tests
             query.SelectDistinct = true;
             query.CommandTimeout = 123;
 
-            var fork = query.Fork();
+            var fork = (DbQueryBuilder)query.Fork();
 
             query.OrderBy.Clear();
             query.AddFilter(new SqlNullFilter(query.Root, "Bar", false));

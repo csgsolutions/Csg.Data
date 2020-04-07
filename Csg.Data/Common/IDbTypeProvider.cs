@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Csg.Data
+namespace Csg.Data.Common
 {
     /// <summary>
     /// When implemented in a derived class, provides a database data type.

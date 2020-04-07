@@ -12,7 +12,7 @@ namespace TestProject
     {
         static QueryBuilderTests()
         {
-            Csg.Data.DbQueryBuilder.DefaultGenerateFormattedSql = false;
+            Csg.Data.Common.DbQueryBuilder.DefaultGenerateFormattedSql = false;
         }
 
         [TestMethod]

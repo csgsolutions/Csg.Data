@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Csg.Data.Common
 {
-    public class DbFeatureAdapter : Abstractions.IQueryFeatureAdapter
+    public class DbFeatureAdapter : IQueryFeatureAdapter
     {
         public DbFeatureAdapter(System.Data.IDbConnection connection)
         {
@@ -24,7 +24,7 @@ namespace Csg.Data.Common
 
         public System.Data.IDbTransaction Transaction { get; set; }
 
-        public TFeature GetFeature<TFeature>(IDbQueryBuilder builder)
+        public TFeature Get<TFeature>(IDbQueryBuilder builder)
         {
             // TCommand can be assinged to IDbCommand, which means it derives from it,
             // which means we are probably doing the right thing.

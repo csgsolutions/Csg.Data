@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Csg.Data
+namespace Csg.Data.Common
 {
     /// <summary>
     /// Provides a class that ensures the given db scope has an active transaciton, and if not, begins one.

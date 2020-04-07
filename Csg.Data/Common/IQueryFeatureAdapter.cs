@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Csg.Data.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Csg.Data.Abstractions
+namespace Csg.Data.Common
 {
     public interface IQueryFeatureAdapter
     {
-        TFeature GetFeature<TFeature>(IDbQueryBuilder builder);
+        TFeature Get<TFeature>(IDbQueryBuilder builder);
     }
 }

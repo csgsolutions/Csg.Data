@@ -5,9 +5,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data.SqlClient;
 using Csg.Data;
-using Csg.Data.Sql;
-using System.Data.Common;
-using Csg.Data.Common;
 
 namespace TestProject
 {

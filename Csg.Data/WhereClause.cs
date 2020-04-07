@@ -1,4 +1,5 @@
-﻿using Csg.Data.Sql;
+﻿using Csg.Data.Abstractions;
+using Csg.Data.Sql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Csg.Data
     /// <summary>
     /// Used to build a set of fitlers with the fluent api.
     /// </summary>
-    public class DbQueryWhereClause : IDbQueryWhereClause
+    public class WhereClause : IWhereClause
     {
         private readonly ISqlTable _root;
 
@@ -18,7 +19,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="root"></param>
         /// <param name="logic"></param>
-        public DbQueryWhereClause(ISqlTable root, SqlLogic logic)
+        public WhereClause(ISqlTable root, SqlLogic logic)
         {
             _root = root;
             this.Filters = new SqlFilterCollection() { Logic = logic };
@@ -45,13 +46,13 @@ namespace Csg.Data
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public IDbQueryWhereClause AddFilter(ISqlFilter filter)
+        public IWhereClause AddFilter(ISqlFilter filter)
         {
             this.Filters.Add(filter);
             return this;
         }
 
-        public void ApplyToQuery(IDbQueryBuilder builder)
+        public void ApplyToQuery(ISelectQueryBuilder builder)
         {
             if (this.Filters.Count > 0)
             {

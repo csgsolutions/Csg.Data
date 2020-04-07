@@ -14,7 +14,7 @@ namespace TestProject
     {
         static FluentAPITests()
         {
-            Csg.Data.DbQueryBuilder.DefaultGenerateFormattedSql = false;
+            Csg.Data.Common.DbQueryBuilder.DefaultGenerateFormattedSql = false;
         }
 
         [TestMethod]

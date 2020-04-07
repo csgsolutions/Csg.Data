@@ -1,4 +1,4 @@
-namespace Csg.Data
+namespace Csg.Data.Common
 {
     /// <summary>
     /// Represents an database

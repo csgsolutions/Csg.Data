@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Csg.Data
+namespace Csg.Data.Common
 {    
     /// <summary>
     /// A class which provides a database connection and transaction.

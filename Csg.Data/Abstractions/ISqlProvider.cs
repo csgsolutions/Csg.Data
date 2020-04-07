@@ -9,7 +9,5 @@ namespace Csg.Data.Abstractions
     public interface ISqlProvider
     {
         ISqlTextWriter CreateWriter();
-
-        
     }
 }

@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Csg.Data
+namespace Csg.Data.Common
 {
     /// <summary>
     /// Extension methods for database connections

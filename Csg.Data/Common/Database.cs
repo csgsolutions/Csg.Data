@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 
-namespace Csg.Data
+namespace Csg.Data.Common
 {
     /// <summary>
     /// Provides a base implementation for a class which implements <see cref="IDatabase"/>.
