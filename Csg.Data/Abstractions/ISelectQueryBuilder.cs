@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Csg.Data.Abstractions
 {
-    public interface ISelectQueryBuilder
+    public interface ISelectQueryBuilder : ISqlStatementElement
     {
         /// <summary>
         /// When implemented in a derived class, returns the root table of the query. This is the table listed immmediately after the FROM clause
@@ -27,5 +27,10 @@ namespace Csg.Data.Abstractions
         /// When implemented in a derived class, gets the current builder configuration.
         /// </summary>
         ISelectQueryBuilderOptions Configuration { get; }
+
+        /// <summary>
+        /// When implemented in a derived class, gets the SQL text provider.
+        /// </summary>
+        ISqlProvider Provider { get; }
     }
 }

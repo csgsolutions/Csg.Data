@@ -48,7 +48,7 @@ namespace Csg.Data.Sql
         /// <returns></returns>
         public static SqlStatementBatch RenderBatch(this IEnumerable<ISqlStatementElement> elements, Abstractions.ISqlProvider provider)
         {
-            var writer = new SqlTextWriter(provider);
+            var writer = provider.CreateWriter();
             int count = 0;
 
             foreach (var element in elements)
@@ -56,7 +56,6 @@ namespace Csg.Data.Sql
                 count++;
                 element.Render(writer);
                 writer.WriteEndStatement();
-                writer.WriteLine();
             }
 
             return new SqlStatementBatch(count, writer.ToString(), writer.BuildArguments.Parameters);

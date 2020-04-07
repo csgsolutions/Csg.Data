@@ -718,7 +718,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         [TestMethod]
         public void Extensions_RenderBatch()
         {
-            string test = "SELECT * FROM [dbo].[DimWidget] AS [t0] WHERE ([t0].[WidgetID]=@p0);\r\nSELECT * FROM [dbo].[DimWidget] AS [t1] WHERE ([t1].[WidgetID]=@p1);\r\nSELECT * FROM [dbo].[DimWidget] AS [t2] WHERE ([t2].[WidgetID]=@p2);\r\n";
+            string test = "SELECT * FROM [dbo].[DimWidget] AS [t0] WHERE ([t0].[WidgetID]=@p0);SELECT * FROM [dbo].[DimWidget] AS [t1] WHERE ([t1].[WidgetID]=@p1);SELECT * FROM [dbo].[DimWidget] AS [t2] WHERE ([t2].[WidgetID]=@p2);";
             var collection = new List<ISqlStatementElement>();
             var provider = Csg.Data.SqlServer.SqlServerProvider.Instance;
 
