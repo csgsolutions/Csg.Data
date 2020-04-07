@@ -220,5 +220,36 @@ namespace TestProject
             Assert.AreEqual(test, stmt.CommandText);
         }
 
+        [TestMethod]
+        public void TestPrefix()
+        {
+            var test = "SET ROWCOUNT 10;SELECT [t0].[FirstName] FROM [dbo].[Contact] AS [t0];";
+            var builder = new SqlSelectBuilder();
+
+            builder.Table = new SqlTable("dbo.Contact");
+            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.Prefix = "SET ROWCOUNT 10";
+
+            var stmt = builder.Render();
+
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(stmt.CommandText, test);
+        }
+
+        [TestMethod]
+        public void TestSuffix()
+        {
+            var test = "SELECT [t0].[FirstName] FROM [dbo].[Contact] AS [t0];A Suffix Statement Goes Here;";
+            var builder = new SqlSelectBuilder();
+
+            builder.Table = new SqlTable("dbo.Contact");
+            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.Suffix = "A Suffix Statement Goes Here";
+
+            var stmt = builder.Render();
+
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(stmt.CommandText, test);
+        }
     }
 }

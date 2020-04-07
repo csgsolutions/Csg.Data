@@ -16,7 +16,7 @@
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
+    
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.1.0" />
   </ItemGroup>

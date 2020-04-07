@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace Csg.Data
 {
+    /// <summary>
+    /// Extensions for adding filters to a <see cref="IDbQueryWhereClause"/>.
+    /// </summary>
     public static class DbWhereClauseExtensions
     {
         /// <summary>
         /// Creates a WHERE clause equality comparison for a field and value in the form ([fieldName] = [equalsValue])
         /// </summary>
-        /// <typeparam name="T">The type of the query builder.</typeparam>
         /// <typeparam name="TValue">The data type of the right operand</typeparam>
         /// <param name="where">The query builder instance</param>
         /// <param name="fieldName">The name of the field to use as the expression on the left of the operator.</param>
@@ -298,24 +300,43 @@ namespace Csg.Data
         /// <summary>
         /// Adds an EXISTS(selectStatement) filter critera.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="where"></param>
         /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
         /// <returns></returns>
-        public static IDbQueryWhereClause Exists<T>(this IDbQueryWhereClause where, SqlSelectBuilder innerQuery)
+        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, SqlSelectBuilder innerQuery)
         {
             where.AddFilter(new Csg.Data.Sql.SqlExistFilter(innerQuery));
             return where;
         }
 
         /// <summary>
+        /// Adds an EXISTS(selectStatement) filter critera.
+        /// </summary>
+        /// <param name="where"></param>
+        /// <param name="innerQuery">The value to render as the inner SELECT statement</param>
+        /// <returns></returns>
+        public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, string sqlText, Action<IDbQueryWhereClause> subQueryFilters)
+        {
+            var innerTable = SqlTable.Create(sqlText);
+            var innerQuery = new SqlSelectBuilder(innerTable);
+            var innerWhere = new DbQueryWhereClause(innerTable, SqlLogic.And);
+            innerQuery.Columns.Add(new SqlRawColumn("1"));
+            subQueryFilters(innerWhere);
+            innerWhere.ApplyTo(innerQuery.Filters);            
+            where.AddFilter(new Sql.SqlExistFilter(innerQuery));
+
+            return where;
+        }
+
+        /// <summary>
         /// Adds a {columnName} IN | NOT IN (SELECT {subQueryColumnName} FROM {sqlText} WHERE {SubQueryConditions})
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="where"></param>
         /// <param name="columnName"></param>
-        /// <param name="subQuery"></param>
-        /// <param name="subQueryColumn"></param>
+        /// <param name="sqlText"></param>
+        /// <param name="subQueryColumnName"></param>
+        /// <param name="condition"></param>
+        /// <param name="subQueryFilters"></param>
         /// <returns></returns>
         internal static IDbQueryWhereClause FieldSubQuery(IDbQueryWhereClause where, string columnName, string sqlText, string subQueryColumnName, SubQueryMode condition, Action<IDbQueryWhereClause> subQueryFilters)
         {

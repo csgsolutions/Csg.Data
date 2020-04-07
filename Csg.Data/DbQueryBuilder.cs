@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Csg.Data
     /// <summary>
     /// Provides a query command builder to create and execute a SELECT statement against a database.
     /// </summary>
+    [DebuggerDisplay("CommandText = {Render().CommandText}, Parameters = {ParameterString()}")]
     public class DbQueryBuilder : SqlSelectBuilder, IDbQueryBuilder, IDbQueryBuilder2, IDbQueryBuilderOptions
     {
         /// <summary>
@@ -153,6 +155,8 @@ namespace Csg.Data
             builder.Provider = this.Provider;
             builder.GenerateFormattedSql = this.GenerateFormattedSql;
             builder.PagingOptions = this.PagingOptions;
+            builder.Prefix = this.Prefix;
+            builder.Suffix = this.Suffix;
             return builder;
         }
 
@@ -211,5 +215,11 @@ namespace Csg.Data
         IDbQueryBuilderOptions IDbQueryBuilder2.Configuration => this;
 
         #endregion
+                
+
+        internal string ParameterString()
+        {
+            return string.Join(", ", this.Render().Parameters.Select(s => s.ParameterName + "=" +s.Value));
+        }
     }
 }

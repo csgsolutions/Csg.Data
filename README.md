@@ -1,9 +1,19 @@
-# Csg.Data
-Tools for data access and database query generation.
+# CSG QueryBuilder and Data Tools
+This package provides an SQL query builder for generating dynamic-SQL statements in .NET and .NET Core applications.
+
+# CI and Pre-Release Feed
+
+[![Build status](https://ci.appveyor.com/api/projects/status/hx4so74ja1y42lfw/branch/master?svg=true)](https://ci.appveyor.com/project/jusbuc2k/csg-data/branch/master)
+
+Early releases can be found on the [CSG Public MyGet feed](https://www.myget.org/feed/csgsolutions/package/nuget/Csg.Data).
+
+# Get Started
+Install the [NuGet package](https://www.nuget.org/packages/Csg.Data/)
 
 # APIs
 
-You can use the QueryBuilder using the Fluent API or the native object model.
+You can use the QueryBuilder using the Fluent API or the native object model. You may also want to use
+the QueryBuilder together with [Csg.Data.Dapper](https://github.com/csgsolutions/csg.data.dapper).
 
 ## Fluent API
 
@@ -193,6 +203,18 @@ var query1 = connection.QueryBuilder("dbo.Product")
 // SELECT * FROM dbo.Product WHERE (SELECT COUNT(ProductID) FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color') >= 2;
 ```
 
+### Sub-Query Exists Filters
+```WHERE EXISTS (<query expression>)``` filters can be built using Exists().
+
+```csharp
+var query1 = connection.QueryBuilder("dbo.Product")
+    .Where(where => where.Exists("dbo.ProductAttribute",
+        subWhere => subWhere.FieldEquals("ProductID", builder.Root, "ProductID").FieldMatch("AttributeName", SqlOperator.Equal, "Color")
+    ));
+// SELECT * FROM dbo.Product WHERE EXISTS (SELECT 1 FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color');
+```
+
+
 ### Creating multiple groups of filters with OR logic
 
 Multiple conditions can be added using a single .Where() method, but each of these conditions will be joined
@@ -356,18 +378,18 @@ var query = connection.QueryBuilder("dbo.Product");
 var listOfThings1 = new string[] { "a", "b", "c" };
 var listOfThings2 = new string[] { "d", "e", "f" };
 
-var listOfCriteria = new Tuple<int, int, string[]>[]
+var listOfCriteria = new List<(int ProductCategoryID, int SupplierID, string[] Names)>
 {
-    new Tuple<int,int,string[]>(123, 456, listOfThings1),
-    new Tuple<int,int,string[]>(123, 456, listOfThings2)
+    (ProductCategoryID: 123, SupplierID: 456, Names: listOfThings1),
+    (ProductCategoryID: 999, SupplierID: 888, Names: listOfThings2),
 };
 
-query = query.Where(x => x.FieldEquals("Foo", "Bar"));
-query = query.WhereAny(
+builder = builder.Where(x => x.FieldEquals<bool>("IsActive", true));
+builder = builder.WhereAny(
     listOfCriteria,
-    (x, f, i) => x.FieldEquals("ProductCategoryID", f.Item1)
-            .FieldEquals("SupplierID", f.Item2)
-            .FieldIn("ThingName", f.Item3)
+    (x, f) => x.FieldEquals("ProductCategoryID", f.ProductCategoryID)
+            .FieldEquals("SupplierID", f.SupplierID)
+            .FieldIn("ThingName", f.Names)
 );
 
 

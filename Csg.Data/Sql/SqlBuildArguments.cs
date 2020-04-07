@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Csg.Data.Sql
 {
     /// <summary>
-    /// The collection of tables and parameters accumulated during a query render.
+    /// The arguments object tracks the parameters and tables used in a query rendering process.
     /// </summary>
     public class SqlBuildArguments
     {

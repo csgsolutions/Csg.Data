@@ -9,6 +9,7 @@ namespace Csg.Data.Sql
     /// <summary>
     /// Renders a T-SQL expression based column for a SELECT statement.
     /// </summary>
+    [Obsolete("Use SqlRawColumn instead")]
     public class SqlExpressionSelectColumn : SqlColumnBase
     {
         /// <summary>

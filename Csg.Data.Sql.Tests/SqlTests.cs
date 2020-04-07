@@ -586,6 +586,19 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         }
 
         [TestMethod]
+        public void TestRawColumn()
+        {
+            var query = new SqlSelectBuilder("[Foo]");
+
+            query.Columns.Add(new SqlRawColumn("NULL", "Nothing"));
+            query.Columns.Add(new SqlRawColumn("1234"));
+
+            var stmt = query.Render();
+
+            Assert.AreEqual("SELECT NULL AS [Nothing],1234 FROM [Foo] AS [t0];", stmt.CommandText);
+        }
+
+        [TestMethod]
         public void TestRawFilter()
         {
             string test = "SELECT * FROM [DimWidget] AS [t0] WHERE ((SELECT COUNT(*) FROM dbo.WidgetComment WHERE WidgetID = [t0].WidgetID) > @p0);";
@@ -598,7 +611,7 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
 
             var s = q.Render();
 
-            Assert.IsTrue((s.Parameters.Count > 0), "Parameter count should be 1.");
+            Assert.AreEqual(1, s.Parameters.Count, "Parameter count should be 1.");
             Assert.AreEqual(test, s.CommandText, true);
         }
 
@@ -647,6 +660,25 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         }
 
         [TestMethod]
+        public void TestPagingOptionsZeroOffset()
+        {
+            string test = "SELECT * FROM [DimWidget] AS [t0] ORDER BY [WidgetID] OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;";
+            //             SELECT * FROM [DimWidget] AS [t0] FROM [dbo].[WidgetComment] AS [t1] WHERE ([t0].[WidgetID]=[t1].[WidgetID])) > @p0);
+            SqlSelectBuilder q = new SqlSelectBuilder("DimWidget");
+
+            q.OrderBy.Add(new SqlOrderColumn() { ColumnName = "WidgetID" });
+            q.PagingOptions = new SqlPagingOptions()
+            {
+                Limit = 10,
+                Offset = 0
+            };
+
+            var s = q.Render();
+
+            Assert.AreEqual(test, s.CommandText, true);
+        }
+
+        [TestMethod]
         public void TestPagingOptions()
         {
             string test = "SELECT * FROM [DimWidget] AS [t0] ORDER BY [WidgetID] OFFSET 50 ROWS FETCH NEXT 10 ROWS ONLY;";
@@ -681,6 +713,34 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
             var s = q.Render();
 
             Assert.AreEqual(test, s.CommandText, true);
+        }
+        
+        [TestMethod]
+        public void Extensions_RenderBatch()
+        {
+            string test = "SELECT * FROM [dbo].[DimWidget] AS [t0] WHERE ([t0].[WidgetID]=@p0);\r\nSELECT * FROM [dbo].[DimWidget] AS [t1] WHERE ([t1].[WidgetID]=@p1);\r\nSELECT * FROM [dbo].[DimWidget] AS [t2] WHERE ([t2].[WidgetID]=@p2);\r\n";
+            var collection = new List<SqlSelectBuilder>();
+
+            var q1 = new SqlSelectBuilder("dbo.DimWidget");
+            q1.Filters.Add(new SqlCompareFilter<int>(q1.Table, "WidgetID", SqlOperator.Equal, 1));
+            collection.Add(q1);
+
+            var q2 = new SqlSelectBuilder("dbo.DimWidget");
+            q2.Filters.Add(new SqlCompareFilter<int>(q2.Table, "WidgetID", SqlOperator.Equal, 2));
+            collection.Add(q2);
+
+            var q3 = new SqlSelectBuilder("dbo.DimWidget");
+            q3.Filters.Add(new SqlCompareFilter<int>(q3.Table, "WidgetID", SqlOperator.Equal, 3));
+            collection.Add(q3);
+
+            var stmt = collection.RenderBatch();
+
+            Assert.AreEqual(3, stmt.Count);
+            Assert.AreEqual(3, stmt.Parameters.Count);
+            Assert.AreEqual(1, stmt.Parameters.First().Value);
+            Assert.AreEqual(2, stmt.Parameters.Skip(1).First().Value);
+            Assert.AreEqual(3, stmt.Parameters.Last().Value);
+            Assert.AreEqual(test, stmt.CommandText, true);
         }
     }
 }

@@ -5,8 +5,15 @@ using System.Text;
 
 namespace Csg.Data.Sql
 {
+    /// <summary>
+    /// Represents a element of SQL statement that can be rendered.
+    /// </summary>
     public interface ISqlStatementElement
     {
+        /// <summary>
+        /// Renders the statement to the given writer/arguments.
+        /// </summary>
+        /// <param name="writer"></param>
         void Render(Abstractions.ISqlTextWriter writer);
     }
 }

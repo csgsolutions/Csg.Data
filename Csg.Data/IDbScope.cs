@@ -33,6 +33,11 @@ namespace Csg.Data
         /// </summary>
         /// <param name="isoLevel"></param>
         bool EnsureTransaction(IsolationLevel isoLevel);
+
+        /// <summary>
+        /// When implemented in a derived class, rolls back the transaction without disposing the connection.
+        /// </summary>
+        void RollbackTransaction();
     }
 
 }
