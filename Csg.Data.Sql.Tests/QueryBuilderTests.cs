@@ -227,7 +227,7 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
 
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
             builder.Prefix = "SET ROWCOUNT 10";
 
             var stmt = builder.Render();
@@ -243,7 +243,7 @@ namespace TestProject
             var builder = new SqlSelectBuilder();
 
             builder.Table = new SqlTable("dbo.Contact");
-            builder.Columns.Add(new SqlColumn(builder.Table, "FirstName"));
+            builder.SelectColumns.Add(new SqlColumn(builder.Table, "FirstName"));
             builder.Suffix = "A Suffix Statement Goes Here";
 
             var stmt = builder.Render();
