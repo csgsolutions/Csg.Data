@@ -24,7 +24,7 @@ namespace Csg.Data.Abstractions
 
         void RenderValue(SqlColumn src);
 
-        void RenderValue(SqlExpressionSelectColumn src);
+        void RenderValue(SqlRawColumn src);
 
         void RenderValue<T>(SqlLiteralColumn<T> src);
 
@@ -38,7 +38,7 @@ namespace Csg.Data.Abstractions
 
         void Render(SqlExistFilter src);
 
-        void Render(SqlExpressionSelectColumn src);
+        void Render(SqlRawColumn src);
 
         void Render(SqlFilterCollection src);
 

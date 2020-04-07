@@ -615,27 +615,34 @@ namespace Csg.Data.Sql
 
         public virtual void WriteExpression(string expression, IList<object> arguments)
         {
-            var resolvedArguments = arguments.Select(arg =>
+            if (arguments != null)
             {
-                if (arg is ISqlTable table)
+                var resolvedArguments = arguments.Select(arg =>
                 {
-                    return this.FormatQualifiedIdentifierName(BuildArguments.TableName(table));
-                }
-                else if (arg is System.Data.Common.DbParameter dbParam)
-                {
-                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(dbParam.Value, dbParam.DbType));
-                }
-                else if (arg is DbParameterValue paramValue)
-                {
-                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
-                }
-                else
-                {
-                    return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(arg.ToString(), System.Data.DbType.String));
-                }
-            }).ToArray();
+                    if (arg is ISqlTable table)
+                    {
+                        return this.FormatQualifiedIdentifierName(BuildArguments.TableName(table));
+                    }
+                    else if (arg is System.Data.Common.DbParameter dbParam)
+                    {
+                        return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(dbParam.Value, dbParam.DbType));
+                    }
+                    else if (arg is DbParameterValue paramValue)
+                    {
+                        return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(paramValue.Value, paramValue.DbType, paramValue.Size));
+                    }
+                    else
+                    {
+                        return string.Concat(this.ParameterNamePrefix, BuildArguments.CreateParameter(arg.ToString(), System.Data.DbType.String));
+                    }
+                }).ToArray();
 
-            this.Write(string.Format(expression, resolvedArguments));
+                this.Write(string.Format(expression, resolvedArguments));
+            }
+            else
+            {
+                this.Write(expression);
+            }            
         }
 
         public virtual void WriteOffsetLimit(SqlPagingOptions options)
@@ -790,29 +797,36 @@ namespace Csg.Data.Sql
             this.WriteEndGroup();
         }
 
-        public virtual void Render(SqlExpressionSelectColumn src)
+        public virtual void Render(SqlRawColumn src)
         {
-            // (( <src.Expression> ) AS <alias>)
-            this.WriteBeginGroup();
-            
+            // <src.Expression>  AS <alias>
             this.RenderValue(src);
-            this.WriteEndGroup();
 
-            this.WriteSpace();
-            this.Write(SqlConstants.AS);
-            this.WriteSpace();
-            this.WriteColumnName(src.Alias);
+            if (src.Alias != null)
+            {
+                this.WriteSpace();
+                this.Write(SqlConstants.AS);
+                this.WriteSpace();
+                this.WriteColumnName(src.Alias);
+            }
         }
 
         public virtual void Render(SqlFilterCollection src)
         {
             if (src.Count <= 0)
                 return;
-            this.WriteBeginGroup();
+
+            if (src.Count > 1)
+            {
+                this.WriteBeginGroup();
+            }
 
             this.RenderAll(src, string.Concat(" ", ((src.Logic == SqlLogic.And) ? SqlConstants.AND : SqlConstants.OR).ToString().ToUpper(), " "));
 
-            this.WriteEndGroup();
+            if (src.Count > 1)
+            {
+                this.WriteEndGroup();
+            }
         }
 
         public virtual void Render(SqlJoin src)
@@ -1051,8 +1065,15 @@ namespace Csg.Data.Sql
 
         public virtual void Render(SqlSelectBuilder selectBuilder, bool wrapped = false, bool aliased = false)
         {
+            if (aliased)
+            {
+                ((ISqlTable)selectBuilder).Compile(BuildArguments);
+            }
+            else
+            {
+                selectBuilder.CompileInternal(BuildArguments);
+            }
             // build refs for all the referenced tables            
-            selectBuilder.CompileInternal(BuildArguments);
 
             if (wrapped)
             {
@@ -1092,6 +1113,7 @@ namespace Csg.Data.Sql
             // ORDER BY
             this.RenderOrderBy(selectBuilder.OrderBy, BuildArguments);
 
+            // OFFSET / LIMIT
             if (selectBuilder.PagingOptions.HasValue)
             {
                 this.WriteOffsetLimit(selectBuilder.PagingOptions.Value);
@@ -1099,11 +1121,11 @@ namespace Csg.Data.Sql
 
             if (selectBuilder.Suffix != null)
             {
-                this.Write(selectBuilder.Suffix);
                 if (!wrapped)
                 {
                     this.WriteEndStatement();
                 }
+                this.Write(selectBuilder.Suffix);
             }
 
             // if we are using this as a subquery, or in a join, we need to wrap/alias it.
@@ -1121,9 +1143,9 @@ namespace Csg.Data.Sql
             }
         }
 
-        public virtual void RenderValue(SqlExpressionSelectColumn src)
+        public virtual void RenderValue(SqlRawColumn src)
         {
-            this.WriteExpression(src.Expression, src.Arguments);
+            this.WriteExpression(src.Value, src.Arguments);
         }
 
         public virtual void RenderValue<T>(SqlLiteralColumn<T> src)

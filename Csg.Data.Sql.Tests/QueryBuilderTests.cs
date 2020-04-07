@@ -199,17 +199,16 @@ namespace TestProject
         public void TestJoinToSelectBuilderSelect()
         {
             var test = "SELECT [t0].[BusinessEntityID],[t2].[PhoneNumber] FROM [Person].[Person] AS [t0] INNER JOIN (SELECT [t1].[BusinessEntityID],[t1].[PhoneNumber] FROM [Person].[PersonPhone] AS [t1]) AS [t2] ON ([t0].[BusinessEntityID]=[t2].[BusinessEntityID]);";
-                      //SELECT [t0].[FooID],[t2].[BarName] FROM [dbo].[Foo] AS [t0] INNER JOIN (SELECT [t1].[BarID],[t1].[BarName] FROM [dbo].[Bar] AS [t1]) AS [t2] ON ([t0].[BarID]=[t2].[BarID]); 
-            var builder = new SqlSelectBuilder();
+            //SELECT [t0].[FooID],[t2].[BarName] FROM [dbo].[Foo] AS [t0] INNER JOIN (SELECT [t1].[BarID],[t1].[BarName] FROM [dbo].[Bar] AS [t1]) AS [t2] ON ([t0].[BarID]=[t2].[BarID]); 
+            var builder = new SqlSelectBuilder(SqlProviderFactory.DefaultProvider);
 
             var foo = new SqlTable("Person.Person");
-            var bar = new SqlSelectBuilder("Person.PersonPhone");
+            var bar = SqlSelectBuilder.JoinTarget("Person.PersonPhone", SqlProviderFactory.DefaultProvider);
 
             bar.SelectColumns.Add(new SqlColumn(bar.Table, "BusinessEntityID"));
             bar.SelectColumns.Add(new SqlColumn(bar.Table, "PhoneNumber"));
 
             builder.Joins.AddInner(foo, bar, "BusinessEntityID");
-
             builder.Table = foo;
             builder.SelectColumns.Add(new SqlColumn(foo, "BusinessEntityID"));
             builder.SelectColumns.Add(new SqlColumn(bar, "PhoneNumber"));

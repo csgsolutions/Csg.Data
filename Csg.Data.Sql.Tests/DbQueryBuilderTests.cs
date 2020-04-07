@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Csg.Data.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,9 +20,10 @@ namespace Csg.Data.Sql.Tests
         public void TestCreateCommandPopulatesCommandParameters()
         {
             var conn = new MockConnection();
-            var query = new DbQueryBuilder("dbo.TableName", conn);
 
-            query.Parameters.Add(new DbParameterValue()
+            var query = conn.QueryBuilder("dbo.TableName");
+
+            query = query.AddParameter(new DbParameterValue()
             {
                 ParameterName  = "@Param1",
                 DbType = System.Data.DbType.Int32,
@@ -49,7 +51,7 @@ namespace Csg.Data.Sql.Tests
         public void TestForkCreatesShallowClone()
         {
             var conn = new MockConnection();
-            var query = new DbQueryBuilder("dbo.TableName", conn);
+            var query = new DbQueryBuilder("dbo.TableName", new DbCommandAdapter(conn));
 
             query.OrderBy.Add(new SqlOrderColumn() { ColumnName = "Foo" });
             query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("Blah")));

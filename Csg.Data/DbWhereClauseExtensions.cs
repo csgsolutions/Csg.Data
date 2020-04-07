@@ -320,7 +320,7 @@ namespace Csg.Data
             var innerTable = SqlTable.Create(sqlText);
             var innerQuery = new SqlSelectBuilder(innerTable, null);
             var innerWhere = new DbQueryWhereClause(innerTable, SqlLogic.And);
-            innerQuery.SelectColumns.Add(new SqlLiteralColumn<string>("1"));
+            innerQuery.SelectColumns.Add(new SqlLiteralColumn<int>(1));
             subQueryFilters(innerWhere);
             innerWhere.ApplyTo(innerQuery.Filters);            
             where.AddFilter(new Sql.SqlExistFilter(innerQuery));

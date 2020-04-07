@@ -65,6 +65,24 @@ namespace Csg.Data.Sql
             this.Table = table;
         }
 
+        public static SqlSelectBuilder JoinTarget(string commandText, ISqlProvider provider)
+        {
+            return new SqlSelectBuilder(commandText, provider)
+            {
+                Wrapped = true,
+                Aliased = true
+            };
+        }
+
+        public static SqlSelectBuilder JoinTarget(ISqlTable table, ISqlProvider provider)
+        {
+            return new SqlSelectBuilder(table, provider)
+            {
+                Wrapped = true,
+                Aliased = true
+            };
+        }
+
         /// <summary>
         /// Creates a new instance.
         /// </summary>
@@ -83,6 +101,10 @@ namespace Csg.Data.Sql
         public SqlSelectBuilder(string commandText) : this(commandText, SqlServer.SqlServerProvider.Instance)
         {
         }
+
+        public bool Wrapped { get; set; } = false;
+
+        public bool Aliased { get; set; } = false;
 
         /// <summary>
         /// Gets a value that indicates if the output SQL text should have line breaks and other formatting.
@@ -175,7 +197,7 @@ namespace Csg.Data.Sql
         /// <param name="writer"></param>
         public void Render(ISqlTextWriter writer)
         {
-            writer.Render(this, wrapped: false, aliased: false);
+            writer.Render(this, wrapped: this.Wrapped, aliased: this.Aliased);
         }
 
         /// <summary>
@@ -207,15 +229,15 @@ namespace Csg.Data.Sql
             }            
         }
 
-        void ISqlTable.Compile(SqlBuildArguments args)
+        public void Compile(SqlBuildArguments args)
         {
             this.CompileInternal(args);
             args.AssignAlias(this);
         }
 
-        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
+        void ISqlStatementElement.Render(ISqlTextWriter writer)
         {
-            writer.Render(this, wrapped: true, aliased: true);
+            writer.Render(this, this.Wrapped, this.Aliased);
         }
     }
 }
