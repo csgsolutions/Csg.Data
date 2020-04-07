@@ -4,7 +4,7 @@
     {
         public SqlDerivedTable(string commandText) : base()
         {
-            this.CommandText = commandText;
+            this.CommandText = TrimCommandText(commandText);
         }
                 
         public string CommandText { get; set; }
@@ -13,5 +13,10 @@
         {
             writer.Render(this);            
         }        
+
+        public static string TrimCommandText(string commandText)
+        {
+            return commandText.TrimEnd(new char[] { '\r', '\n', ';', ' ', '\t'});
+        }
     }
 }

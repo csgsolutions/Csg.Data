@@ -69,8 +69,22 @@ namespace Csg.Data
             if (this.Transaction != null)
             {
                 this.Transaction.Dispose();
+                this.Transaction = null;
+                
             }
             this.Connection.Dispose();
+        }
+        
+        /// <summary>
+        /// Rolls back the transaction without disposing the connection.
+        /// </summary>
+        public virtual void RollbackTransaction()
+        {
+            if (this.Transaction != null)
+            {
+                this.Transaction.Rollback();
+                this.Transaction = null;
+            }
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Csg.Data.Sql;
+﻿using Csg.Data.Abstractions;
+using Csg.Data.Sql;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,57 +20,6 @@ namespace Csg.Data
         ISqlTable Root { get; }
 
         /// <summary>
-        /// When implemented in a derived class, gets a collection of SELECT columns.
-        /// </summary>
-        IList<ISqlColumn> SelectColumns { get; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets or sets a value that indicates if SELECT DISTINCT should be used.
-        /// </summary>
-        bool SelectDistinct { get; set; }
-
-        /// <summary>
-        /// When implemented in a derived class, adds a JOIN to the FROM clause of the query.
-        /// </summary>
-        void AddJoin(ISqlJoin join);
-
-        /// <summary>
-        /// When implemented in a derived class, adds a WHERE clause to the query.
-        /// </summary>
-        void AddFilter(ISqlFilter filter);
-
-        /// <summary>
-        /// When implemented in a derived class, gets the list of columns to order by.
-        /// </summary>
-        IList<SqlOrderColumn> OrderBy { get; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets the underlying database connection.
-        /// </summary>
-        System.Data.IDbConnection Connection { get; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets the underlying database transaction.
-        /// </summary>
-        System.Data.IDbTransaction Transaction { get; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets a collection of parameters.
-        /// </summary>
-        ICollection<DbParameterValue> Parameters { get; }
-
-        /// <summary>
-        /// When implemented in a derived class, gets or sets the command timeout.
-        /// </summary>
-        int CommandTimeout { get; set; }
-
-        /// <summary>
-        /// When implemented in a derived class, returns an initalized database command.
-        /// </summary>
-        /// <returns></returns>
-        IDbCommand CreateCommand();
-
-        /// <summary>
         /// Gets a SQL statement for the given query.
         /// </summary>
         /// <returns></returns>
@@ -82,8 +32,33 @@ namespace Csg.Data
         IDbQueryBuilder Fork();
 
         /// <summary>
-        /// When implemented in a derived class, gets or sets the paging options for the query.
+        /// When implemented in a derived class, gets the current builder configuration.
         /// </summary>
+        IDbQueryBuilderOptions Configuration { get; }
+
+        IDbCommandAdapter CommandAdapter { get; }
+    }
+
+    public interface IDbQueryBuilderOptions
+    {
+        int? CommandTimeout { get; set; }
+
+        bool SelectDistinct { get; set; }
+
+        ICollection<DbParameterValue> Parameters { get; }
+
+        IList<ISqlColumn> SelectColumns { get; }
+
+        ICollection<ISqlFilter> Filters { get; }
+
+        ICollection<ISqlJoin> Joins { get; }
+
+        IList<SqlOrderColumn> OrderBy { get; }
+
         SqlPagingOptions? PagingOptions { get; set; }
+
+        string Prefix { get; set; }
+
+        string Suffix { get; set; }
     }
 }

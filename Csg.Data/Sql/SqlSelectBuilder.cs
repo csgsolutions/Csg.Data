@@ -17,27 +17,31 @@ namespace Csg.Data.Sql
 
         private void ParseInternal(string commandText)
         {
-            //TODO: check sortExpression for SQL injection            
-            string orderBy;
-            int i = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
+            //TODO: check sortExpression for SQL injection
+            int indexOfOrderBy = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
                         
             if (string.IsNullOrEmpty(commandText))
             {
                 throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
             }
 
-            commandText = commandText.Trim().TrimEnd(new char[] { '\r', '\n', ';', ' ', '\t' });
+            //commandText = commandText.Trim();
 
-            if (i >= 0)
+            //if (commandText.EndsWith(";"))
+            //{
+            //    commandText = commandText.Substring(0, commandText.Length - 1);
+            //}
+
+            commandText = SqlDerivedTable.TrimCommandText(commandText);
+
+            if (indexOfOrderBy >= 0)
             {
-                this.Table = SqlTableBase.Create(commandText.Substring(0, i));
-                orderBy = commandText.Substring(i + TSQL_ORDER_BY.Length + 1);
-                this.OrderBy.Add(orderBy);
+                this.Table = SqlTableBase.Create(commandText.Substring(0, indexOfOrderBy));
+                this.OrderBy.Add(commandText.Substring(indexOfOrderBy + TSQL_ORDER_BY.Length + 1));
             }
             else
             {
                 this.Table = SqlTableBase.Create(commandText);
-                orderBy = null;
             }
         }
 
@@ -61,6 +65,24 @@ namespace Csg.Data.Sql
             this.Table = table;
         }
 
+        public static SqlSelectBuilder JoinTarget(string commandText, ISqlProvider provider)
+        {
+            return new SqlSelectBuilder(commandText, provider)
+            {
+                Wrapped = true,
+                Aliased = true
+            };
+        }
+
+        public static SqlSelectBuilder JoinTarget(ISqlTable table, ISqlProvider provider)
+        {
+            return new SqlSelectBuilder(table, provider)
+            {
+                Wrapped = true,
+                Aliased = true
+            };
+        }
+
         /// <summary>
         /// Creates a new instance.
         /// </summary>
@@ -79,6 +101,10 @@ namespace Csg.Data.Sql
         public SqlSelectBuilder(string commandText) : this(commandText, SqlServer.SqlServerProvider.Instance)
         {
         }
+
+        public bool Wrapped { get; set; } = false;
+
+        public bool Aliased { get; set; } = false;
 
         /// <summary>
         /// Gets a value that indicates if the output SQL text should have line breaks and other formatting.
@@ -135,6 +161,16 @@ namespace Csg.Data.Sql
         }
 
         /// <summary>
+        /// Gets or sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards. This can be used to set query options.
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter (semicolon).
+        /// </summary>
+        public string Suffix { get; set; }
+
+        /// <summary>
         /// Renders the query.
         /// </summary>
         /// <param name="supressEndStatement">True if you want to supress statement terminating characters (semicolon)</param>
@@ -144,13 +180,14 @@ namespace Csg.Data.Sql
             var writer = this.Provider.CreateWriter();
 
             writer.Format = this.GenerateFormattedSql;
+
             writer.Render(this);
 
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();
             }
-
+            
             return new SqlStatement(writer.ToString(), writer.BuildArguments.Parameters);
         }
         
@@ -160,7 +197,7 @@ namespace Csg.Data.Sql
         /// <param name="writer"></param>
         public void Render(ISqlTextWriter writer)
         {
-            writer.Render(this, wrapped: false, aliased: false);
+            writer.Render(this, wrapped: this.Wrapped, aliased: this.Aliased);
         }
 
         /// <summary>
@@ -192,15 +229,15 @@ namespace Csg.Data.Sql
             }            
         }
 
-        void ISqlTable.Compile(SqlBuildArguments args)
+        public void Compile(SqlBuildArguments args)
         {
             this.CompileInternal(args);
             args.AssignAlias(this);
         }
 
-        void ISqlStatementElement.Render(Abstractions.ISqlTextWriter writer)
+        void ISqlStatementElement.Render(ISqlTextWriter writer)
         {
-            writer.Render(this, wrapped: true, aliased: true);
+            writer.Render(this, this.Wrapped, this.Aliased);
         }
     }
 }
