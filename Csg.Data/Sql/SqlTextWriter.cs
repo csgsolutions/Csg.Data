@@ -785,7 +785,6 @@ namespace Csg.Data.Sql
             this.WriteBeginGroup();
             this.Write("EXISTS ");
             this.WriteBeginGroup();
-//            this.Render(src.Statement, wrapped: true, aliased: false);
             src.Statement.Render(this);
             this.WriteEndGroup();
             this.WriteEndGroup();
@@ -1060,6 +1059,15 @@ namespace Csg.Data.Sql
                 this.WriteBeginGroup();
             }
 
+            if (selectBuilder.Prefix != null)
+            {
+                this.Write(selectBuilder.Prefix);
+                if (!wrapped)
+                {
+                    this.WriteEndStatement();
+                }
+            }
+
             // SELECT
             this.RenderSelect(selectBuilder.SelectColumns, BuildArguments, selectBuilder.SelectDistinct);
 
@@ -1087,6 +1095,15 @@ namespace Csg.Data.Sql
             if (selectBuilder.PagingOptions.HasValue)
             {
                 this.WriteOffsetLimit(selectBuilder.PagingOptions.Value);
+            }
+
+            if (selectBuilder.Suffix != null)
+            {
+                this.Write(selectBuilder.Suffix);
+                if (!wrapped)
+                {
+                    this.WriteEndStatement();
+                }
             }
 
             // if we are using this as a subquery, or in a join, we need to wrap/alias it.

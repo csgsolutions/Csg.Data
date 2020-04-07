@@ -318,9 +318,9 @@ namespace Csg.Data
         public static IDbQueryWhereClause Exists(this IDbQueryWhereClause where, string sqlText, Action<IDbQueryWhereClause> subQueryFilters)
         {
             var innerTable = SqlTable.Create(sqlText);
-            var innerQuery = new SqlSelectBuilder(innerTable);
+            var innerQuery = new SqlSelectBuilder(innerTable, null);
             var innerWhere = new DbQueryWhereClause(innerTable, SqlLogic.And);
-            innerQuery.Columns.Add(new SqlRawColumn("1"));
+            innerQuery.SelectColumns.Add(new SqlLiteralColumn<string>("1"));
             subQueryFilters(innerWhere);
             innerWhere.ApplyTo(innerQuery.Filters);            
             where.AddFilter(new Sql.SqlExistFilter(innerQuery));

@@ -590,8 +590,8 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         {
             var query = new SqlSelectBuilder("[Foo]");
 
-            query.Columns.Add(new SqlRawColumn("NULL", "Nothing"));
-            query.Columns.Add(new SqlRawColumn("1234"));
+            query.SelectColumns.Add(new SqlRawColumn("NULL", "Nothing"));
+            query.ColSelectColumnsumns.Add(new SqlRawColumn("1234"));
 
             var stmt = query.Render();
 

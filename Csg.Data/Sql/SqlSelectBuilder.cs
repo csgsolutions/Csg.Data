@@ -159,31 +159,13 @@ namespace Csg.Data.Sql
 
             writer.Format = this.GenerateFormattedSql;
 
-            if (this.Prefix != null)
-            {
-                writer.Write(this.Prefix);
-                if (!supressEndStatement)
-                {
-                    writer.WriteEndStatement();
-                }
-            }
-
             writer.Render(this);
-
 
             if (!supressEndStatement)
             {
                 writer.WriteEndStatement();
             }
-
-            if (this.Suffix != null)
-            {
-                writer.Write(this.Suffix);
-                if (!supressEndStatement)
-                {
-                    writer.WriteEndStatement();
-                }
-            }
+            
             return new SqlStatement(writer.ToString(), writer.BuildArguments.Parameters);
         }
         

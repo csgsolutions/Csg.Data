@@ -46,16 +46,16 @@ namespace Csg.Data.Sql
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public static SqlStatementBatch RenderBatch(this IEnumerable<ISqlStatementElement> elements)
+        public static SqlStatementBatch RenderBatch(this IEnumerable<ISqlStatementElement> elements, Abstractions.ISqlProvider provider)
         {
-            var writer = new SqlTextWriter();
+            var writer = new SqlTextWriter(provider);
             var args = new SqlBuildArguments();
             int count = 0;
 
             foreach (var element in elements)
             {
                 count++;
-                element.Render(writer, args);
+                element.Render(writer);
                 writer.WriteEndStatement();
                 writer.WriteLine();
             }
