@@ -36,7 +36,7 @@ namespace Csg.Data
         /// </summary>
         IDbQueryBuilderOptions Configuration { get; }
 
-        IDbCommandAdapter CommandAdapter { get; }
+        IQueryFeatureAdapter CommandAdapter { get; }
     }
 
     public interface IDbQueryBuilderOptions

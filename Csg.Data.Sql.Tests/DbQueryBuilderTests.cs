@@ -51,7 +51,7 @@ namespace Csg.Data.Sql.Tests
         public void TestForkCreatesShallowClone()
         {
             var conn = new MockConnection();
-            var query = new DbQueryBuilder("dbo.TableName", new DbCommandAdapter(conn));
+            var query = new DbQueryBuilder("dbo.TableName", new DbFeatureAdapter(conn));
 
             query.OrderBy.Add(new SqlOrderColumn() { ColumnName = "Foo" });
             query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("Blah")));

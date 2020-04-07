@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Csg.Data.Abstractions
 {
-    public interface IDbCommandAdapter
+    public interface IQueryFeatureAdapter
     {
-        TCommand CreateCommand<TCommand>(IDbQueryBuilder builder);
+        TFeature GetFeature<TFeature>(IDbQueryBuilder builder);
     }
 }

@@ -26,7 +26,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
         /// <param name="commandAdapter">The database connection.</param>
-        public DbQueryBuilder(string sql, Abstractions.IDbCommandAdapter commandAdapter, Abstractions.ISqlProvider provider = null) : base(sql, provider ?? SqlProviderFactory.DefaultProvider)
+        public DbQueryBuilder(string sql, Abstractions.IQueryFeatureAdapter commandAdapter, Abstractions.ISqlProvider provider = null) : base(sql, provider ?? SqlProviderFactory.DefaultProvider)
         {
             this.CommandAdapter = commandAdapter;
             this.GenerateFormattedSql = DefaultGenerateFormattedSql;
@@ -39,7 +39,7 @@ namespace Csg.Data
         /// </summary>
         /// <param name="sql">The name of a table, a table expression, or other object that can be the target of a SELECT query.</param>
         /// <param name="commandAdapter">The database connection.</param>
-        public DbQueryBuilder(ISqlTable table, Abstractions.IDbCommandAdapter commandAdapter, Abstractions.ISqlProvider provider = null) : base(table, provider ?? SqlProviderFactory.DefaultProvider)
+        public DbQueryBuilder(ISqlTable table, Abstractions.IQueryFeatureAdapter commandAdapter, Abstractions.ISqlProvider provider = null) : base(table, provider ?? SqlProviderFactory.DefaultProvider)
         {
             this.CommandAdapter = commandAdapter;
             this.GenerateFormattedSql = DefaultGenerateFormattedSql;
@@ -52,7 +52,7 @@ namespace Csg.Data
         /// </summary>
         public virtual ISqlTable Root { get => this.Table; }
 
-        public virtual Abstractions.IDbCommandAdapter CommandAdapter { get; protected set; }
+        public virtual Abstractions.IQueryFeatureAdapter CommandAdapter { get; protected set; }
 
         /// <summary>
         /// Adds a JOIN to the FROM clause of the query.

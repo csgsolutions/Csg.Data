@@ -22,7 +22,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static IDbQueryBuilder QueryBuilder(this Csg.Data.IDbScope scope, string commandText, Abstractions.ISqlProvider provider = null)
         {
-            var adapter = new DbCommandAdapter(scope.Connection, scope.Transaction);
+            var adapter = new DbFeatureAdapter(scope.Connection, scope.Transaction);
 
             return new DbQueryBuilder(commandText, adapter, provider ?? SqlProviderFactory.GetProvider(scope.Connection));
         }
@@ -36,7 +36,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static IDbQueryBuilder QueryBuilder(this System.Data.IDbConnection connection, string commandText, Abstractions.ISqlProvider provider = null)
         {
-            var adapter = new DbCommandAdapter(connection);
+            var adapter = new DbFeatureAdapter(connection);
 
             return new DbQueryBuilder(commandText, adapter, provider: provider ?? Sql.SqlProviderFactory.GetProvider(connection));
         }
@@ -50,7 +50,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static IDbQueryBuilder QueryBuilder(this System.Data.IDbTransaction transaction, string commandText, Abstractions.ISqlProvider provider = null)
         {
-            return new DbQueryBuilder(commandText, new DbCommandAdapter(transaction.Connection, transaction), provider: provider ?? Sql.SqlProviderFactory.GetProvider(transaction.Connection));
+            return new DbQueryBuilder(commandText, new DbFeatureAdapter(transaction.Connection, transaction), provider: provider ?? Sql.SqlProviderFactory.GetProvider(transaction.Connection));
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static IDataReader ExecuteReader(this IDbQueryBuilder query)
         {
-            return query.CommandAdapter.CreateCommand<IDbCommand>(query).ExecuteReader();
+            return query.CommandAdapter.GetFeature<IDbCommand>(query).ExecuteReader();
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static object ExecuteScalar(this IDbQueryBuilder query)
         {
-            return query.CommandAdapter.CreateCommand<IDbCommand>(query).ExecuteScalar();
+            return query.CommandAdapter.GetFeature<IDbCommand>(query).ExecuteScalar();
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static bool GetSchemaTable(this IDbQueryBuilder query, out DataTable schema, out ICollection<Exception> errors)
         {
-            var cmd = query.CommandAdapter.CreateCommand<IDbCommand>(query);
+            var cmd = query.CommandAdapter.GetFeature<IDbCommand>(query);
 
             errors = null;
             schema = null;
@@ -135,7 +135,7 @@ namespace Csg.Data.Common
         /// <returns></returns>
         public static bool GetColumnSchema(this IDbQueryBuilder query, out ReadOnlyCollection<DbColumn> schema, out ICollection<Exception> errors)
         {
-            var cmd = query.CommandAdapter.CreateCommand<IDbCommand>(query);
+            var cmd = query.CommandAdapter.GetFeature<IDbCommand>(query);
 
             errors = null;
             schema = null;
