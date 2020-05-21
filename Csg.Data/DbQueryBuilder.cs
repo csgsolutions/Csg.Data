@@ -160,8 +160,8 @@ namespace Csg.Data
             var builder = this.CreateSelectBuilder(generateFormattedSql);
 
             var stmt = builder.Render();
-
-            foreach(var param in this.Parameters)
+            
+            foreach (var param in this.Parameters)
             {
                 stmt.Parameters.Add(param);
             }
@@ -182,7 +182,7 @@ namespace Csg.Data
                 GenerateFormattedSql = generateFormattedSql ?? GenerateFormattedSql,
                 PagingOptions = this.PagingOptions,
                 Prefix = this.Prefix,
-                Suffix = this.Suffix
+                Suffix = this.Suffix,                
             };
         }
 
@@ -239,6 +239,11 @@ namespace Csg.Data
         void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
         {
             this.CreateSelectBuilder(false).Render(writer, args);
+
+            foreach (var param in this.Parameters)
+            {
+                args.Parameters.Add(param);
+            }
         }
 
         internal string ParameterString()

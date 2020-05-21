@@ -89,5 +89,49 @@ namespace Csg.Data.Sql.Tests
             Assert.AreEqual(true, fork.Distinct);
             Assert.AreEqual(123, fork.CommandTimeout);
         }
+
+        [TestMethod]
+        public void TestQueryBuilderAsSqlStatementRendersParametersToArgs()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
+
+
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Foo",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+
+            var args = new SqlBuildArguments();
+            var writer = new SqlTextWriter();
+
+            ((ISqlStatementElement)query).Render(writer, args);
+
+            Assert.AreEqual(1, args.Parameters.Count);
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0]", writer.ToString());
+        }
+
+        [TestMethod]
+        public void TestQueryBuilderRenderBatch()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
+
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Foo",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+
+            var stmt = new ISqlStatementElement[] { query }.RenderBatch();
+
+            Assert.AreEqual(1, stmt.Parameters.Count);
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];\r\n", stmt.CommandText);
+        }
     }
 }
