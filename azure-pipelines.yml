@@ -4,9 +4,14 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 
 trigger:
-- master
-- ref/tags/*
-
+  branches:
+    include:
+    - master
+    - refs/tags/*
+  paths:
+    exclude:
+    - README.md
+    
 pool:
   vmImage: 'windows-latest'
 
