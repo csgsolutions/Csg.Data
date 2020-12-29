@@ -1073,6 +1073,7 @@ namespace Csg.Data.Sql
             {
                 selectBuilder.CompileInternal(BuildArguments);
             }
+                                    
             // build refs for all the referenced tables            
 
             if (wrapped)

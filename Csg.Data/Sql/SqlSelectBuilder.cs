@@ -217,7 +217,7 @@ namespace Csg.Data.Sql
         /// Compiles the tables used in the query into the given build arguments object.
         /// </summary>
         /// <param name="args"></param>
-        public void CompileInternal(SqlBuildArguments args)
+        public virtual void CompileInternal(SqlBuildArguments args)
         {
             this.Table.Compile(args);
             if (this.Joins.Count > 0)
@@ -226,7 +226,7 @@ namespace Csg.Data.Sql
                 {
                     join.JoinedTable.Compile(args);
                 }
-            }            
+            }
         }
 
         public void Compile(SqlBuildArguments args)

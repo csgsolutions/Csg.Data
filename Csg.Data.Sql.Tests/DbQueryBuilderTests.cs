@@ -99,7 +99,6 @@ namespace Csg.Data.Sql.Tests
             var conn = new MockConnection();
             var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", new DbFeatureAdapter(conn));
 
-
             query.Parameters.Add(new DbParameterValue()
             {
                 ParameterName = "@Foo",
@@ -128,14 +127,12 @@ namespace Csg.Data.Sql.Tests
                 DbType = System.Data.DbType.Int32,
                 Size = 4,
                 Value = 123
-            });
-
-            
+            });            
 
             var stmt = new ISqlStatementElement[] { query }.RenderBatch(SqlServerProvider.Instance);
 
             Assert.AreEqual(1, stmt.Parameters.Count);
-            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];\r\n", stmt.CommandText);
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];", stmt.CommandText);
         }
     }
 }

@@ -83,11 +83,6 @@ namespace Csg.Data.Abstractions
         {
             var stmt = base.Render();
 
-            foreach(var param in this.Parameters)
-            {
-                stmt.Parameters.Add(param);
-            }
-
             return stmt;
         }
 
@@ -140,12 +135,17 @@ namespace Csg.Data.Abstractions
 
         ISelectQueryBuilderOptions ISelectQueryBuilder.Configuration => this;
 
-        #endregion
-                
+        #endregion                
 
         internal string ParameterString()
         {
             return string.Join(", ", this.Render().Parameters.Select(s => s.ParameterName + "=" +s.Value));
+        }
+
+        public override void CompileInternal(SqlBuildArguments args)
+        {
+            base.CompileInternal(args);
+            args.Parameters.AddRange(this.Parameters);
         }
     }
 }
