@@ -144,10 +144,8 @@ namespace Csg.Data
         /// <returns></returns>
         public static System.Data.DbType TypeToDbType(Type type)
         {
-            if (type == typeof(Nullable<>))
-            {
-                type = type.GetGenericArguments()[0];
-            }
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            type = underlyingType ?? type;
 
             if (type == typeof(byte)) return DbType.Byte;
             if (type == typeof(short)) return DbType.Int16;

@@ -5,7 +5,6 @@ namespace Csg.Data
 {
     internal static class util
     {
-
         public static System.InvalidOperationException InvalidOperationException(string format, object arg0)
         {
             return new InvalidOperationException(string.Format(format, arg0));
@@ -15,11 +14,5 @@ namespace Csg.Data
         {
             return DbConvert.ConvertValue(value, dbType);
         }
-
-        public static DbType ConvertTypeCodeToDbType(TypeCode typeCode)
-        {
-            return DbConvert.TypeCodeToDbType(typeCode);
-        }
-
     }
 }

@@ -17,6 +17,10 @@ namespace Csg.Data.SqlServer
         /// </summary>
         public static readonly SqlServerProvider Instance = new SqlServerProvider();
 
+        private SqlServerProvider()
+        {
+        }
+
         /// <summary>
         /// Creates a sql text writer optimized for SQL Server.
         /// </summary>

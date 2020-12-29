@@ -1,4 +1,5 @@
 ﻿using Csg.Data.Common;
+using Csg.Data.SqlServer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -90,6 +91,51 @@ namespace Csg.Data.Sql.Tests
             Assert.AreEqual(100, fork.PagingOptions.Value.Limit);
             Assert.AreEqual(true, fork.SelectDistinct);
             Assert.AreEqual(123, fork.CommandTimeout);
+        }
+
+        [TestMethod]
+        public void TestQueryBuilderAsSqlStatementRendersParametersToArgs()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", new DbFeatureAdapter(conn));
+
+
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Foo",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+
+            var writer = new SqlTextWriter(SqlServerProvider.Instance);
+
+            ((ISqlStatementElement)query).Render(writer);
+
+            Assert.AreEqual(1, writer.BuildArguments.Parameters.Count);
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0]", writer.ToString());
+        }
+
+        [TestMethod]
+        public void TestQueryBuilderRenderBatch()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", new DbFeatureAdapter(conn));
+
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Foo",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+
+            
+
+            var stmt = new ISqlStatementElement[] { query }.RenderBatch(SqlServerProvider.Instance);
+
+            Assert.AreEqual(1, stmt.Parameters.Count);
+            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];\r\n", stmt.CommandText);
         }
     }
 }
