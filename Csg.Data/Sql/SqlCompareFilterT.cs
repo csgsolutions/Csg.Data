@@ -17,6 +17,7 @@ namespace Csg.Data.Sql
         public SqlCompareFilter()
         {
             this.EncodeValueAsLiteral = false;
+            this.DataType = DbConvert.TypeToDbType(typeof(TValue));
         }
 
         /// <summary>
@@ -30,8 +31,7 @@ namespace Csg.Data.Sql
         {
             this.Table = table;
             this.ColumnName = columnName;
-            this.Operator = @operator;
-            this.DataType = util.ConvertTypeCodeToDbType(Type.GetTypeCode(typeof(TValue)));
+            this.Operator = @operator;            
             this.Value = value;            
         }
 
