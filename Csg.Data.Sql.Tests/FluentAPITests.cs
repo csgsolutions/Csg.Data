@@ -166,5 +166,26 @@ namespace TestProject
             Assert.AreEqual(test, stmt.CommandText, true);
         }
 
+        [TestMethod]
+        public void TestFieldMatchInfersCorrectDbTypeFromClrType()
+        {
+            var stmt = new MockConnection().QueryBuilder("dbo.Product")
+                .Where(x => x.FieldMatch("byte", SqlOperator.Equal, (byte)0))
+                .Where(x => x.FieldMatch("Int16", SqlOperator.Equal, (short)123))
+                .Where(x => x.FieldMatch("Int32", SqlOperator.Equal, 123))
+                .Where(x => x.FieldMatch("Int64", SqlOperator.Equal, (long)123))
+                .Where(x => x.FieldMatch("bool", SqlOperator.Equal, true))
+                .Where(x => x.FieldMatch("string", SqlOperator.Equal, "test123"))
+                .Render();
+
+            var plist = stmt.Parameters.ToList();
+            Assert.AreEqual(System.Data.DbType.Byte, plist[0].DbType);
+            Assert.AreEqual(System.Data.DbType.Int16, plist[1].DbType);
+            Assert.AreEqual(System.Data.DbType.Int32, plist[2].DbType);
+            Assert.AreEqual(System.Data.DbType.Int64, plist[3].DbType);
+            Assert.AreEqual(System.Data.DbType.Boolean, plist[4].DbType);
+            Assert.AreEqual(System.Data.DbType.String, plist[5].DbType);
+        }
+
     }
 }
