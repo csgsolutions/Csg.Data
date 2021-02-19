@@ -63,8 +63,7 @@ namespace Csg.Data
             {
                 where.AddFilter(new Csg.Data.Sql.SqlCompareFilter<TValue>(where.Root, fieldName, @operator, value)
                 {
-                    //TODO: Is AnsiString the right default?
-                    DataType = dbType.HasValue ? dbType.Value : DbType.AnsiString,
+                    DataType = dbType.HasValue ? dbType.Value : DbConvert.TypeToDbType(typeof(TValue)),
                     Size = size,
                 });
             }
