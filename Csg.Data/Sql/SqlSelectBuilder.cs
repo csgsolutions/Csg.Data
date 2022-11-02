@@ -19,7 +19,7 @@ namespace Csg.Data.Sql
             //TODO: check sortExpression for SQL injection            
             string orderBy;
             int i = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
-                        
+
             if (string.IsNullOrEmpty(commandText))
             {
                 throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
@@ -73,7 +73,7 @@ namespace Csg.Data.Sql
         /// Gets or sets a value that indicates if only distinct values should be returned from the query.
         /// </summary>
         public bool SelectDistinct { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the primary table used in the query. This will be used as the first table rendered directly after the FROM keyword.
         /// </summary>
@@ -182,21 +182,27 @@ namespace Csg.Data.Sql
 
             this.RenderInternal(writer, args);
 
+            this.Table = new SqlDerivedTable(writer.ToString());
+            var writerTwo = new SqlTextWriter() { Format = writer.Format, };
+
+            this.CompileInternal(args);
+            this.RenderAgain(writerTwo, args);
+
             if (!supressEndStatement)
             {
-                writer.WriteEndStatement();
+                writerTwo.WriteEndStatement();
             }
 
             if (this.Suffix != null)
             {
-                writer.Write(this.Suffix);
+                writerTwo.Write(this.Suffix);
                 if (!supressEndStatement)
                 {
                     writer.WriteEndStatement();
                 }
             }
 
-            return new SqlStatement(writer.ToString(), args.Parameters);
+            return new SqlStatement(writerTwo.ToString(), args.Parameters);
         }
 
         /// <summary>
@@ -221,7 +227,7 @@ namespace Csg.Data.Sql
 
             return s;
         }
-        
+
         /// <summary>
         /// Compiles the tables used in the query into the given build arguments object.
         /// </summary>
@@ -245,13 +251,27 @@ namespace Csg.Data.Sql
         /// <param name="args"></param>
         protected void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
         {
-            writer.RenderSelect(this.Columns, args, this.SelectDistinct);
+            writer.RenderSelect(new List<SqlColumn>(), args, false);
+
             writer.RenderFrom(this.Table, args);
             if (this.Joins.Count > 0)
             {
                 writer.RenderJoins(this.Joins, args);
             }
+
             writer.RenderWhere(this.Filters, SqlLogic.And, args);
+        }
+
+        /// <summary>
+        /// Renders the query to the given text writer.
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="args"></param>
+        protected void RenderAgain(SqlTextWriter writer, SqlBuildArguments args)
+        {
+            writer.RenderSelect(this.Columns, args, this.SelectDistinct);
+
+            writer.RenderFrom(this.Table, args);
 
             if (this.Columns.Count(x => x.IsAggregate) > 0)
             {
@@ -263,8 +283,15 @@ namespace Csg.Data.Sql
             {
                 writer.RenderOffsetLimit(this.PagingOptions.Value, args);
             }
-        }
-                
+            /*
+            this.WriteBeginGroup();
+            this.WriteEndGroup();
+            */
+        }       /// Renders the query to the given text writer.
+                /// </summary>
+                /// <param name="writer"></param>
+
+
         void ISqlTable.Compile(SqlBuildArguments args)
         {
             args.AssignAlias(this);
@@ -284,3 +311,4 @@ namespace Csg.Data.Sql
         }
     }
 }
+

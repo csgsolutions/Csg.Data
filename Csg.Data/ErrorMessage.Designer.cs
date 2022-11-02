@@ -8,10 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Csg.Data {
+namespace Csg.Data
+{
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -19,106 +20,128 @@ namespace Csg.Data {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class ErrorMessage {
-        
+    internal class ErrorMessage
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ErrorMessage() {
+        internal ErrorMessage()
+        {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Csg.Data.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The value for &apos;{0}&apos; cannot be empty or null..
         /// </summary>
-        internal static string GenericValueCannotBeEmptyOrNull {
-            get {
+        internal static string GenericValueCannotBeEmptyOrNull
+        {
+            get
+            {
                 return ResourceManager.GetString("GenericValueCannotBeEmptyOrNull", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The OrderBy expression contains an invalid property name..
         /// </summary>
-        internal static string InvalidOrderByExpression {
-            get {
+        internal static string InvalidOrderByExpression
+        {
+            get
+            {
                 return ResourceManager.GetString("InvalidOrderByExpression", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to A query cannot have a limit or offset without an order by expression..
         /// </summary>
-        internal static string LimitOrOffsetWithoutOrderBy {
-            get {
+        internal static string LimitOrOffsetWithoutOrderBy
+        {
+            get
+            {
                 return ResourceManager.GetString("LimitOrOffsetWithoutOrderBy", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The specified value is not in a valid format for a data column name..
         /// </summary>
-        internal static string SqlDbColumn_InvalidNameFormat {
-            get {
+        internal static string SqlDbColumn_InvalidNameFormat
+        {
+            get
+            {
                 return ResourceManager.GetString("SqlDbColumn_InvalidNameFormat", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The values collection for a SqlListFilter on data field &apos;{0}&apos; is empty or null..
         /// </summary>
-        internal static string SqlListFilter_CollectionIsEmpty {
-            get {
+        internal static string SqlListFilter_CollectionIsEmpty
+        {
+            get
+            {
                 return ResourceManager.GetString("SqlListFilter_CollectionIsEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The operation was cancelled by a child filter..
         /// </summary>
-        internal static string SqlSelectBuilder_OperationCancelled {
-            get {
+        internal static string SqlSelectBuilder_OperationCancelled
+        {
+            get
+            {
                 return ResourceManager.GetString("SqlSelectBuilder_OperationCancelled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Timeout value must be greater than or equal to zero..
         /// </summary>
-        internal static string TimeoutValueMustBeGreater {
-            get {
+        internal static string TimeoutValueMustBeGreater
+        {
+            get
+            {
                 return ResourceManager.GetString("TimeoutValueMustBeGreater", resourceCulture);
             }
         }

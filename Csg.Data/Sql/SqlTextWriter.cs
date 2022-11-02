@@ -9,12 +9,12 @@ namespace Csg.Data.Sql
     public class SqlTextWriter : System.IO.TextWriter
     {
         private System.IO.TextWriter InnerWriter;
-        
+
         private const string COLUMN_SEPERATOR = ",";
         private const string JOIN_SEPERATOR = " ";
         private const string QUOTE = "\"";
         private const string QUOTEQUOTE = "\"\"";
-        
+
         public SqlTextWriter() : base()
         {
             this.InnerWriter = new System.IO.StringWriter();
@@ -23,7 +23,7 @@ namespace Csg.Data.Sql
         public SqlTextWriter(System.IO.TextWriter writer) : base()
         {
             this.InnerWriter = writer;
-        }        
+        }
 
         public SqlTextWriter(StringBuilder sb) : base()
         {
@@ -219,7 +219,7 @@ namespace Csg.Data.Sql
         }
 
         public void WriteTableName(string tableName, string alias)
-        {            
+        {
             Write(FormatQualifiedIdentifierName(tableName));
             if (!string.IsNullOrEmpty(alias))
             {
@@ -238,19 +238,19 @@ namespace Csg.Data.Sql
 
         public void WriteAggregateColumn(string columnName, string tableName, SqlAggregate aggregateType, string outputName)
         {
-                Write(ConvertSqlAggregateToString(aggregateType));
-                WriteBeginGroup();
-                if (aggregateType == SqlAggregate.CountDistinct)
-                {
-                    Write(SqlConstants.DISTINCT);
-                    WriteSpace();
-                }
-                WriteColumnName(columnName, tableName);
-                WriteEndGroup();
+            Write(ConvertSqlAggregateToString(aggregateType));
+            WriteBeginGroup();
+            if (aggregateType == SqlAggregate.CountDistinct)
+            {
+                Write(SqlConstants.DISTINCT);
                 WriteSpace();
-                Write(SqlConstants.AS);
-                WriteSpace();
-                WriteColumnName(outputName);
+            }
+            WriteColumnName(columnName, tableName);
+            WriteEndGroup();
+            WriteSpace();
+            Write(SqlConstants.AS);
+            WriteSpace();
+            WriteColumnName(outputName);
         }
 
         public void WriteAggregate(string columnName, string tableName, SqlAggregate aggregateType)
@@ -284,7 +284,7 @@ namespace Csg.Data.Sql
                 throw new ArgumentNullException("args");
 
             var items = columns.ToArray();
-            this.WriteSelect();      
+            this.WriteSelect();
             this.WriteSpace();
 
             if (distinct)
@@ -308,6 +308,50 @@ namespace Csg.Data.Sql
             {
                 this.Write("*");
             }
+
+            this.WriteNewLine();
+        }
+
+        public void RenderSelectAgain(IEnumerable<ISqlColumn> columns, SqlBuildArguments args, bool distinct, bool UseParens = false)
+        {
+            if (UseParens)
+            {
+                this.WriteBeginGroup();
+            }
+            if (columns == null)
+                throw new ArgumentNullException("columns");
+            if (args == null)
+                throw new ArgumentNullException("args");
+
+            var items = columns.ToArray();
+            this.WriteSelect();
+            this.WriteSpace();
+
+            if (distinct)
+            {
+                this.Write(SqlConstants.DISTINCT);
+                this.WriteSpace();
+            }
+
+            if (items.Length > 0)
+            {
+                if (this.Format)
+                {
+                    this.RenderAll(items, args, string.Concat(COLUMN_SEPERATOR, "\r\n"));
+                }
+                else
+                {
+                    this.RenderAll(items, args, COLUMN_SEPERATOR);
+                }
+            }
+            else
+            {
+                this.Write("*");
+            }
+            if (UseParens)
+            {
+                this.WriteEndGroup();
+            }
             this.WriteNewLine();
         }
 
@@ -324,7 +368,7 @@ namespace Csg.Data.Sql
                 throw new ArgumentNullException("table");
             if (args == null)
                 throw new ArgumentNullException("args");
-            
+
             this.WriteFrom();
             table.Render(this, args);
             this.WriteNewLine();
@@ -348,7 +392,7 @@ namespace Csg.Data.Sql
             if (items.Length > 0)
             {
                 this.WriteWhere();
-                this.RenderAll(items, args, string.Concat(SqlConstants.SPACE,ConvertSqlLogicToString(logic),SqlConstants.SPACE));
+                this.RenderAll(items, args, string.Concat(SqlConstants.SPACE, ConvertSqlLogicToString(logic), SqlConstants.SPACE));
             }
         }
 
@@ -369,8 +413,8 @@ namespace Csg.Data.Sql
             var items = columns.ToArray();
             if (items.Length > 0)
             {
-                this.WriteGroupBy();                
-                this.RenderAll(items, args, COLUMN_SEPERATOR, (a, b, c) => { a.RenderValueExpression(b,c); });               
+                this.WriteGroupBy();
+                this.RenderAll(items, args, COLUMN_SEPERATOR, (a, b, c) => { a.RenderValueExpression(b, c); });
             }
             this.WriteNewLine();
         }
@@ -390,10 +434,10 @@ namespace Csg.Data.Sql
                 throw new ArgumentNullException("args");
 
             var items = columns.ToArray();
-            
+
             if (items.Length > 0)
             {
-                this.WriteOrderBy();                
+                this.WriteOrderBy();
                 this.RenderAll(items, args, COLUMN_SEPERATOR);
             }
             this.WriteNewLine();
@@ -435,7 +479,7 @@ namespace Csg.Data.Sql
             this.WriteSpace();
             this.WriteTableName(FormatTableName(alias));
         }
-        
+
         public void WriteSpace()
         {
             Write(SqlConstants.SPACE);
@@ -450,7 +494,7 @@ namespace Csg.Data.Sql
         {
             this.WriteComma();
         }
-        
+
         public virtual void WriteBeginGroup()
         {
             Write(SqlConstants.BEGINGROUP);
@@ -542,12 +586,12 @@ namespace Csg.Data.Sql
             }
         }
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator) where T: ISqlStatementElement
+        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator) where T : ISqlStatementElement
         {
             this.RenderAll(items, args, seperator, (a, b, c) => { a.Render(b, c); });
         }
 
-        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator, Action<T,SqlTextWriter, SqlBuildArguments> renderAction) where T : ISqlStatementElement
+        public virtual void RenderAll<T>(IEnumerable<T> items, SqlBuildArguments args, string seperator, Action<T, SqlTextWriter, SqlBuildArguments> renderAction) where T : ISqlStatementElement
         {
             bool first = true;
             foreach (var item in items)
