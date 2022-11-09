@@ -82,10 +82,6 @@ namespace Csg.Data.Sql
             {
                 throw new InvalidOperationException("The specified table is not associated with the query.");
             }
-            if (_tables.Count > 1)
-            {
-                index = _tables.Count - 1;
-            }
             return string.Format(SqlTableNameFormat, index);
         }
     }

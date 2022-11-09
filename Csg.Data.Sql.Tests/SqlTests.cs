@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using Csg.Data;
 using Csg.Data.Sql;
 using System.Data.Common;
+using System.Data;
 
 namespace TestProject
 {
@@ -476,40 +477,80 @@ from facGadget Inner Join DimWidget on facGadget.GadgetKey = DimWidget.GadgetKey
         [TestMethod]
         public void TestJoins()
         {
-            string test1 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]);";
-            string test2 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]) WHERE ([t0].[SomeField]=@p0);";
-            //string test3 = "SELECT RS.* FROM (SELECT [t0].*,[t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2] FROM (Table1) AS t0 INNER JOIN [dbo].[Table2] AS t1 ON t1.[Table1ID]=[t0].[Table1ID] LEFT JOIN [dbo].[Table3] AS [t2] ON [t2].[Table1ID]=[t0].[Table1ID] AND [t2].[Table2ID]=t1.[Table2ID]) RS WHERE (RS.[SomeField]=@p0);";
-            string test4 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2],[t3].[Test1] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]) CROSS JOIN [dbo].[Table4] AS [t3];";
-
             SqlSelectBuilder q = new SqlSelectBuilder("Table1");
             SqlStatement s;
 
             var table2 = new SqlTable("dbo.Table2");
-            q.Joins.AddInner(q.Table, table2, new ISqlFilter[] { new SqlColumnCompareFilter(table2, "Table1ID", SqlOperator.Equal, q.Table, "Table1ID") });            
+            q.Joins.AddInner(q.Table, table2, new ISqlFilter[] { new SqlColumnCompareFilter(table2, "Table1ID", SqlOperator.Equal, q.Table, "Table1ID") });
             q.Columns.Add(new SqlColumn(table2, "Foo"));
             q.Columns.Add(new SqlColumn(table2, "Bar"));
 
             var table3 = new SqlTable("dbo.Table3");
-            q.Joins.AddLeft(q.Table, table3, new ISqlFilter[] { 
+            q.Joins.AddLeft(q.Table, table3, new ISqlFilter[] {
                 new SqlColumnCompareFilter(table3,"Table1ID", SqlOperator.Equal, q.Table, "Table1ID"),
                 new SqlColumnCompareFilter(table3, "Table2ID", SqlOperator.Equal, table2, "Table2ID")
             });
             q.Columns.Add(new SqlColumn(table3, "Test1"));
             q.Columns.Add(new SqlColumn(table3, "Test2"));
-                                              
+
+            string test1 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]);";
             s = q.Render();
             Assert.IsTrue(string.Equals(s.CommandText, test1, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
+        }
 
+        
+
+        [TestMethod]
+        public void TestJoinsTwo()
+        {
+            SqlSelectBuilder q = new SqlSelectBuilder("Table1");
+            SqlStatement s;
+
+            var table2 = new SqlTable("dbo.Table2");
+            q.Joins.AddInner(q.Table, table2, new ISqlFilter[] { new SqlColumnCompareFilter(table2, "Table1ID", SqlOperator.Equal, q.Table, "Table1ID") });
+            q.Columns.Add(new SqlColumn(table2, "Foo"));
+            q.Columns.Add(new SqlColumn(table2, "Bar"));
+
+            var table3 = new SqlTable("dbo.Table3");
+            q.Joins.AddLeft(q.Table, table3, new ISqlFilter[] {
+                new SqlColumnCompareFilter(table3,"Table1ID", SqlOperator.Equal, q.Table, "Table1ID"),
+                new SqlColumnCompareFilter(table3, "Table2ID", SqlOperator.Equal, table2, "Table2ID")
+            });
+            q.Columns.Add(new SqlColumn(table3, "Test1"));
+            q.Columns.Add(new SqlColumn(table3, "Test2"));
+
+            string test2 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]) WHERE ([t0].[SomeField]=@p0);";
             q.Filters.Add(new SqlCompareFilter<string>(q.Table, "SomeField", SqlOperator.Equal, "Value"));
             s = q.Render();
-            Assert.IsTrue(string.Equals(s.CommandText, test2, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");
+            Assert.AreEqual(s.CommandText, test2, "Output CommandText does not match expected result");
+        }
 
+        [TestMethod]
+        public void TestJoinsThree()
+        {
+            SqlSelectBuilder q = new SqlSelectBuilder("Table1");
+            SqlStatement s;
+
+            var table2 = new SqlTable("dbo.Table2");
+            q.Joins.AddInner(q.Table, table2, new ISqlFilter[] { new SqlColumnCompareFilter(table2, "Table1ID", SqlOperator.Equal, q.Table, "Table1ID") });
+            q.Columns.Add(new SqlColumn(table2, "Foo"));
+            q.Columns.Add(new SqlColumn(table2, "Bar"));
+
+            var table3 = new SqlTable("dbo.Table3");
+            q.Joins.AddLeft(q.Table, table3, new ISqlFilter[] {
+                new SqlColumnCompareFilter(table3,"Table1ID", SqlOperator.Equal, q.Table, "Table1ID"),
+                new SqlColumnCompareFilter(table3, "Table2ID", SqlOperator.Equal, table2, "Table2ID")
+            });
+            q.Columns.Add(new SqlColumn(table3, "Test1"));
+            q.Columns.Add(new SqlColumn(table3, "Test2"));
+
+            string test4 = "SELECT [t1].[Foo],[t1].[Bar],[t2].[Test1],[t2].[Test2],[t3].[Test1] FROM [Table1] AS [t0] INNER JOIN [dbo].[Table2] AS [t1] ON ([t1].[Table1ID]=[t0].[Table1ID]) LEFT JOIN [dbo].[Table3] AS [t2] ON ([t2].[Table1ID]=[t0].[Table1ID]) AND ([t2].[Table2ID]=[t1].[Table2ID]) CROSS JOIN [dbo].[Table4] AS [t3];";
             q.Filters.Clear();
             var table4 = new SqlTable("dbo.Table4");
             q.Joins.AddCross(q.Table, table4);
             q.Columns.Add(new SqlColumn(table4, "Test1"));
             s = q.Render();
-            Assert.IsTrue(string.Equals(s.CommandText, test4, StringComparison.OrdinalIgnoreCase), "Output CommandText does not match expected result");            
+            Assert.AreEqual(s.CommandText, test4, "Output CommandText does not match expected result");
         }
 
         [TestMethod]

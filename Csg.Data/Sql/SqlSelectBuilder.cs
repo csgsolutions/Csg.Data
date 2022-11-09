@@ -168,41 +168,84 @@ namespace Csg.Data.Sql
         {
             var writer = new SqlTextWriter() { Format = this.GenerateFormattedSql };
             var args = new SqlBuildArguments();
-
+            
             this.CompileInternal(args);
-
-            if (this.Prefix != null)
+            if ((this.Columns.Count() > 0 && this.Filters.Count()>0) && this.Joins.Count()==0 )
             {
-                writer.Write(this.Prefix);
+                this.RenderInternal(writer, args);
+
+                this.Table = new SqlDerivedTable(writer.ToString());
+                writer = new SqlTextWriter() { Format = writer.Format, };
+
+                this.CompileInternal(args);
+
+                if (this.Prefix != null)
+                {
+                    writer.Write(this.Prefix);
+                    if (!supressEndStatement)
+                    {
+                        writer.WriteEndStatement();
+                    }
+                }
+
+                //add the columns to the right table
+                var newcolumns = _columns;
+
+                _columns = new List<ISqlColumn>();
+                foreach (var column in newcolumns)
+                {
+                    column.Table = this.Table;
+                    _columns.Add(column);
+                }
+
+                this.RenderAgain(writer, args);
+
                 if (!supressEndStatement)
                 {
                     writer.WriteEndStatement();
                 }
+
+                if (this.Suffix != null)
+                {
+                    writer.Write(this.Suffix);
+                    if (!supressEndStatement)
+                    {
+                        writer.WriteEndStatement();
+                    }
+                }
+
+                return new SqlStatement(writer.ToString(), args.Parameters);
             }
-
-            this.RenderInternal(writer, args);
-
-            this.Table = new SqlDerivedTable(writer.ToString());
-            var writerTwo = new SqlTextWriter() { Format = writer.Format, };
-
-            this.CompileInternal(args);
-            this.RenderAgain(writerTwo, args);
-
-            if (!supressEndStatement)
+            else
             {
-                writerTwo.WriteEndStatement();
-            }
+                if (this.Prefix != null)
+                {
+                    writer.Write(this.Prefix);
+                    if (!supressEndStatement)
+                    {
+                        writer.WriteEndStatement();
+                    }
+                }
 
-            if (this.Suffix != null)
-            {
-                writerTwo.Write(this.Suffix);
+                this.RenderBoth(writer, args);
+                
                 if (!supressEndStatement)
                 {
                     writer.WriteEndStatement();
                 }
+
+                if (this.Suffix != null)
+                {
+                    writer.Write(this.Suffix);
+                    if (!supressEndStatement)
+                    {
+                        writer.WriteEndStatement();
+                    }
+                }
+
+                return new SqlStatement(writer.ToString(), args.Parameters);
             }
 
-            return new SqlStatement(writerTwo.ToString(), args.Parameters);
         }
 
         /// <summary>
@@ -212,7 +255,7 @@ namespace Csg.Data.Sql
         public void Render(SqlTextWriter writer, SqlBuildArguments args)
         {
             this.CompileInternal(args);
-            this.RenderInternal(writer, args);
+            this.RenderBoth(writer, args);
         }
 
         /// <summary>
@@ -260,6 +303,32 @@ namespace Csg.Data.Sql
             }
 
             writer.RenderWhere(this.Filters, SqlLogic.And, args);
+        }/// <summary>
+         /// Renders the query to the given text writer.
+         /// </summary>
+         /// <param name="writer"></param>
+         /// <param name="args"></param>
+        protected void RenderBoth(SqlTextWriter writer, SqlBuildArguments args)
+        {
+
+            writer.RenderSelect(this.Columns, args, this.SelectDistinct);
+            writer.RenderFrom(this.Table, args);
+            if (this.Joins.Count > 0)
+            {
+                writer.RenderJoins(this.Joins, args);
+            }
+            writer.RenderWhere(this.Filters, SqlLogic.And, args);
+
+            if (this.Columns.Count(x => x.IsAggregate) > 0)
+            {
+                writer.RenderGroupBy(this.Columns.Where(x => !x.IsAggregate), args);
+            }
+
+            writer.RenderOrderBy(this.OrderBy, args);
+            if (this.PagingOptions.HasValue)
+            {
+                writer.RenderOffsetLimit(this.PagingOptions.Value, args);
+            }
         }
 
         /// <summary>
@@ -302,7 +371,7 @@ namespace Csg.Data.Sql
         {
             this.CompileInternal(args);
             //writer.WriteBeginGroup();
-            this.RenderInternal(writer, args);
+            this.RenderBoth(writer, args);
             //writer.WriteEndGroup();
             //writer.WriteSpace();
             //writer.Write(SqlConstants.AS);

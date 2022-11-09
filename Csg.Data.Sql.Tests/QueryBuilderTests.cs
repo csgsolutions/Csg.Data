@@ -4,6 +4,7 @@ using Csg.Data.Sql;
 using System.Collections.Generic;
 using System.Linq;
 using Csg.Data;
+using System.Data;
 
 namespace TestProject
 {
@@ -65,7 +66,7 @@ namespace TestProject
         [TestMethod]
         public void TestSelectFilters()
         {
-            var test = "SELECT [t0].[LastName],[t0].[FirstName] FROM [dbo].[Contact] AS [t0] WHERE ([t0].[LastName]=@p0) AND ([t0].[FirstName]>@p1) ORDER BY [LastName] ASC,[FirstName] DESC;";
+            var test = "SELECT [t0].[LastName],[t0].[FirstName] FROM (SELECT * FROM [dbo].[Contact] AS [t0] WHERE ([t0].[LastName]=@p0) AND ([t0].[FirstName]>@p1)) AS [t1] ORDER BY [LastName] ASC,[FirstName] DESC;";
             var builder = new SqlSelectBuilder();
                         
             builder.Table = new SqlTable("dbo.Contact");            
@@ -225,6 +226,22 @@ namespace TestProject
 
             Assert.IsNotNull(stmt.CommandText);
             Assert.AreEqual(stmt.CommandText, test);
+        }
+
+        [TestMethod]
+        public void TestWhereAndColumnSelectOnSingleTable()
+        {
+            var test = "SELECT [t1].[ProductID] FROM (SELECT * FROM (Select 'Baserecord',productid, otheritems,RecordSource from F join p on p.id = f.id) AS [t0] WHERE ([t0].[RecordSource]=@p0)) AS [t1];";
+    
+            var builder = new SqlSelectBuilder("Select 'Baserecord',productid, otheritems,RecordSource from F join p on p.id = f.id");
+            builder.Columns.Add(new SqlColumn(builder.Table, "ProductID"));
+            builder.Filters.Add(new SqlCompareFilter(builder.Table, "RecordSource", SqlOperator.Equal, DbType.String, "CCA"));
+
+            var stmt = builder.Render();
+
+            Assert.IsNotNull(stmt.CommandText);
+            Assert.AreEqual(test,stmt.CommandText);
+
         }
     }
 }
