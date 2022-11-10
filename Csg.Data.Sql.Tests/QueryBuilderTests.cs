@@ -66,7 +66,7 @@ namespace TestProject
         [TestMethod]
         public void TestSelectFilters()
         {
-            var test = "SELECT [t0].[LastName],[t0].[FirstName] FROM (SELECT * FROM [dbo].[Contact] AS [t0] WHERE ([t0].[LastName]=@p0) AND ([t0].[FirstName]>@p1)) AS [t1] ORDER BY [LastName] ASC,[FirstName] DESC;";
+            var test = "SELECT [t1].[LastName],[t1].[FirstName] FROM (SELECT * FROM [dbo].[Contact] AS [t0] WHERE ([t0].[LastName]=@p0) AND ([t0].[FirstName]>@p1)) AS [t1] ORDER BY [LastName] ASC,[FirstName] DESC;";
             var builder = new SqlSelectBuilder();
                         
             builder.Table = new SqlTable("dbo.Contact");            
