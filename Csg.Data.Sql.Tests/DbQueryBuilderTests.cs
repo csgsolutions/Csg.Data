@@ -23,7 +23,7 @@ namespace Csg.Data.Sql.Tests
 
             query.Parameters.Add(new DbParameterValue()
             {
-                ParameterName  = "@Param1",
+                ParameterName = "@Param1",
                 DbType = System.Data.DbType.Int32,
                 Size = 4,
                 Value = 123
@@ -43,6 +43,39 @@ namespace Csg.Data.Sql.Tests
             Assert.AreEqual(System.Data.DbType.Int32, ((IDbDataParameter)cmd.Parameters[0]).DbType);
             Assert.AreEqual(4, ((IDbDataParameter)cmd.Parameters[0]).Size);
             Assert.AreEqual(123, ((IDbDataParameter)cmd.Parameters[0]).Value);
+        }
+
+        [TestMethod]
+        public void TestCreateCommandPopulatesCommandParametersAndPrefix()
+        {
+            var conn = new MockConnection();
+            var query = new DbQueryBuilder("dbo.TableName", conn);
+
+            query.Parameters.Add(new DbParameterValue()
+            {
+                ParameterName = "@Param1",
+                DbType = System.Data.DbType.Int32,
+                Size = 4,
+                Value = 123
+            });
+
+            query.Prefix("test"); 
+            var stmt = query.Render();
+
+            Assert.AreEqual(1, stmt.Parameters.Count);
+            Assert.AreEqual(System.Data.DbType.Int32, stmt.Parameters.First().DbType);
+            Assert.AreEqual(4, stmt.Parameters.First().Size);
+            Assert.AreEqual(123, stmt.Parameters.First().Value);
+
+            var cmd = stmt.CreateCommand(conn);
+
+            Assert.AreEqual(conn, cmd.Connection);
+            Assert.AreEqual(1, cmd.Parameters.Count);
+            Assert.AreEqual(System.Data.DbType.Int32, ((IDbDataParameter)cmd.Parameters[0]).DbType);
+            Assert.AreEqual(4, ((IDbDataParameter)cmd.Parameters[0]).Size);
+            Assert.AreEqual(123, ((IDbDataParameter)cmd.Parameters[0]).Value);
+            Assert.AreEqual("test;SELECT * FROM [dbo].[TableName] AS [t0];", cmd.CommandText);
+            
         }
 
         [TestMethod]
