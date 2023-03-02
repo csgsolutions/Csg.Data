@@ -423,7 +423,6 @@ namespace Csg.Data
         /// <returns></returns>
         public static IDbQueryBuilder Prefix(this IDbQueryBuilder query, string prefix)
         {
-            query = query.Fork();
             query.Prefix = prefix;
             return query;
         }

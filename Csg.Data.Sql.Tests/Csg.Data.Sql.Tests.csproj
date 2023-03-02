@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>3.1.6</VersionPrefix>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net471</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>Csg.Data.Sql.Tests</AssemblyName>
     <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
@@ -33,7 +33,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
