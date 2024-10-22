@@ -39,21 +39,20 @@ public class SqlStringMatchFilter : SqlSingleColumnFilterBase
     /// <returns></returns>
     public static string DecorateValue(string value, SqlWildcardDecoration decoration)
     {
-        if (value.Contains('*') || value.Contains('%')) return value.Replace("*", "%");
+        if (value.Contains("*") || value.Contains("%")) return value.Replace("*", "%");
 
-        if (decoration == SqlWildcardDecoration.BeginsWith)
-            return string.Concat(value, "%");
-        if (decoration == SqlWildcardDecoration.Contains)
-            return string.Concat("%", value, "%");
-        if (decoration == SqlWildcardDecoration.EndsWith)
-            return string.Concat("%", value);
-        return value;
+        return decoration switch
+        {
+            SqlWildcardDecoration.BeginsWith => string.Concat(value, "%"),
+            SqlWildcardDecoration.Contains => string.Concat("%", value, "%"),
+            SqlWildcardDecoration.EndsWith => string.Concat("%", value),
+            _ => value
+        };
     }
 
     protected override void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
     {
-        var s = Value;
-        if (s == null) s = string.Empty;
+        var s = Value ?? string.Empty;
 
         writer.WriteBeginGroup();
         writer.WriteColumnName(ColumnName, args.TableName(Table));
