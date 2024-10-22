@@ -1,26 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿namespace Csg.Data.Sql;
 
-namespace Csg.Data.Sql
+/// <summary>
+///     Represents the options of table join types.
+/// </summary>
+public enum SqlJoinType
 {
     /// <summary>
-    /// Represents the options of table join types.
+    ///     INNER JOIN
     /// </summary>
-    public enum SqlJoinType
-    {
-        /// <summary>
-        /// INNER JOIN
-        /// </summary>
-        Inner,
-        /// <summary>
-        /// LEFT JOIN
-        /// </summary>
-        Left,
-        /// <summary>
-        /// CROSS JOIN
-        /// </summary>
-        Cross
-    }
+    Inner,
+
+    /// <summary>
+    ///     LEFT JOIN
+    /// </summary>
+    Left,
+
+    /// <summary>
+    ///     CROSS JOIN
+    /// </summary>
+    Cross
 }

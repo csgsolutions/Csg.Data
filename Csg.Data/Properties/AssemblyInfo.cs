@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Resources;
-using System;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -30,4 +30,6 @@ using System;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: NeutralResourcesLanguageAttribute("en-US")]
 [assembly: CLSCompliant(true)]
-[assembly: InternalsVisibleTo("Csg.Data.Sql.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100575057b441e9af9a8e3381d8c81227ad802ca781c026f424b58e853abaef44b17b5fc6bec9fe9ba3af8b675de57160bd8be77b1f8301cc9da51cbe95aed5b597a55e98afa20f32658b3bdea8b8cdd65617a16a1ab118efbf96ff501ad13324b5d91f0e72c21f52b17e7cd10c709dab92c9350cb9218af639992b4075e85e04d0")]
+[assembly:
+    InternalsVisibleTo(
+        "Csg.Data.Sql.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100575057b441e9af9a8e3381d8c81227ad802ca781c026f424b58e853abaef44b17b5fc6bec9fe9ba3af8b675de57160bd8be77b1f8301cc9da51cbe95aed5b597a55e98afa20f32658b3bdea8b8cdd65617a16a1ab118efbf96ff501ad13324b5d91f0e72c21f52b17e7cd10c709dab92c9350cb9218af639992b4075e85e04d0")]

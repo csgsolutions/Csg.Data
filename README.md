@@ -1,13 +1,16 @@
 # CSG QueryBuilder and Data Tools
+
 This package provides an SQL query builder for generating dynamic-SQL statements in .NET and .NET Core applications.
 
 # CI and Pre-Release Feed
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hx4so74ja1y42lfw/branch/master?svg=true)](https://ci.appveyor.com/project/jusbuc2k/csg-data/branch/master)
 
-Early releases can be found on the [CSG Public MyGet feed](https://www.myget.org/feed/csgsolutions/package/nuget/Csg.Data).
+Early releases can be found on
+the [CSG Public MyGet feed](https://www.myget.org/feed/csgsolutions/package/nuget/Csg.Data).
 
 # Get Started
+
 Install the [NuGet package](https://www.nuget.org/packages/Csg.Data/)
 
 # APIs
@@ -18,17 +21,19 @@ the QueryBuilder together with [Csg.Data.Dapper](https://github.com/csgsolutions
 ## Fluent API
 
 ### Note about parameterization and SQL text
+
 Unless otherwise noted, the literal values shown in the example rendered queries would always
-be rendered as parameter references. The parameter values are shown as literals for ease of 
+be rendered as parameter references. The parameter values are shown as literals for ease of
 understanding. In addition, the example SQL output is not exactly what is rendered, but is simplified
 for demonstration purposes.
 
 ### QueryBuilder Extension Method
+
 Querybuilder is an extension method for IDbConnection, so it can be used
-with most DB connection types, such as SqlConnection, DbConnection, 
+with most DB connection types, such as SqlConnection, DbConnection,
 etc. by adding a ```using Csg.Data;``` in your code file.
 
-Query builders can also be created from a transaction, if you need to execute a 
+Query builders can also be created from a transaction, if you need to execute a
 query in an existing transaction.
 
 ```csharp
@@ -62,12 +67,15 @@ var query = connection.QueryBuilder("SELECT ProductID, Name FROM dbo.Product");
 ```
 
 ### Add a simple equality filter
+
 ```csharp
 var query = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldEquals<bool>("IsActive", true));
 // SELECT * FROM dbo.Product WHERE IsActive=1;
 ```
+
 Which is equivalent to
+
 ```csharp
 var query = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldMatch<bool>("IsActive", SqlOperator.Equal, true));
@@ -75,6 +83,7 @@ var query = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Add a comparison filter
+
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldMatch<decimal>("Price", SqlOperator.GreaterThan, 100M));
@@ -85,6 +94,7 @@ var query2 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Add a between filter
+
 ```csharp
 var query = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldBetween<decimal>("Price", 100, 200))   
@@ -92,6 +102,7 @@ var query = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Add a NULL or NOT NULL filter
+
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldIsNull("ExpirationDate"))   
@@ -102,9 +113,11 @@ var query2 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### String Comparisons
+
 It is important to specify IsAnsi: true when using FieldEquals(), FieldMatch() or StringMatch() with string
 values defined in the database as char or varchar so the correct parameter data types are generated. This
 can affect the performance of the executed query dramatically.
+
 ```csharp
 var query = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldEquals<string>("NameNVarChar", "Red Apple"));
@@ -114,10 +127,11 @@ var query = connection.QueryBuilder("dbo.Product")
 ```
 
 To generate pattern matching (LIKE) filters, use the .StringMatch() method. The SqlWildcardDecoration
-enum parameter indicates whether the given value should be automatically wrapped 
+enum parameter indicates whether the given value should be automatically wrapped
 with SQL wildcard characters as %value% value%, %value or not at all. If the input string
-contains asterisk (*) or question marks (?) they will be replaced with the SQL 
+contains asterisk (*) or question marks (?) they will be replaced with the SQL
 equivalent of % and _ respectively.
+
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
     .Where(x => x.StringMatch("Description", SqlWildcardDecoration.Contains, "Fruit"));
@@ -131,9 +145,12 @@ var query3 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Manually specify a parameter data type
-Type mapping from .NET types to System.Data.DbType is performed when creating parameters, however sometimes it may be 
-necessary to specify the type or size of the generated parameter manually. FieldEquals(), FieldMatch() and FieldBetween() support specifying
-both the type and size, and StringMatch supports specifying the length. 
+
+Type mapping from .NET types to System.Data.DbType is performed when creating parameters, however sometimes it may be
+necessary to specify the type or size of the generated parameter manually. FieldEquals(), FieldMatch() and
+FieldBetween() support specifying
+both the type and size, and StringMatch supports specifying the length.
+
 ```csharp
 var query = connection.QueryBuilder("dbo.Product")
     .Where(x => x.FieldEquals("Code", 100, dbType: System.Data.DbType.Byte));
@@ -147,6 +164,7 @@ var query = connection.QueryBuilder("dbo.Product")
 ```
 
 ### List filters
+
 WHERE IN (list,of,values) and WHERE NOT IN (list,of,values) filters can be built using FieldIn() and FieldNotIn()
 
 ```csharp
@@ -160,9 +178,12 @@ var query2 = connection.QueryBuilder("dbo.Product")
 ```
 
 In the above examples, the values in the comma seperated list in the generated SQL text would be parameterized in
-the form of (@p0, @p1, @p2) etc. If you want to generate literal values for numeric data types, specify the useLiteralNumbers argument. 
-This feature is currently only supported for Int16, Int32, and Int64 data types. All other data types will be rendered parameterized
+the form of (@p0, @p1, @p2) etc. If you want to generate literal values for numeric data types, specify the
+useLiteralNumbers argument.
+This feature is currently only supported for Int16, Int32, and Int64 data types. All other data types will be rendered
+parameterized
 regardless of the useLiteralNumbers value. Boolean values are always rendered as literal 1 and 0.
+
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
     .Where(x => .FieldIn("CategoryID", new int[] { 10, 20, 30 }, useLiteralNumbers: true));
@@ -174,7 +195,9 @@ var query2 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Sub-Query Matching Filters
-```WHERE IN (SELECT <cols> FROM <table> WHERE <conditions>)``` filters can be built using FieldInSubQuery() and FieldNotInSubQuery().
+
+```WHERE IN (SELECT <cols> FROM <table> WHERE <conditions>)``` filters can be built using FieldInSubQuery() and
+FieldNotInSubQuery().
 
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
@@ -193,7 +216,9 @@ var query2 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Sub-Query Counting Filters
-```WHERE (SELECT COUNT(<something>) FROM <table> WHERE <conditions>) <count condition>``` filters can be built using SubQueryCount().
+
+```WHERE (SELECT COUNT(<something>) FROM <table> WHERE <conditions>) <count condition>``` filters can be built using
+SubQueryCount().
 
 ```csharp
 var query1 = connection.QueryBuilder("dbo.Product")
@@ -204,6 +229,7 @@ var query1 = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Sub-Query Exists Filters
+
 ```WHERE EXISTS (<query expression>)``` filters can be built using Exists().
 
 ```csharp
@@ -213,7 +239,6 @@ var query1 = connection.QueryBuilder("dbo.Product")
     ));
 // SELECT * FROM dbo.Product WHERE EXISTS (SELECT 1 FROM dbo.ProductAttribute WHERE ProductID=dbo.Product.ProductID AND AttributeName=='Color');
 ```
-
 
 ### Creating multiple groups of filters with OR logic
 
@@ -302,6 +327,7 @@ var productName = connection.QueryBuilder("dbo.Product")
 ```
 
 ### Render a query to a string and a parameter collection
+
 If you need the SQL text and parameter values, render the query with Render()
 
 ```csharp
@@ -311,6 +337,7 @@ var statement = connection.QueryBuilder("dbo.Product").Render();
 ```
 
 ### Query Cloning
+
 The fluent API Where() and WhereAny() methods create a clones of the original query
 before making modifications. Multiple forks of the same query can be created by assigning
 the results of Where() and WhereAny() to variables.
@@ -334,6 +361,7 @@ var query4 = query1.Where(x => x.FieldEquals<bool>("IsActive", false));
 ```
 
 ### Conditional Filter Application Scenario
+
 A common application of the QueryBuilder is in building a dynamic WHERE clause for a query based on various
 input parameters that may or may not have values provided. Below is an example of a ListProducts() method for such
 a scenario.
@@ -369,7 +397,8 @@ public static IEnumerable<Product> ListProducts(bool? isActive, string productNa
 
 ### Filter a query using a collection of criteria
 
-If you need to add multiple sets of filter criteria joined using OR logic, use WhereAny() giving it an IList or IEnumerable
+If you need to add multiple sets of filter criteria joined using OR logic, use WhereAny() giving it an IList or
+IEnumerable
 as the first argument. Tuples are used for this example, but the collection can be of any type.
 
 ```csharp

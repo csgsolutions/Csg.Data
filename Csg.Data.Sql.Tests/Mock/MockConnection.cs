@@ -1,94 +1,74 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Data;
 
-namespace Csg.Data
+namespace Csg.Data.Sql.Tests.Mock;
+
+public class MockConnection : IDbConnection
 {
-    public class MockConnection : System.Data.IDbConnection
+    public MockConnection()
     {
-
-        private System.Data.ConnectionState InternalState { get; set; }
-
-        public MockConnection()
-        {
-            this.InternalState = System.Data.ConnectionState.Closed;
-        }
-
-        public System.Data.IDbTransaction BeginTransaction(System.Data.IsolationLevel il)
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Data.IDbTransaction BeginTransaction()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ChangeDatabase(string databaseName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Close()
-        {
-            this.InternalState = System.Data.ConnectionState.Closed;
-        }
-
-        public string ConnectionString
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public int ConnectionTimeout
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public System.Data.IDbCommand CreateCommand()
-        {
-            return new MockCommand()
-            {
-                Connection = this
-            };
-        }
-
-        public string Database
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public void Open()
-        {
-            this.InternalState = System.Data.ConnectionState.Open;
-        }
-
-        public System.Data.ConnectionState State
-        {
-            get { return this.InternalState; }
-        }
-
-        public void Dispose()
-        {
-            this.Close();
-        }
-
-        public bool IsOpen()
-        {
-            return this.State == System.Data.ConnectionState.Open;
-        }
-
-        public bool IsClosed()
-        {
-            return this.State == System.Data.ConnectionState.Closed;
-        }
+        InternalState = ConnectionState.Closed;
     }
 
+    private ConnectionState InternalState { get; set; }
+
+    public IDbTransaction BeginTransaction(IsolationLevel il)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IDbTransaction BeginTransaction()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ChangeDatabase(string databaseName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Close()
+    {
+        InternalState = ConnectionState.Closed;
+    }
+
+    public string ConnectionString
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
+
+    public int ConnectionTimeout => throw new NotImplementedException();
+
+    public IDbCommand CreateCommand()
+    {
+        return new MockCommand
+        {
+            Connection = this
+        };
+    }
+
+    public string Database => throw new NotImplementedException();
+
+    public void Open()
+    {
+        InternalState = ConnectionState.Open;
+    }
+
+    public ConnectionState State => InternalState;
+
+    public void Dispose()
+    {
+        Close();
+    }
+
+    public bool IsOpen()
+    {
+        return State == ConnectionState.Open;
+    }
+
+    public bool IsClosed()
+    {
+        return State == ConnectionState.Closed;
+    }
 }

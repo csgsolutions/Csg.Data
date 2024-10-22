@@ -1,78 +1,60 @@
-﻿using Csg.Data.Sql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using Csg.Data.Sql;
 
-namespace Csg.Data
+namespace Csg.Data;
+
+/// <summary>
+///     Used to build a set of fitlers with the fluent api.
+/// </summary>
+public class DbQueryWhereClause : IDbQueryWhereClause
 {
     /// <summary>
-    /// Used to build a set of fitlers with the fluent api.
+    ///     Initializes a new instance with the given table and AND/OR logic.
     /// </summary>
-    public class DbQueryWhereClause : IDbQueryWhereClause
+    /// <param name="root"></param>
+    /// <param name="logic"></param>
+    public DbQueryWhereClause(ISqlTable root, SqlLogic logic)
     {
-        private readonly ISqlTable _root;
+        Root = root;
+        Filters = new SqlFilterCollection { Logic = logic };
+    }
 
-        /// <summary>
-        /// Initializes a new instance with the given table and AND/OR logic.
-        /// </summary>
-        /// <param name="root"></param>
-        /// <param name="logic"></param>
-        public DbQueryWhereClause(ISqlTable root, SqlLogic logic)
-        {
-            _root = root;
-            this.Filters = new SqlFilterCollection() { Logic = logic };
-        }
+    /// <summary>
+    ///     Gets or sets the filter collection
+    /// </summary>
+    public SqlFilterCollection Filters { get; set; }
 
-        /// <summary>
-        /// Gets or sets the filter collection
-        /// </summary>
-        public SqlFilterCollection Filters { get; set; }
+    /// <summary>
+    ///     Gets or sets the root table associated with the WHERE clause.
+    /// </summary>
+    public ISqlTable Root { get; }
 
-        /// <summary>
-        /// Gets or sets the root table associated with the WHERE clause.
-        /// </summary>
-        public ISqlTable Root
-        {
-            get
-            {
-                return _root;
-            }
-        }
+    /// <summary>
+    ///     Adds a filter to the where clause
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    public IDbQueryWhereClause AddFilter(ISqlFilter filter)
+    {
+        Filters.Add(filter);
+        return this;
+    }
 
-        /// <summary>
-        /// Adds a filter to the where clause
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        public IDbQueryWhereClause AddFilter(ISqlFilter filter)
-        {
-            this.Filters.Add(filter);
-            return this;
-        }
+    /// <summary>
+    ///     Applies filters to the given query builder.
+    /// </summary>
+    /// <param name="builder"></param>
+    public void ApplyToQuery(IDbQueryBuilder builder)
+    {
+        if (Filters.Count > 0) builder.AddFilter(Filters);
+    }
 
-        /// <summary>
-        /// Applies filters to the given query builder.
-        /// </summary>
-        /// <param name="builder"></param>
-        public void ApplyToQuery(IDbQueryBuilder builder)
-        {
-            if (this.Filters.Count > 0)
-            {
-                builder.AddFilter(this.Filters);
-            }
-        }
-
-        /// <summary>
-        /// Adds filters to teh given collection.
-        /// </summary>
-        /// <param name="filters"></param>
-        public void ApplyTo(ICollection<ISqlFilter> filters)
-        {
-            if (this.Filters.Count > 0)
-            {
-                filters.Add(this.Filters);
-            }
-        }
+    /// <summary>
+    ///     Adds filters to teh given collection.
+    /// </summary>
+    /// <param name="filters"></param>
+    public void ApplyTo(ICollection<ISqlFilter> filters)
+    {
+        if (Filters.Count > 0) filters.Add(Filters);
     }
 }

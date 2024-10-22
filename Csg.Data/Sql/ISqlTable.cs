@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿namespace Csg.Data.Sql;
 
-namespace Csg.Data.Sql
+/// <summary>
+///     Represents a SQL table.
+/// </summary>
+public interface ISqlTable : ISqlStatementElement
 {
     /// <summary>
-    /// Represents a SQL table.
+    ///     Adds the table to the given arguments colletion so it can be referenced.
     /// </summary>
-    public interface ISqlTable : ISqlStatementElement
-    {
-        /// <summary>
-        /// Adds the table to the given arguments colletion so it can be referenced.
-        /// </summary>
-        /// <param name="args"></param>
-        void Compile(SqlBuildArguments args);
-    }
+    /// <param name="args"></param>
+    void Compile(SqlBuildArguments args);
 }

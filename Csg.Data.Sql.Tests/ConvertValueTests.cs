@@ -1,128 +1,125 @@
 ﻿using System;
+using System.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace TestProject
+namespace Csg.Data.Sql.Tests;
+
+[TestClass]
+public class ConvertValueTests
 {
-    [TestClass]
-    public class ConvertValueTests
+    [TestMethod]
+    public void TestConvertInt16()
     {
-        [TestMethod]
-        public void TestConvertInt16()
-        {
-            short value = 123;
-            object valueAsObject = 123;
-            string valueAsString = value.ToString();            
+        short value = 123;
+        object valueAsObject = 123;
+        var valueAsString = value.ToString();
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Int16));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Int16));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Int16));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Int16));
+    }
 
-        [TestMethod]
-        public void TestConvertInt32()
-        {
-            int value = 123;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123;
+    [TestMethod]
+    public void TestConvertInt32()
+    {
+        var value = 123;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Int32));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Int32));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Int32));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Int32));
+    }
 
-        [TestMethod]
-        public void TestConvertInt64()
-        {
-            long value = 123;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123;
+    [TestMethod]
+    public void TestConvertInt64()
+    {
+        long value = 123;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Int64));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Int64));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Int64));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Int64));
+    }
 
-        [TestMethod]
-        public void TestConvertSingle()
-        {
-            Single value = 123.456F;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123.456;
+    [TestMethod]
+    public void TestConvertSingle()
+    {
+        var value = 123.456F;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123.456;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Single));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Single));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Single));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Single));
+    }
 
-        [TestMethod]
-        public void TestConvertDouble()
-        {
-            Double value = 123.456;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123.456;
+    [TestMethod]
+    public void TestConvertDouble()
+    {
+        var value = 123.456;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123.456;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Double));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Double));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Double));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Double));
+    }
 
-        [TestMethod]
-        public void TestConvertDecimal()
-        {
-            decimal value = 123.456M;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123.456;
+    [TestMethod]
+    public void TestConvertDecimal()
+    {
+        var value = 123.456M;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123.456;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Decimal));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Decimal));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Decimal));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Decimal));
+    }
 
-        [TestMethod]
-        public void TestConvertCurrency()
-        {
-            decimal value = 123.456M;
-            string valueAsString = value.ToString();
-            object valueAsObject = 123.456;
+    [TestMethod]
+    public void TestConvertCurrency()
+    {
+        var value = 123.456M;
+        var valueAsString = value.ToString();
+        object valueAsObject = 123.456;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Currency));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Currency));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Currency));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Currency));
+    }
 
-        [TestMethod]
-        public void TestConvertBoolean()
-        {
-            bool value = true;
-            string valueAsString = value.ToString();
-            object valueAsObject = true;
+    [TestMethod]
+    public void TestConvertBoolean()
+    {
+        var value = true;
+        var valueAsString = value.ToString();
+        object valueAsObject = true;
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsString, System.Data.DbType.Boolean));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Boolean));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(1, System.Data.DbType.Boolean));
-            Assert.AreEqual(false, Csg.Data.util.ConvertValue(0, System.Data.DbType.Boolean));
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsString, DbType.Boolean));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.Boolean));
+        Assert.AreEqual(value, util.ConvertValue(1, DbType.Boolean));
+        Assert.AreEqual(false, util.ConvertValue(0, DbType.Boolean));
+    }
 
-        [TestMethod]
-        public void TestConvertString()
-        {
-            string value = "123";
-            object valueAsObject = "123";
+    [TestMethod]
+    public void TestConvertString()
+    {
+        var value = "123";
+        object valueAsObject = "123";
 
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.String));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.StringFixedLength));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.AnsiString));
-            Assert.AreEqual(value, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.AnsiStringFixedLength));            
-        }
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.String));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.StringFixedLength));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.AnsiString));
+        Assert.AreEqual(value, util.ConvertValue(valueAsObject, DbType.AnsiStringFixedLength));
+    }
 
-        [TestMethod]
-        public void TestConvertDateTime()
-        {
-            string value = "1/1/1900";
-            DateTime date = DateTime.Parse(value);
-            DateTimeOffset dateo = DateTime.Parse(value);
-            object valueAsObject = "1/1/1900";
+    [TestMethod]
+    public void TestConvertDateTime()
+    {
+        var value = "1/1/1900";
+        var date = DateTime.Parse(value);
+        DateTimeOffset dateo = DateTime.Parse(value);
+        object valueAsObject = "1/1/1900";
 
-            Assert.AreEqual(date, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.Date));
-            Assert.AreEqual(date, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.DateTime));
-            Assert.AreEqual(date, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.DateTime2));
-            Assert.AreEqual(dateo, Csg.Data.util.ConvertValue(valueAsObject, System.Data.DbType.DateTimeOffset));
-        }
+        Assert.AreEqual(date, util.ConvertValue(valueAsObject, DbType.Date));
+        Assert.AreEqual(date, util.ConvertValue(valueAsObject, DbType.DateTime));
+        Assert.AreEqual(date, util.ConvertValue(valueAsObject, DbType.DateTime2));
+        Assert.AreEqual(dateo, util.ConvertValue(valueAsObject, DbType.DateTimeOffset));
     }
 }
-
-
-
