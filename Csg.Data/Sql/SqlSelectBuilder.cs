@@ -1,286 +1,265 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Data;
 
-namespace Csg.Data.Sql
+namespace Csg.Data.Sql;
+
+/// <summary>
+///     Provides methods for parsing, testing, and executing an SQL SELECT statement
+/// </summary>
+public class SqlSelectBuilder : ISqlTable
 {
-    /// <summary>
-    /// Provides methods for parsing, testing, and executing an SQL SELECT statement
-    /// </summary>
-    public class SqlSelectBuilder : ISqlTable
+    private const string TSQL_FMT_ONLY_ON = "SET FMTONLY ON; ";
+    private const string TSQL_FMT_ONLY_OFF = "SET FMTONLY OFF; ";
+    private const string TSQL_ORDER_BY = "ORDER BY";
+    private IList<ISqlColumn> _columns;
+    private IList<ISqlFilter> _filters;
+    private IList<ISqlJoin> _joins;
+    private IList<SqlOrderColumn> _orderBy;
+
+    internal SqlSelectBuilder(ISqlTable table, IEnumerable<ISqlJoin> joins, IList<ISqlColumn> columns,
+        IEnumerable<ISqlFilter> filters, IList<SqlOrderColumn> orderBy) : this()
     {
-        private const string TSQL_FMT_ONLY_ON = "SET FMTONLY ON; ";
-        private const string TSQL_FMT_ONLY_OFF = "SET FMTONLY OFF; ";
-        private const string TSQL_ORDER_BY = "ORDER BY";
+        Table = table;
+        _joins = joins.ToList();
+        _columns = columns;
+        _filters = filters.ToList();
+        _orderBy = orderBy;
+    }
 
-        private void ParseInternal(string commandText)
+    public SqlSelectBuilder()
+    {
+        GenerateFormattedSql = false;
+    }
+
+    public SqlSelectBuilder(string commandText) : this()
+    {
+        ParseInternal(commandText);
+    }
+
+    public SqlSelectBuilder(ISqlTable table) : this()
+    {
+        Table = table;
+    }
+
+    /// <summary>
+    ///     Gets a value that indicates if the output SQL text should have line breaks and other formatting.
+    /// </summary>
+    public bool GenerateFormattedSql { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value that indicates if only distinct values should be returned from the query.
+    /// </summary>
+    public bool SelectDistinct { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the primary table used in the query. This will be used as the first table rendered directly after the
+    ///     FROM keyword.
+    /// </summary>
+    public ISqlTable Table { get; set; }
+
+    /// <summary>
+    ///     Gets a collection of table joins used to join other tables into the resulting query.
+    /// </summary>
+    public IList<ISqlJoin> Joins
+    {
+        get
         {
-            //TODO: check sortExpression for SQL injection            
-            string orderBy;
-            int i = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
-                        
-            if (string.IsNullOrEmpty(commandText))
-            {
-                throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
-            }
+            if (_joins == null)
+                _joins = new List<ISqlJoin>();
+            return _joins;
+        }
+    }
 
-            commandText = commandText.Trim().TrimEnd(new char[] { '\r', '\n', ';', ' ', '\t' });
+    /// <summary>
+    ///     Gets a collection of columns to be used in the query.
+    /// </summary>
+    public IList<ISqlColumn> Columns
+    {
+        get
+        {
+            if (_columns == null)
+                _columns = new List<ISqlColumn>();
+            return _columns;
+        }
+    }
 
-            if (i >= 0)
-            {
-                this.Table = SqlTableBase.Create(commandText.Substring(0, i));
-                orderBy = commandText.Substring(i + TSQL_ORDER_BY.Length + 1);
-                this.OrderBy.Add(orderBy);
-            }
-            else
-            {
-                this.Table = SqlTableBase.Create(commandText);
-                orderBy = null;
-            }
+    /// <summary>
+    ///     Gets a collection of <see cref="SqlOrderColumn" /> which control how the ORDER BY keyword is rendered, if at all.
+    /// </summary>
+    public IList<SqlOrderColumn> OrderBy
+    {
+        get
+        {
+            if (_orderBy == null)
+                _orderBy = new List<SqlOrderColumn>();
+            return _orderBy;
+        }
+    }
+
+    /// <summary>
+    ///     Gets a collection of filter objects that will follow the WHERE keyword.
+    /// </summary>
+    public IList<ISqlFilter> Filters
+    {
+        get
+        {
+            if (_filters == null)
+                _filters = new List<ISqlFilter>();
+            return _filters;
+        }
+    }
+
+    /// <summary>
+    ///     Gets the paging options that will be applied to the query.
+    /// </summary>
+    public SqlPagingOptions? PagingOptions { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards.
+    ///     This can be used to set query options.
+    /// </summary>
+    public string Prefix { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter
+    ///     (semicolon).
+    /// </summary>
+    public string Suffix { get; set; }
+
+    void ISqlTable.Compile(SqlBuildArguments args)
+    {
+        args.AssignAlias(this);
+        CompileInternal(args);
+    }
+
+    void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
+    {
+        CompileInternal(args);
+        //writer.WriteBeginGroup();
+        RenderInternal(writer, args);
+        //writer.WriteEndGroup();
+        //writer.WriteSpace();
+        //writer.Write(SqlConstants.AS);
+        //writer.WriteSpace();
+        //writer.Write(SqlDataColumn.Format(args.TableName(this)));
+    }
+
+    private void ParseInternal(string commandText)
+    {
+        //TODO: check sortExpression for SQL injection            
+        string orderBy;
+        var i = commandText.IndexOf(TSQL_ORDER_BY, StringComparison.OrdinalIgnoreCase);
+
+        if (string.IsNullOrEmpty(commandText))
+            throw util.InvalidOperationException(ErrorMessage.GenericValueCannotBeEmptyOrNull, "commandText");
+
+        commandText = commandText.Trim().TrimEnd('\r', '\n', ';', ' ', '\t');
+
+        if (i >= 0)
+        {
+            Table = SqlTableBase.Create(commandText.Substring(0, i));
+            orderBy = commandText.Substring(i + TSQL_ORDER_BY.Length + 1);
+            OrderBy.Add(orderBy);
+        }
+        else
+        {
+            Table = SqlTableBase.Create(commandText);
+            orderBy = null;
+        }
+    }
+
+    /// <summary>
+    ///     Renders the query.
+    /// </summary>
+    /// <returns></returns>
+    public SqlStatement Render()
+    {
+        return Render(false);
+    }
+
+    /// <summary>
+    ///     Renders the query.
+    /// </summary>
+    /// <param name="supressEndStatement">True if you want to supress statement terminating characters (semicolon)</param>
+    /// <returns></returns>
+    public SqlStatement Render(bool supressEndStatement)
+    {
+        var writer = new SqlTextWriter { Format = GenerateFormattedSql };
+        var args = new SqlBuildArguments();
+
+        CompileInternal(args);
+
+        if (Prefix != null)
+        {
+            writer.Write(Prefix);
+            if (!supressEndStatement) writer.WriteEndStatement();
         }
 
-        internal SqlSelectBuilder(ISqlTable table, IEnumerable<ISqlJoin> joins, IList<ISqlColumn> columns, IEnumerable<ISqlFilter> filters, IList<SqlOrderColumn> orderBy) : this()
+        RenderInternal(writer, args);
+
+        if (!supressEndStatement) writer.WriteEndStatement();
+
+        if (Suffix != null)
         {
-            this.Table = table;
-            _joins = joins.ToList();
-            _columns = columns;
-            _filters = filters.ToList();
-            _orderBy = orderBy;
+            writer.Write(Suffix);
+            if (!supressEndStatement) writer.WriteEndStatement();
         }
 
-        public SqlSelectBuilder()
-        {
-            this.GenerateFormattedSql = false;
-        }
+        return new SqlStatement(writer.ToString(), args.Parameters);
+    }
 
-        public SqlSelectBuilder(string commandText) : this()
-        {
-            this.ParseInternal(commandText);
-        }
+    /// <summary>
+    ///     Renders the query.
+    /// </summary>
+    /// <returns></returns>
+    public void Render(SqlTextWriter writer, SqlBuildArguments args)
+    {
+        CompileInternal(args);
+        RenderInternal(writer, args);
+    }
 
-        public SqlSelectBuilder(ISqlTable table) : this()
-        {
-            this.Table = table;
-        }
+    /// <summary>
+    ///     Renders the query with T-SQL 'format only' decorators. This allows the query to be executed to validate the query
+    ///     and inspect the resulting schema, but will not return any data.
+    /// </summary>
+    /// <returns></returns>
+    public SqlStatement RenderFormatOnly()
+    {
+        var s = Render();
 
-        /// <summary>
-        /// Gets a value that indicates if the output SQL text should have line breaks and other formatting.
-        /// </summary>
-        public bool GenerateFormattedSql { get; set; }
+        s.CommandText = string.Concat(TSQL_FMT_ONLY_ON, ";", s.CommandText, TSQL_FMT_ONLY_OFF, ";");
 
-        /// <summary>
-        /// Gets or sets a value that indicates if only distinct values should be returned from the query.
-        /// </summary>
-        public bool SelectDistinct { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the primary table used in the query. This will be used as the first table rendered directly after the FROM keyword.
-        /// </summary>
-        public ISqlTable Table { get; set; }
+        return s;
+    }
 
-        /// <summary>
-        /// Gets a collection of table joins used to join other tables into the resulting query.
-        /// </summary>
-        public IList<ISqlJoin> Joins
-        {
-            get
-            {
-                if (_joins == null)
-                    _joins = new List<ISqlJoin>();
-                return _joins;
-            }
-        }
-        private IList<ISqlJoin> _joins;
+    /// <summary>
+    ///     Compiles the tables used in the query into the given build arguments object.
+    /// </summary>
+    /// <param name="args"></param>
+    protected void CompileInternal(SqlBuildArguments args)
+    {
+        Table.Compile(args);
+        if (Joins.Count > 0)
+            foreach (var join in Joins)
+                join.JoinedTable.Compile(args);
+    }
 
-        /// <summary>
-        /// Gets a collection of columns to be used in the query.
-        /// </summary>
-        public IList<ISqlColumn> Columns
-        {
-            get
-            {
-                if (_columns == null)
-                    _columns = new List<ISqlColumn>();
-                return _columns;
-            }
-        }
-        private IList<ISqlColumn> _columns;
+    /// <summary>
+    ///     Renders the query to the given text writer.
+    /// </summary>
+    /// <param name="writer"></param>
+    /// <param name="args"></param>
+    protected void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
+    {
+        writer.RenderSelect(Columns, args, SelectDistinct);
+        writer.RenderFrom(Table, args);
+        if (Joins.Count > 0) writer.RenderJoins(Joins, args);
+        writer.RenderWhere(Filters, SqlLogic.And, args);
 
-        /// <summary>
-        /// Gets a collection of <see cref="SqlOrderColumn"/> which control how the ORDER BY keyword is rendered, if at all.
-        /// </summary>
-        public IList<SqlOrderColumn> OrderBy
-        {
-            get
-            {
-                if (_orderBy == null)
-                    _orderBy = new List<SqlOrderColumn>();
-                return _orderBy;
-            }
-        }
-        private IList<SqlOrderColumn> _orderBy;
+        if (Columns.Count(x => x.IsAggregate) > 0) writer.RenderGroupBy(Columns.Where(x => !x.IsAggregate), args);
 
-        /// <summary>
-        /// Gets a collection of filter objects that will follow the WHERE keyword.
-        /// </summary>
-        public IList<ISqlFilter> Filters
-        {
-            get
-            {
-                if (_filters == null)
-                    _filters = new List<ISqlFilter>();
-                return _filters;
-            }
-        }
-        private IList<ISqlFilter> _filters;
-
-        /// <summary>
-        /// Gets the paging options that will be applied to the query.
-        /// </summary>
-        public SqlPagingOptions? PagingOptions { get; set; }
-
-        /// <summary>
-        /// Renders the query.
-        /// </summary>
-        /// <returns></returns>
-        public SqlStatement Render()
-        {
-            return this.Render(false);
-        }
-
-        /// <summary>
-        /// Gets or sets a SQL statement that will be prefixed to the rendered query with a statement separater afterwards. This can be used to set query options.
-        /// </summary>
-        public string Prefix { get; set; }
-
-        /// <summary>
-        /// Gets or sets a SQL statment that will be appended to the end of the rendered query after a statement separaeter (semicolon).
-        /// </summary>
-        public string Suffix { get; set; }
-
-        /// <summary>
-        /// Renders the query.
-        /// </summary>
-        /// <param name="supressEndStatement">True if you want to supress statement terminating characters (semicolon)</param>
-        /// <returns></returns>
-        public SqlStatement Render(bool supressEndStatement)
-        {
-            var writer = new SqlTextWriter() { Format = this.GenerateFormattedSql };
-            var args = new SqlBuildArguments();
-
-            this.CompileInternal(args);
-
-            if (this.Prefix != null)
-            {
-                writer.Write(this.Prefix);
-                if (!supressEndStatement)
-                {
-                    writer.WriteEndStatement();
-                }
-            }
-
-            this.RenderInternal(writer, args);
-
-            if (!supressEndStatement)
-            {
-                writer.WriteEndStatement();
-            }
-
-            if (this.Suffix != null)
-            {
-                writer.Write(this.Suffix);
-                if (!supressEndStatement)
-                {
-                    writer.WriteEndStatement();
-                }
-            }
-
-            return new SqlStatement(writer.ToString(), args.Parameters);
-        }
-
-        /// <summary>
-        /// Renders the query.
-        /// </summary>
-        /// <returns></returns>
-        public void Render(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            this.CompileInternal(args);
-            this.RenderInternal(writer, args);
-        }
-
-        /// <summary>
-        /// Renders the query with T-SQL 'format only' decorators. This allows the query to be executed to validate the query and inspect the resulting schema, but will not return any data.
-        /// </summary>
-        /// <returns></returns>
-        public SqlStatement RenderFormatOnly()
-        {
-            SqlStatement s = this.Render();
-
-            s.CommandText = string.Concat(new string[] { TSQL_FMT_ONLY_ON, ";", s.CommandText, TSQL_FMT_ONLY_OFF, ";" });
-
-            return s;
-        }
-        
-        /// <summary>
-        /// Compiles the tables used in the query into the given build arguments object.
-        /// </summary>
-        /// <param name="args"></param>
-        protected void CompileInternal(SqlBuildArguments args)
-        {
-            this.Table.Compile(args);
-            if (this.Joins.Count > 0)
-            {
-                foreach (var join in this.Joins)
-                {
-                    join.JoinedTable.Compile(args);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Renders the query to the given text writer.
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="args"></param>
-        protected void RenderInternal(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            writer.RenderSelect(this.Columns, args, this.SelectDistinct);
-            writer.RenderFrom(this.Table, args);
-            if (this.Joins.Count > 0)
-            {
-                writer.RenderJoins(this.Joins, args);
-            }
-            writer.RenderWhere(this.Filters, SqlLogic.And, args);
-
-            if (this.Columns.Count(x => x.IsAggregate) > 0)
-            {
-                writer.RenderGroupBy(this.Columns.Where(x => !x.IsAggregate), args);
-            }
-
-            writer.RenderOrderBy(this.OrderBy, args);
-            if (this.PagingOptions.HasValue)
-            {
-                writer.RenderOffsetLimit(this.PagingOptions.Value, args);
-            }
-        }
-                
-        void ISqlTable.Compile(SqlBuildArguments args)
-        {
-            args.AssignAlias(this);
-            this.CompileInternal(args);
-        }
-
-        void ISqlStatementElement.Render(SqlTextWriter writer, SqlBuildArguments args)
-        {
-            this.CompileInternal(args);
-            //writer.WriteBeginGroup();
-            this.RenderInternal(writer, args);
-            //writer.WriteEndGroup();
-            //writer.WriteSpace();
-            //writer.Write(SqlConstants.AS);
-            //writer.WriteSpace();
-            //writer.Write(SqlDataColumn.Format(args.TableName(this)));
-        }
+        writer.RenderOrderBy(OrderBy, args);
+        if (PagingOptions.HasValue) writer.RenderOffsetLimit(PagingOptions.Value, args);
     }
 }

@@ -1,137 +1,134 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
+using Csg.Data.Sql.Tests.Mock;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Csg.Data.Sql.Tests
+namespace Csg.Data.Sql.Tests;
+
+[TestClass]
+public class DbQueryBuilderTests
 {
-    [TestClass]
-    public class DbQueryBuilderTests
+    static DbQueryBuilderTests()
     {
-        static DbQueryBuilderTests()
+        DbQueryBuilder.GenerateFormattedSql = false;
+    }
+
+    [TestMethod]
+    public void TestCreateCommandPopulatesCommandParameters()
+    {
+        var conn = new MockConnection();
+        var query = new DbQueryBuilder("dbo.TableName", conn);
+
+        query.Parameters.Add(new DbParameterValue
         {
-            Csg.Data.DbQueryBuilder.GenerateFormattedSql = false;
-        }
+            ParameterName = "@Param1",
+            DbType = DbType.Int32,
+            Size = 4,
+            Value = 123
+        });
 
-        [TestMethod]
-        public void TestCreateCommandPopulatesCommandParameters()
+        var stmt = query.Render();
+
+        Assert.AreEqual(1, stmt.Parameters.Count);
+        Assert.AreEqual(DbType.Int32, stmt.Parameters.First().DbType);
+        Assert.AreEqual(4, stmt.Parameters.First().Size);
+        Assert.AreEqual(123, stmt.Parameters.First().Value);
+
+        var cmd = stmt.CreateCommand(conn);
+
+        Assert.AreEqual(conn, cmd.Connection);
+        Assert.AreEqual(1, cmd.Parameters.Count);
+        Assert.AreEqual(DbType.Int32, ((IDbDataParameter)cmd.Parameters[0]).DbType);
+        Assert.AreEqual(4, ((IDbDataParameter)cmd.Parameters[0]).Size);
+        Assert.AreEqual(123, ((IDbDataParameter)cmd.Parameters[0]).Value);
+    }
+
+    [TestMethod]
+    public void TestForkCreatesShallowClone()
+    {
+        var conn = new MockConnection();
+        var query = new DbQueryBuilder("dbo.TableName", conn);
+
+        query.OrderBy.Add(new SqlOrderColumn { ColumnName = "Foo" });
+        query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTableBase.Create("Blah")));
+        query.AddFilter(new SqlNullFilter(query.Root, "Foo", false));
+        query.SelectColumns.Add(new SqlColumn(query.Root, "Foo"));
+        query.PagingOptions = new SqlPagingOptions
         {
-            var conn = new MockConnection();
-            var query = new DbQueryBuilder("dbo.TableName", conn);
-
-            query.Parameters.Add(new DbParameterValue()
-            {
-                ParameterName  = "@Param1",
-                DbType = System.Data.DbType.Int32,
-                Size = 4,
-                Value = 123
-            });
-
-            var stmt = query.Render();
-
-            Assert.AreEqual(1, stmt.Parameters.Count);
-            Assert.AreEqual(System.Data.DbType.Int32, stmt.Parameters.First().DbType);
-            Assert.AreEqual(4, stmt.Parameters.First().Size);
-            Assert.AreEqual(123, stmt.Parameters.First().Value);
-
-            var cmd = stmt.CreateCommand(conn);
-
-            Assert.AreEqual(conn, cmd.Connection);
-            Assert.AreEqual(1, cmd.Parameters.Count);
-            Assert.AreEqual(System.Data.DbType.Int32, ((IDbDataParameter)cmd.Parameters[0]).DbType);
-            Assert.AreEqual(4, ((IDbDataParameter)cmd.Parameters[0]).Size);
-            Assert.AreEqual(123, ((IDbDataParameter)cmd.Parameters[0]).Value);
-        }
-
-        [TestMethod]
-        public void TestForkCreatesShallowClone()
+            Offset = 10,
+            Limit = 100
+        };
+        query.Parameters.Add(new DbParameterValue
         {
-            var conn = new MockConnection();
-            var query = new DbQueryBuilder("dbo.TableName", conn);
+            ParameterName = "@Param1",
+            DbType = DbType.Int32,
+            Size = 4,
+            Value = 123
+        });
+        query.Distinct = true;
+        query.CommandTimeout = 123;
 
-            query.OrderBy.Add(new SqlOrderColumn() { ColumnName = "Foo" });
-            query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("Blah")));
-            query.AddFilter(new SqlNullFilter(query.Root, "Foo", false));
-            query.SelectColumns.Add(new SqlColumn(query.Root, "Foo"));
-            query.PagingOptions = new SqlPagingOptions()
-            {
-                Offset = 10,
-                Limit = 100
-            };
-            query.Parameters.Add(new DbParameterValue()
-            {
-                ParameterName = "@Param1",
-                DbType = System.Data.DbType.Int32,
-                Size = 4,
-                Value = 123
-            });
-            query.Distinct = true;
-            query.CommandTimeout = 123;
+        var fork = query.Fork();
 
-            var fork = query.Fork();
+        query.OrderBy.Clear();
+        query.AddFilter(new SqlNullFilter(query.Root, "Bar", false));
+        query.SelectColumns.Clear();
+        query.PagingOptions = null;
+        query.Parameters.Clear();
+        query.CommandTimeout = 999;
+        query.Distinct = false;
+        query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTableBase.Create("blah2")));
 
-            query.OrderBy.Clear();
-            query.AddFilter(new SqlNullFilter(query.Root, "Bar", false));
-            query.SelectColumns.Clear();
-            query.PagingOptions = null;
-            query.Parameters.Clear();
-            query.CommandTimeout = 999;
-            query.Distinct = false;
-            query.AddJoin(new SqlJoin(query.Root, SqlJoinType.Cross, SqlTable.Create("blah2")));
+        Assert.AreEqual(1, fork.OrderBy.Count);
+        Assert.AreEqual(1, fork.SelectColumns.Count);
+        Assert.AreEqual(1, fork.Parameters.Count);
+        Assert.AreEqual(10, fork.PagingOptions.Value.Offset);
+        Assert.AreEqual(100, fork.PagingOptions.Value.Limit);
+        Assert.AreEqual(true, fork.Distinct);
+        Assert.AreEqual(123, fork.CommandTimeout);
+    }
 
-            Assert.AreEqual(1, fork.OrderBy.Count);
-            Assert.AreEqual(1, fork.SelectColumns.Count);
-            Assert.AreEqual(1, fork.Parameters.Count);
-            Assert.AreEqual(10, fork.PagingOptions.Value.Offset);
-            Assert.AreEqual(100, fork.PagingOptions.Value.Limit);
-            Assert.AreEqual(true, fork.Distinct);
-            Assert.AreEqual(123, fork.CommandTimeout);
-        }
+    [TestMethod]
+    public void TestQueryBuilderAsSqlStatementRendersParametersToArgs()
+    {
+        var conn = new MockConnection();
+        var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
 
-        [TestMethod]
-        public void TestQueryBuilderAsSqlStatementRendersParametersToArgs()
+
+        query.Parameters.Add(new DbParameterValue
         {
-            var conn = new MockConnection();
-            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
+            ParameterName = "@Foo",
+            DbType = DbType.Int32,
+            Size = 4,
+            Value = 123
+        });
 
+        var args = new SqlBuildArguments();
+        var writer = new SqlTextWriter();
 
-            query.Parameters.Add(new DbParameterValue()
-            {
-                ParameterName = "@Foo",
-                DbType = System.Data.DbType.Int32,
-                Size = 4,
-                Value = 123
-            });
+        ((ISqlStatementElement)query).Render(writer, args);
 
-            var args = new SqlBuildArguments();
-            var writer = new SqlTextWriter();
+        Assert.AreEqual(1, args.Parameters.Count);
+        Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0]", writer.ToString());
+    }
 
-            ((ISqlStatementElement)query).Render(writer, args);
+    [TestMethod]
+    public void TestQueryBuilderRenderBatch()
+    {
+        var conn = new MockConnection();
+        var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
 
-            Assert.AreEqual(1, args.Parameters.Count);
-            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0]", writer.ToString());
-        }
-
-        [TestMethod]
-        public void TestQueryBuilderRenderBatch()
+        query.Parameters.Add(new DbParameterValue
         {
-            var conn = new MockConnection();
-            var query = new DbQueryBuilder("SELECT * FROM dbo.TableName WHERE Foo=@Foo", conn);
+            ParameterName = "@Foo",
+            DbType = DbType.Int32,
+            Size = 4,
+            Value = 123
+        });
 
-            query.Parameters.Add(new DbParameterValue()
-            {
-                ParameterName = "@Foo",
-                DbType = System.Data.DbType.Int32,
-                Size = 4,
-                Value = 123
-            });
+        var stmt = new ISqlStatementElement[] { query }.RenderBatch();
 
-            var stmt = new ISqlStatementElement[] { query }.RenderBatch();
-
-            Assert.AreEqual(1, stmt.Parameters.Count);
-            Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];\r\n", stmt.CommandText);
-        }
+        Assert.AreEqual(1, stmt.Parameters.Count);
+        Assert.AreEqual("SELECT * FROM (SELECT * FROM dbo.TableName WHERE Foo=@Foo) AS [t0];\r\n", stmt.CommandText);
     }
 }

@@ -1,44 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 
-namespace Csg.Data
+namespace Csg.Data.Sql.Tests.Mock;
+
+public class MockTransaction : IDbTransaction
 {
-    public class MockTransaction : System.Data.IDbTransaction
+    public bool IsCommited { get; set; }
+
+    public bool IsDisposed { get; set; }
+
+    public bool IsRolledBack { get; set; }
+
+    public IDbConnection Connection { get; set; }
+
+
+    public IsolationLevel IsolationLevel { get; set; }
+
+
+    public void Commit()
     {
-
-        public IDbConnection Connection { get; set; }
-        
-
-        public IsolationLevel IsolationLevel { get; set; }
-
-        public bool IsCommited { get; set; }
-
-        public bool IsDisposed { get; set; }
-
-        public bool IsRolledBack { get; set; }
-
-
-        public void Commit()
-        {
-            this.IsCommited = true;
-        }
-
-        public void Dispose()
-        {
-            if (!this.IsCommited)
-            {
-                this.Rollback();
-            }
-            this.IsDisposed = true;
-        }
-
-        public void Rollback()
-        {
-            this.IsRolledBack = true;
-        }
+        IsCommited = true;
     }
 
+    public void Dispose()
+    {
+        if (!IsCommited) Rollback();
+        IsDisposed = true;
+    }
+
+    public void Rollback()
+    {
+        IsRolledBack = true;
+    }
 }
