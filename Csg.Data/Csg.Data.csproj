@@ -15,7 +15,7 @@
         <PackageIcon>icon.png</PackageIcon>
         <LangVersion>default</LangVersion>
         <Nullable>warnings</Nullable>
-        <TargetFrameworks>net6.0;net8.0;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0;netstandard2.0</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|AnyCPU'">

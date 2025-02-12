@@ -21,7 +21,7 @@
         <LangVersion>default</LangVersion>
         <Nullable>warnings</Nullable>
         <OutputType>Library</OutputType>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,34 +29,34 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Identity" Version="1.13.1" />
+        <PackageReference Include="Azure.Identity" Version="1.13.2" />
         <PackageReference Include="Microsoft.Build.Tasks.Git" Version="8.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-        <PackageReference Include="Microsoft.Identity.Client" Version="4.66.1" />
-        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.66.1" />
-        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.2.0" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.2.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.68.0" />
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.68.0" />
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.4.0" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.4.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
         <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
         <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
         <PackageReference Include="Microsoft.SourceLink.Common" Version="8.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="MSTest.TestAdapter" Version="3.6.2" />
+        <PackageReference Include="MSTest.TestAdapter" Version="3.8.0" />
         <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
-        <PackageReference Include="MSTest.TestFramework" Version="3.6.2" />
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
+        <PackageReference Include="MSTest.TestFramework" Version="3.8.0" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.2" />
         <PackageReference Include="System.Runtime" Version="4.3.1" />
-        <PackageReference Include="System.Runtime.Caching" Version="8.0.1" />
+        <PackageReference Include="System.Runtime.Caching" Version="9.0.2" />
         <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
-        <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-        <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+        <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.2" />
+        <PackageReference Include="System.Text.Encodings.Web" Version="9.0.2" />
+        <PackageReference Include="System.Text.Json" Version="9.0.2" />
         <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
         <PackageReference Include="System.ValueTuple" Version="4.5.0" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
