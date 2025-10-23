@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>3.1.6</VersionPrefix>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>Csg.Data.Sql.Tests</AssemblyName>
     <AssemblyOriginatorKeyFile>../build/key.snk</AssemblyOriginatorKeyFile>
@@ -28,7 +28,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
-    <PackageReference Include="System.Data.Common" Version="4.1.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
@@ -36,6 +36,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
